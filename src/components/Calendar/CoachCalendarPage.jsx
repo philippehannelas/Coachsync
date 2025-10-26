@@ -52,7 +52,7 @@ const CoachCalendarPage = () => {
     try {
       const response = await fetch('https://coachsync-pro.onrender.com/api/coach/customers', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${localStorage.getItem('coachsync_token')}`,
           'Content-Type': 'application/json'
         }
       });
