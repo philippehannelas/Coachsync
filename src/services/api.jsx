@@ -1,9 +1,9 @@
 import axios from 'axios';
 
-// API Configuration
+// Backend API base URL
 const API_BASE_URL = 'https://vgh0i1c5dyvj.manus.space/api';
 
-// Create axios instance
+// Create axios instance with default config
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -12,11 +12,29 @@ const api = axios.create({
 });
 
 // Token management
-const getToken = () => localStorage.getItem('authToken');
-const setToken = (token) => localStorage.setItem('authToken', token);
-const removeToken = () => localStorage.removeItem('authToken');
+const TOKEN_KEY = 'coachsync_token';
 
-// Request interceptor to add auth token
+export const setToken = (token) => {
+  localStorage.setItem(TOKEN_KEY, token);
+  api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+};
+
+export const getToken = () => {
+  return localStorage.getItem(TOKEN_KEY);
+};
+
+export const removeToken = () => {
+  localStorage.removeItem(TOKEN_KEY);
+  delete api.defaults.headers.common['Authorization'];
+};
+
+// Set token on app initialization if it exists
+const existingToken = getToken();
+if (existingToken) {
+  api.defaults.headers.common['Authorization'] = `Bearer ${existingToken}`;
+}
+
+// Request interceptor to add token to requests
 api.interceptors.request.use(
   (config) => {
     const token = getToken();
@@ -25,81 +43,60 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    return Promise.reject(error);
+  }
 );
 
-// Response interceptor for error handling
+// Response interceptor to handle token expiration
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
       removeToken();
-      window.location.href = '/login';
+      window.location.reload();
     }
     return Promise.reject(error);
   }
 );
 
-// Auth API
+// Auth API endpoints
 export const authAPI = {
   register: (userData) => api.post('/auth/register', userData),
   login: (credentials) => api.post('/auth/login', credentials),
-  logout: () => {
-    removeToken();
-    return Promise.resolve();
-  },
+  logout: () => api.post('/auth/logout'),
   getCurrentUser: () => api.get('/auth/me'),
 };
 
-// Coach API
+// Coach API endpoints
 export const coachAPI = {
-  // Customer management
   getCustomers: () => api.get('/coach/customers'),
   createCustomer: (customerData) => api.post('/coach/customers', customerData),
   updateCustomer: (customerId, customerData) => api.put(`/coach/customers/${customerId}`, customerData),
   deleteCustomer: (customerId) => api.delete(`/coach/customers/${customerId}`),
   addCredits: (customerId, credits) => api.post(`/coach/customers/${customerId}/credits`, { credits }),
-
-  // Training plans
+  
   getTrainingPlans: () => api.get('/coach/training-plans'),
   createTrainingPlan: (planData) => api.post('/coach/training-plans', planData),
   updateTrainingPlan: (planId, planData) => api.put(`/coach/training-plans/${planId}`, planData),
   deleteTrainingPlan: (planId) => api.delete(`/coach/training-plans/${planId}`),
-  assignPlan: (planId, customerIds) => api.post(`/coach/training-plans/${planId}/assign`, { customer_ids: customerIds }),
-
-  // Bookings
+  
   getBookings: () => api.get('/coach/bookings'),
   createBooking: (bookingData) => api.post('/coach/bookings', bookingData),
   updateBooking: (bookingId, bookingData) => api.put(`/coach/bookings/${bookingId}`, bookingData),
-  deleteBooking: (bookingId) => api.delete(`/coach/bookings/${bookingId}`),
-
-  // Availability
-  getAvailability: () => api.get('/coach/availability'),
-  setAvailability: (availabilityData) => api.post('/coach/availability', availabilityData),
+  cancelBooking: (bookingId) => api.delete(`/coach/bookings/${bookingId}`),
 };
 
-// Customer API
+// Customer API endpoints
 export const customerAPI = {
-  // Training plans
+  getProfile: () => api.get('/customer/profile'),
+  updateProfile: (profileData) => api.put('/customer/profile', profileData),
   getTrainingPlans: () => api.get('/customer/training-plans'),
-  getTrainingPlan: (planId) => api.get(`/customer/training-plans/${planId}`),
-
-  // Bookings
   getBookings: () => api.get('/customer/bookings'),
   createBooking: (bookingData) => api.post('/customer/bookings', bookingData),
   cancelBooking: (bookingId) => api.delete(`/customer/bookings/${bookingId}`),
-
-  // Profile
-  getProfile: () => api.get('/customer/profile'),
-  updateProfile: (profileData) => api.put('/customer/profile', profileData),
-
-  // Credits
   getCredits: () => api.get('/customer/credits'),
 };
 
-// Export token management functions
-export { getToken, setToken, removeToken };
-
-// Export default api instance
 export default api;
 

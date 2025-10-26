@@ -1,16 +1,14 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth.jsx';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Alert, AlertDescription } from './ui/alert';
-import { Loader2, User, Phone, Mail, Lock, UserCheck } from 'lucide-react';
+import { Button } from './ui/button.jsx';
+import { Input } from './ui/input.jsx';
+import { Label } from './ui/label.jsx';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card.jsx';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs.jsx';
+import { Alert, AlertDescription } from './ui/alert.jsx';
 
 const AuthForm = () => {
-  const { login, register } = useAuth();
+  const { login, register, loading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -31,7 +29,7 @@ const AuthForm = () => {
     email: '',
     phone: '',
     password: '',
-    role: '',
+    role: 'customer',
   });
 
   const handleLogin = async (e) => {
@@ -63,7 +61,7 @@ const AuthForm = () => {
     setSuccess('');
 
     // Validate required fields
-    if (!registerData.first_name || !registerData.last_name || !registerData.password || !registerData.role) {
+    if (!registerData.first_name || !registerData.last_name || !registerData.password) {
       setError('Please fill in all required fields');
       setIsLoading(false);
       return;
@@ -93,7 +91,7 @@ const AuthForm = () => {
         email: '',
         phone: '',
         password: '',
-        role: '',
+        role: 'customer',
       });
     } else {
       setError(result.error);
@@ -112,6 +110,17 @@ const AuthForm = () => {
     setError('');
     setSuccess('');
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
@@ -137,14 +146,8 @@ const AuthForm = () => {
                 {/* Login Method Selection */}
                 <Tabs value={loginMethod} onValueChange={setLoginMethod}>
                   <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="email">
-                      <Mail className="w-4 h-4 mr-2" />
-                      Email
-                    </TabsTrigger>
-                    <TabsTrigger value="phone">
-                      <Phone className="w-4 h-4 mr-2" />
-                      Phone
-                    </TabsTrigger>
+                    <TabsTrigger value="email">Email</TabsTrigger>
+                    <TabsTrigger value="phone">Phone</TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="email" className="space-y-4 mt-4">
@@ -203,17 +206,7 @@ const AuthForm = () => {
                 )}
 
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Signing In...
-                    </>
-                  ) : (
-                    <>
-                      <User className="mr-2 h-4 w-4" />
-                      Sign In
-                    </>
-                  )}
+                  {isLoading ? 'Signing In...' : 'Sign In'}
                 </Button>
               </form>
             </TabsContent>
@@ -246,25 +239,15 @@ const AuthForm = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="role">Role *</Label>
-                  <Select value={registerData.role} onValueChange={(value) => updateRegisterData('role', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select your role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="coach">
-                        <div className="flex items-center">
-                          <UserCheck className="mr-2 h-4 w-4" />
-                          Coach
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="customer">
-                        <div className="flex items-center">
-                          <User className="mr-2 h-4 w-4" />
-                          Customer
-                        </div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <select
+                    id="role"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    value={registerData.role}
+                    onChange={(e) => updateRegisterData('role', e.target.value)}
+                  >
+                    <option value="customer">Customer</option>
+                    <option value="coach">Coach</option>
+                  </select>
                 </div>
 
                 <div className="space-y-2">
@@ -319,17 +302,7 @@ const AuthForm = () => {
                 )}
 
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Creating Account...
-                    </>
-                  ) : (
-                    <>
-                      <UserCheck className="mr-2 h-4 w-4" />
-                      Create Account
-                    </>
-                  )}
+                  {isLoading ? 'Creating Account...' : 'Create Account'}
                 </Button>
               </form>
             </TabsContent>
