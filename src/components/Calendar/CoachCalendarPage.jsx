@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, Plus, Settings, Users } from 'lucide-react';
 import WeekCalendar from './WeekCalendar';
 import BookingModal from './BookingModal';
-import { availabilityApi, bookingApi } from './calendarApi';
+import { availabilityApi, bookingApi } from '../../services/calendarApi';
 
 /**
  * CoachCalendarPage Component

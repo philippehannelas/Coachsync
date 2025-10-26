@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, CreditCard, AlertCircle } from 'lucide-react';
 import WeekCalendar from './WeekCalendar';
 import BookingModal from './BookingModal';
-import { availabilityApi, bookingApi } from './calendarApi';
+import { availabilityApi, bookingApi } from '../../services/calendarApi';
 
 /**
  * CustomerCalendarPage Component

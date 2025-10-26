@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, Plus, Trash2, Save, X, AlertCircle } from 'lucide-react';
-import { availabilityApi } from './calendarApi';
+import { availabilityApi } from '../../services/calendarApi';
 
 /**
  * AvailabilityManager Component
