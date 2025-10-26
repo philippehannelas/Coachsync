@@ -98,7 +98,7 @@ function AppContent() {
       <main>
         {currentPage === 'dashboard' && (
           isCoach ? (
-            <CoachDashboard onNavigate={setCurrentPage} />
+            <CoachDashboard user={user} onNavigate={setCurrentPage} />
           ) : (
             <CustomerDashboard userProfile={user} onNavigate={setCurrentPage} />
           )
@@ -113,7 +113,7 @@ function AppContent() {
         )}
 
         {currentPage === 'customers' && isCoach && (
-          <CoachDashboard onNavigate={setCurrentPage} />
+          <CoachDashboard user={user} onNavigate={setCurrentPage} />
         )}
       </main>
     </div>
