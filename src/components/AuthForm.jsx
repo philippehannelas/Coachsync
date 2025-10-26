@@ -1,14 +1,9 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth.jsx';
-import { Button } from './ui/button.jsx';
-import { Input } from './ui/input.jsx';
-import { Label } from './ui/label.jsx';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card.jsx';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs.jsx';
-import { Alert, AlertDescription } from './ui/alert.jsx';
+import { Mail, Phone, Lock, User, UserPlus, LogIn, Dumbbell } from 'lucide-react';
 
 const AuthForm = () => {
-  const { login, register, loading } = useAuth();
+  const { login, register } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -60,31 +55,11 @@ const AuthForm = () => {
     setError('');
     setSuccess('');
 
-    // Validate required fields
-    if (!registerData.first_name || !registerData.last_name || !registerData.password) {
-      setError('Please fill in all required fields');
-      setIsLoading(false);
-      return;
-    }
-
-    if (!registerData.email && !registerData.phone) {
-      setError('Please provide either email or phone number');
-      setIsLoading(false);
-      return;
-    }
-
-    if (registerData.phone && registerData.phone.length !== 8) {
-      setError('Phone number must be exactly 8 digits');
-      setIsLoading(false);
-      return;
-    }
-
     const result = await register(registerData);
     
     if (result.success) {
-      setSuccess('Registration successful! Please login with your credentials.');
+      setSuccess('Registration successful! Please sign in.');
       setActiveTab('login');
-      // Reset form
       setRegisterData({
         first_name: '',
         last_name: '',
@@ -100,215 +75,364 @@ const AuthForm = () => {
     setIsLoading(false);
   };
 
-  const updateLoginData = (field, value) => {
-    setLoginData(prev => ({ ...prev, [field]: value }));
-    setError('');
-  };
-
-  const updateRegisterData = (field, value) => {
-    setRegisterData(prev => ({ ...prev, [field]: value }));
-    setError('');
-    setSuccess('');
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-gray-900">
-            Welcome to CoachSync
-          </CardTitle>
-          <CardDescription>
-            Your personal training management platform
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Sign In</TabsTrigger>
-              <TabsTrigger value="register">Sign Up</TabsTrigger>
-            </TabsList>
+    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-pink-500 flex items-center justify-center p-4">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-white opacity-10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white opacity-10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-white opacity-5 rounded-full blur-3xl animate-pulse delay-500"></div>
+      </div>
 
-            {/* Login Tab */}
-            <TabsContent value="login">
-              <form onSubmit={handleLogin} className="space-y-4">
-                {/* Login Method Selection */}
-                <Tabs value={loginMethod} onValueChange={setLoginMethod}>
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="email">Email</TabsTrigger>
-                    <TabsTrigger value="phone">Phone</TabsTrigger>
-                  </TabsList>
+      <div className="w-full max-w-md relative z-10">
+        {/* Logo and Title */}
+        <div className="text-center mb-8 animate-fade-in">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-2xl shadow-2xl mb-4 transform hover:scale-110 transition-transform duration-300">
+            <Dumbbell className="h-8 w-8 text-purple-600" />
+          </div>
+          <h1 className="text-4xl font-bold text-white mb-2">CoachSync</h1>
+          <p className="text-blue-100 text-lg">Your personal training management platform</p>
+        </div>
 
-                  <TabsContent value="email" className="space-y-4 mt-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email Address</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="Enter your email"
-                        value={loginData.email}
-                        onChange={(e) => updateLoginData('email', e.target.value)}
-                        required
-                      />
-                    </div>
-                  </TabsContent>
+        {/* Main Card */}
+        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden transform hover:scale-[1.02] transition-transform duration-300">
+          {/* Tabs */}
+          <div className="flex border-b border-gray-200">
+            <button
+              onClick={() => setActiveTab('login')}
+              className={`flex-1 py-4 px-6 font-semibold transition-all duration-300 ${
+                activeTab === 'login'
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+                  : 'text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              <div className="flex items-center justify-center space-x-2">
+                <LogIn className="h-5 w-5" />
+                <span>Sign In</span>
+              </div>
+            </button>
+            <button
+              onClick={() => setActiveTab('register')}
+              className={`flex-1 py-4 px-6 font-semibold transition-all duration-300 ${
+                activeTab === 'register'
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+                  : 'text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              <div className="flex items-center justify-center space-x-2">
+                <UserPlus className="h-5 w-5" />
+                <span>Sign Up</span>
+              </div>
+            </button>
+          </div>
 
-                  <TabsContent value="phone" className="space-y-4 mt-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Phone Number</Label>
-                      <Input
-                        id="phone"
-                        type="tel"
-                        placeholder="Enter 8-digit phone number"
-                        value={loginData.phone}
-                        onChange={(e) => updateLoginData('phone', e.target.value)}
-                        maxLength={8}
-                        pattern="[0-9]{8}"
-                        required
-                      />
-                    </div>
-                  </TabsContent>
-                </Tabs>
+          <div className="p-8">
+            {/* Error/Success Messages */}
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg animate-shake">
+                <p className="text-red-800 text-sm font-medium">{error}</p>
+              </div>
+            )}
+            {success && (
+              <div className="mb-6 p-4 bg-green-50 border-l-4 border-green-500 rounded-lg animate-fade-in">
+                <p className="text-green-800 text-sm font-medium">{success}</p>
+              </div>
+            )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="Enter your password"
-                    value={loginData.password}
-                    onChange={(e) => updateLoginData('password', e.target.value)}
-                    required
-                  />
-                </div>
-
-                {error && (
-                  <Alert variant="destructive">
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>
-                )}
-
-                {success && (
-                  <Alert>
-                    <AlertDescription>{success}</AlertDescription>
-                  </Alert>
-                )}
-
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? 'Signing In...' : 'Sign In'}
-                </Button>
-              </form>
-            </TabsContent>
-
-            {/* Register Tab */}
-            <TabsContent value="register">
-              <form onSubmit={handleRegister} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="first_name">First Name *</Label>
-                    <Input
-                      id="first_name"
-                      placeholder="First name"
-                      value={registerData.first_name}
-                      onChange={(e) => updateRegisterData('first_name', e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="last_name">Last Name *</Label>
-                    <Input
-                      id="last_name"
-                      placeholder="Last name"
-                      value={registerData.last_name}
-                      onChange={(e) => updateRegisterData('last_name', e.target.value)}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="role">Role *</Label>
-                  <select
-                    id="role"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    value={registerData.role}
-                    onChange={(e) => updateRegisterData('role', e.target.value)}
+            {/* Login Form */}
+            {activeTab === 'login' && (
+              <form onSubmit={handleLogin} className="space-y-6">
+                {/* Login Method Toggle */}
+                <div className="flex gap-2 p-1 bg-gray-100 rounded-lg">
+                  <button
+                    type="button"
+                    onClick={() => setLoginMethod('email')}
+                    className={`flex-1 flex items-center justify-center space-x-2 py-2 px-4 rounded-md font-medium transition-all duration-200 ${
+                      loginMethod === 'email'
+                        ? 'bg-white text-blue-600 shadow-md'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
                   >
-                    <option value="customer">Customer</option>
-                    <option value="coach">Coach</option>
-                  </select>
+                    <Mail className="h-4 w-4" />
+                    <span>Email</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setLoginMethod('phone')}
+                    className={`flex-1 flex items-center justify-center space-x-2 py-2 px-4 rounded-md font-medium transition-all duration-200 ${
+                      loginMethod === 'phone'
+                        ? 'bg-white text-blue-600 shadow-md'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    <Phone className="h-4 w-4" />
+                    <span>Phone</span>
+                  </button>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="reg_email">Email Address (Optional)</Label>
-                  <Input
-                    id="reg_email"
-                    type="email"
-                    placeholder="Enter your email"
-                    value={registerData.email}
-                    onChange={(e) => updateRegisterData('email', e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="reg_phone">Phone Number (Optional)</Label>
-                  <Input
-                    id="reg_phone"
-                    type="tel"
-                    placeholder="Enter 8-digit phone number"
-                    value={registerData.phone}
-                    onChange={(e) => updateRegisterData('phone', e.target.value)}
-                    maxLength={8}
-                    pattern="[0-9]{8}"
-                  />
-                  <p className="text-xs text-gray-500">
-                    Provide either email or phone number (or both)
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="reg_password">Password *</Label>
-                  <Input
-                    id="reg_password"
-                    type="password"
-                    placeholder="Create a password"
-                    value={registerData.password}
-                    onChange={(e) => updateRegisterData('password', e.target.value)}
-                    required
-                  />
-                </div>
-
-                {error && (
-                  <Alert variant="destructive">
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>
+                {/* Email/Phone Input */}
+                {loginMethod === 'email' ? (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Email Address
+                    </label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <input
+                        type="email"
+                        required
+                        value={loginData.email}
+                        onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        placeholder="Enter your email"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Phone Number (8 digits)
+                    </label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <input
+                        type="tel"
+                        required
+                        pattern="[0-9]{8}"
+                        value={loginData.phone}
+                        onChange={(e) => setLoginData({ ...loginData, phone: e.target.value })}
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        placeholder="12345678"
+                      />
+                    </div>
+                  </div>
                 )}
 
-                {success && (
-                  <Alert>
-                    <AlertDescription>{success}</AlertDescription>
-                  </Alert>
-                )}
+                {/* Password Input */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <input
+                      type="password"
+                      required
+                      value={loginData.password}
+                      onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      placeholder="Enter your password"
+                    />
+                  </div>
+                </div>
 
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? 'Creating Account...' : 'Create Account'}
-                </Button>
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? (
+                    <div className="flex items-center justify-center space-x-2">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      <span>Signing in...</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center space-x-2">
+                      <LogIn className="h-5 w-5" />
+                      <span>Sign In</span>
+                    </div>
+                  )}
+                </button>
               </form>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+            )}
+
+            {/* Register Form */}
+            {activeTab === 'register' && (
+              <form onSubmit={handleRegister} className="space-y-5">
+                {/* Name Fields */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      First Name
+                    </label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <input
+                        type="text"
+                        required
+                        value={registerData.first_name}
+                        onChange={(e) => setRegisterData({ ...registerData, first_name: e.target.value })}
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        placeholder="First name"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Last Name
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={registerData.last_name}
+                      onChange={(e) => setRegisterData({ ...registerData, last_name: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      placeholder="Last name"
+                    />
+                  </div>
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email Address
+                  </label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <input
+                      type="email"
+                      required
+                      value={registerData.email}
+                      onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      placeholder="your@email.com"
+                    />
+                  </div>
+                </div>
+
+                {/* Phone */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Phone Number (8 digits)
+                  </label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <input
+                      type="tel"
+                      required
+                      pattern="[0-9]{8}"
+                      value={registerData.phone}
+                      onChange={(e) => setRegisterData({ ...registerData, phone: e.target.value })}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      placeholder="12345678"
+                    />
+                  </div>
+                </div>
+
+                {/* Password */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <input
+                      type="password"
+                      required
+                      minLength="6"
+                      value={registerData.password}
+                      onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      placeholder="Min. 6 characters"
+                    />
+                  </div>
+                </div>
+
+                {/* Role Selection */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    I am a...
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setRegisterData({ ...registerData, role: 'coach' })}
+                      className={`py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
+                        registerData.role === 'coach'
+                          ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      Coach
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRegisterData({ ...registerData, role: 'customer' })}
+                      className={`py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
+                        registerData.role === 'customer'
+                          ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      Customer
+                    </button>
+                  </div>
+                </div>
+
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? (
+                    <div className="flex items-center justify-center space-x-2">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      <span>Creating account...</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center space-x-2">
+                      <UserPlus className="h-5 w-5" />
+                      <span>Create Account</span>
+                    </div>
+                  )}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <p className="text-center text-blue-100 text-sm mt-6">
+          © 2025 CoachSync. All rights reserved.
+        </p>
+      </div>
+
+      <style jsx>{`
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-5px); }
+          75% { transform: translateX(5px); }
+        }
+
+        .animate-fade-in {
+          animation: fade-in 0.3s ease-out;
+        }
+
+        .animate-shake {
+          animation: shake 0.3s ease-out;
+        }
+
+        .delay-500 {
+          animation-delay: 500ms;
+        }
+
+        .delay-1000 {
+          animation-delay: 1000ms;
+        }
+      `}</style>
     </div>
   );
 };
