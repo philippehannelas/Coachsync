@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Search, Plus, Edit, Trash2, CreditCard, LogOut, Mail, Phone, User, Dumbbell } from 'lucide-react';
+import { Users, Search, Plus, Edit, Trash2, CreditCard, LogOut, Mail, Phone, User, Dumbbell, Calendar } from 'lucide-react';
 import { coachAPI } from '../../services/api.jsx';
 
-function CoachDashboard({ user, onLogout }) {
+function CoachDashboard({ user, onLogout, onNavigate }) {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -225,6 +225,13 @@ function CoachDashboard({ user, onLogout }) {
             <Plus className="h-5 w-5" />
             <span>Add Customer</span>
           </button>
+<button
+  onClick={() => onNavigate && onNavigate('calendar')}
+  className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105"
+>
+  <Calendar className="h-5 w-5" />
+  <span>View Calendar</span>
+</button>
         </div>
 
         {/* Customers Grid */}

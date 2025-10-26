@@ -1,7 +1,7 @@
 import React from 'react';
 import { User, Mail, Phone, CreditCard, LogOut, Calendar, Dumbbell, TrendingUp } from 'lucide-react';
 
-function CustomerDashboard({ user, onLogout }) {
+function CustomerDashboard({ user, onLogout, onNavigate }) {
   const credits = user.session_credits || 0;
   const creditsStatus = credits > 5 ? 'good' : credits > 2 ? 'medium' : 'low';
 
@@ -188,10 +188,12 @@ function CustomerDashboard({ user, onLogout }) {
         <div className="bg-white rounded-xl shadow-md p-8">
           <h3 className="text-xl font-bold text-gray-900 mb-6">Quick Actions</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button className="flex items-center justify-center space-x-3 p-6 bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 rounded-xl border border-blue-200 transition-all duration-200 transform hover:scale-105">
-              <Calendar className="h-6 w-6 text-blue-600" />
-              <span className="font-semibold text-blue-900">Book Session</span>
-            </button>
+            <button 
+  onClick={() => onNavigate && onNavigate('calendar')}
+  className="flex items-center...">
+  <Calendar className="h-6 w-6 text-blue-600" />
+  <span className="font-semibold text-blue-900">Book Session</span>
+</button>
             
             <button className="flex items-center justify-center space-x-3 p-6 bg-gradient-to-r from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 rounded-xl border border-purple-200 transition-all duration-200 transform hover:scale-105">
               <Dumbbell className="h-6 w-6 text-purple-600" />
@@ -212,10 +214,10 @@ function CustomerDashboard({ user, onLogout }) {
               <span className="text-white text-sm font-bold">ℹ️</span>
             </div>
             <div>
-              <p className="font-semibold text-gray-900">More Features Coming Soon!</p>
-              <p className="text-gray-600 text-sm">
-                Session booking, training plans, and progress tracking will be available in the next update.
-              </p>
+              <p className="font-semibold text-gray-900">Session Booking Now Available!</p>
+<p className="text-gray-600 text-sm">
+  Click "Book Session" above to view your coach's availability and schedule training sessions.
+</p>
             </div>
           </div>
         </div>
