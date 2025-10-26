@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, Plus, Settings, Users } from 'lucide-react';
 import WeekCalendar from './WeekCalendar';
 import BookingModal from './BookingModal';
+import AvailabilityManager from './AvailabilityManager';
 import { availabilityApi, bookingApi } from '../../services/calendarApi';
 
 /**
@@ -251,20 +252,13 @@ const CoachCalendarPage = () => {
           />
         )}
 
-        {/* Availability Modal - TODO: Create this component */}
+        {/* Availability Manager */}
         {showAvailabilityModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6">
-              <h2 className="text-2xl font-bold mb-4">Manage Availability</h2>
-              <p className="text-gray-600 mb-4">This feature is coming soon!</p>
-              <button
-                onClick={() => setShowAvailabilityModal(false)}
-                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-              >
-                Close
-              </button>
-            </div>
-          </div>
+          <AvailabilityManager
+            isOpen={showAvailabilityModal}
+            onClose={() => setShowAvailabilityModal(false)}
+            onSave={loadData}
+          />
         )}
       </div>
     </div>
