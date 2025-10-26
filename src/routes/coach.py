@@ -78,7 +78,7 @@ def create_customer(current_user):
         data = request.json
         
         # Validate required fields
-        required_fields = ['first_name', 'last_name', 'password']
+        required_fields = ['first_name', 'last_name']
         for field in required_fields:
             if not data.get(field):
                 return jsonify({'message': f'{field} is required'}), 400
@@ -98,13 +98,16 @@ def create_customer(current_user):
             return jsonify({'message': 'User with this email or phone already exists'}), 400
         
         # Create new user
+        # Generate a default password if not provided (customer can change it later)
+        password = data.get('password', f"temp{uuid.uuid4().hex[:8]}")
+        
         user = User(
             id=str(uuid.uuid4()),
             first_name=data['first_name'],
             last_name=data['last_name'],
             email=data.get('email'),
             phone=data.get('phone'),
-            password_hash=generate_password_hash(data['password']),
+            password_hash=generate_password_hash(password),
             role='customer'
         )
         
@@ -112,10 +115,13 @@ def create_customer(current_user):
         db.session.flush()
         
         # Create customer profile
+        # Use initial_credits if provided, otherwise default to 0
+        initial_credits = data.get('initial_credits', data.get('session_credits', 0))
+        
         customer_profile = CustomerProfile(
             user_id=user.id,
             coach_id=current_user.coach_profile.id,
-            session_credits=data.get('session_credits', 0),
+            session_credits=initial_credits,
             is_active=data.get('is_active', True),
             notes=data.get('notes', '')
         )
@@ -208,7 +214,7 @@ def delete_customer(current_user, customer_id):
         db.session.rollback()
         return jsonify({'message': f'Failed to delete customer: {str(e)}'}), 500
 
-@coach_bp.route('/customers/<customer_id>/credits', methods=['PUT'])
+@coach_bp.route('/customers/<customer_id>/credits', methods=['PUT', 'POST'])
 @token_required
 @coach_required
 def update_customer_credits(current_user, customer_id):
