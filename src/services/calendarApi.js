@@ -7,7 +7,7 @@ const API_URL = 'https://coachsync-pro.onrender.com/api';
 
 // Get auth token from localStorage
 const getAuthToken = () => {
-  return localStorage.getItem('token');
+  return localStorage.getItem('coachsync_token');
 };
 
 // Availability API
