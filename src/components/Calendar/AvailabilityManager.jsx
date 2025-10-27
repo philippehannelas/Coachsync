@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Plus, Trash2, Clock, Save } from 'lucide-react';
-import { getAvailability, setAvailability } from '../../services/calendarApi';
+import { availabilityApi } from '../../services/calendarApi';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -18,7 +18,7 @@ const AvailabilityManager = ({ onClose, onSave }) => {
   const loadAvailability = async () => {
     try {
       setLoading(true);
-      const data = await getAvailability();
+      const data = await availabilityApi.getCoachAvailability();
       
       // Convert API format to component format
       const formattedAvailability = {};
@@ -99,7 +99,7 @@ const AvailabilityManager = ({ onClose, onSave }) => {
         });
       });
 
-      await setAvailability(slots);
+      await availabilityApi.createAvailability(slots);
       
       if (onSave) {
         onSave();
