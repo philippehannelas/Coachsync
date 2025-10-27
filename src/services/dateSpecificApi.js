@@ -1,11 +1,13 @@
-import axios from 'axios';
+/**
+ * Date-Specific Availability API Service
+ * Handles all date-specific availability API calls
+ */
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = 'https://coachsync-pro.onrender.com/api';
 
 // Get auth token from localStorage
-const getAuthHeader = () => {
-  const token = localStorage.getItem('token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
+const getAuthToken = () => {
+  return localStorage.getItem('coachsync_token');
 };
 
 /**
@@ -30,14 +32,22 @@ export const dateSpecificApi = {
       const queryString = params.toString();
       const url = `${API_URL}/coach/date-specific-availability${queryString ? `?${queryString}` : ''}`;
       
-      const response = await axios.get(url, {
-        headers: getAuthHeader()
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${getAuthToken()}`,
+          'Content-Type': 'application/json'
+        }
       });
       
-      return response.data;
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to fetch date-specific availability');
+      }
+      
+      return response.json();
     } catch (error) {
       console.error('Error fetching date-specific availability:', error);
-      throw new Error(error.response?.data?.message || 'Failed to fetch date-specific availability');
+      throw new Error(error.message || 'Failed to fetch date-specific availability');
     }
   },
 
@@ -53,16 +63,24 @@ export const dateSpecificApi = {
    */
   create: async (data) => {
     try {
-      const response = await axios.post(
-        `${API_URL}/coach/date-specific-availability`,
-        data,
-        { headers: getAuthHeader() }
-      );
+      const response = await fetch(`${API_URL}/coach/date-specific-availability`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${getAuthToken()}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
       
-      return response.data;
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to create date-specific availability');
+      }
+      
+      return response.json();
     } catch (error) {
       console.error('Error creating date-specific availability:', error);
-      throw new Error(error.response?.data?.message || 'Failed to create date-specific availability');
+      throw new Error(error.message || 'Failed to create date-specific availability');
     }
   },
 
@@ -79,16 +97,24 @@ export const dateSpecificApi = {
    */
   createBulk: async (data) => {
     try {
-      const response = await axios.post(
-        `${API_URL}/coach/date-specific-availability/bulk`,
-        data,
-        { headers: getAuthHeader() }
-      );
+      const response = await fetch(`${API_URL}/coach/date-specific-availability/bulk`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${getAuthToken()}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
       
-      return response.data;
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to create bulk date-specific availability');
+      }
+      
+      return response.json();
     } catch (error) {
       console.error('Error creating bulk date-specific availability:', error);
-      throw new Error(error.response?.data?.message || 'Failed to create bulk date-specific availability');
+      throw new Error(error.message || 'Failed to create bulk date-specific availability');
     }
   },
 
@@ -100,16 +126,24 @@ export const dateSpecificApi = {
    */
   update: async (id, data) => {
     try {
-      const response = await axios.put(
-        `${API_URL}/coach/date-specific-availability/${id}`,
-        data,
-        { headers: getAuthHeader() }
-      );
+      const response = await fetch(`${API_URL}/coach/date-specific-availability/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${getAuthToken()}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
       
-      return response.data;
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to update date-specific availability');
+      }
+      
+      return response.json();
     } catch (error) {
       console.error('Error updating date-specific availability:', error);
-      throw new Error(error.response?.data?.message || 'Failed to update date-specific availability');
+      throw new Error(error.message || 'Failed to update date-specific availability');
     }
   },
 
@@ -120,15 +154,23 @@ export const dateSpecificApi = {
    */
   delete: async (id) => {
     try {
-      const response = await axios.delete(
-        `${API_URL}/coach/date-specific-availability/${id}`,
-        { headers: getAuthHeader() }
-      );
+      const response = await fetch(`${API_URL}/coach/date-specific-availability/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${getAuthToken()}`,
+          'Content-Type': 'application/json'
+        }
+      });
       
-      return response.data;
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to delete date-specific availability');
+      }
+      
+      return response.json();
     } catch (error) {
       console.error('Error deleting date-specific availability:', error);
-      throw new Error(error.response?.data?.message || 'Failed to delete date-specific availability');
+      throw new Error(error.message || 'Failed to delete date-specific availability');
     }
   }
 };
