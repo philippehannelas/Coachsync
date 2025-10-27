@@ -16,7 +16,7 @@ const WeekCalendar = ({
   selectedDate = new Date()
 }) => {
   const [currentWeek, setCurrentWeek] = useState(getWeekDates(selectedDate));
-  const timeSlots = generateTimeSlots('08:00', '20:00', 60); // 8 AM to 8 PM, 1-hour slots
+  const timeSlots = generateDynamicTimeSlots(availability, dateSpecific, currentWeek);
 
   function getWeekDates(date) {
     const week = [];
@@ -34,13 +34,46 @@ const WeekCalendar = ({
     return week;
   }
 
-  function generateTimeSlots(start, end, interval) {
-    const slots = [];
-    const [startHour] = start.split(':').map(Number);
-    const [endHour] = end.split(':').map(Number);
+  /**
+   * Generate time slots dynamically based on availability
+   * Shows 30-minute intervals from earliest to latest availability
+   */
+  function generateDynamicTimeSlots(availability, dateSpecific, week) {
+    // Default range if no availability set
+    let earliestHour = 6;  // 6 AM
+    let latestHour = 22;   // 10 PM
     
-    for (let hour = startHour; hour < endHour; hour++) {
+    // Find earliest and latest times from recurring availability
+    if (availability && availability.length > 0) {
+      availability.forEach(slot => {
+        const [startHour] = slot.start_time.split(':').map(Number);
+        const [endHour] = slot.end_time.split(':').map(Number);
+        earliestHour = Math.min(earliestHour, startHour);
+        latestHour = Math.max(latestHour, endHour);
+      });
+    }
+    
+    // Check date-specific availability for this week
+    if (dateSpecific && dateSpecific.length > 0 && week) {
+      week.forEach(date => {
+        const dateString = date.toISOString().split('T')[0];
+        const specific = dateSpecific.find(item => item.date === dateString && item.type === 'override');
+        if (specific) {
+          const [startHour] = specific.start_time.split(':').map(Number);
+          const [endHour] = specific.end_time.split(':').map(Number);
+          earliestHour = Math.min(earliestHour, startHour);
+          latestHour = Math.max(latestHour, endHour);
+        }
+      });
+    }
+    
+    // Generate 30-minute slots
+    const slots = [];
+    for (let hour = earliestHour; hour <= latestHour; hour++) {
       slots.push(`${String(hour).padStart(2, '0')}:00`);
+      if (hour < latestHour) {
+        slots.push(`${String(hour).padStart(2, '0')}:30`);
+      }
     }
     
     return slots;
