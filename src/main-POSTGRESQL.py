@@ -28,12 +28,27 @@ app.register_blueprint(booking_bp, url_prefix='/api')
 app.register_blueprint(availability_bp, url_prefix='/api')
 
 # Database configuration for production
-os.makedirs('/tmp/coachsync', exist_ok=True)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/coachsync/app.db'
+# Use PostgreSQL if DATABASE_URL is set, otherwise fall back to SQLite
+database_url = os.environ.get('DATABASE_URL')
+if database_url:
+    # Render provides DATABASE_URL automatically when you connect the database
+    # Fix for SQLAlchemy 1.4+ which doesn't accept postgres:// prefix
+    if database_url.startswith('postgres://'):
+        database_url = database_url.replace('postgres://', 'postgresql://', 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+    print(f"✅ Using PostgreSQL database")
+else:
+    # Fallback to SQLite for local development
+    os.makedirs('/tmp/coachsync', exist_ok=True)
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/coachsync/app.db'
+    print(f"⚠️  Using SQLite database (data will not persist on Render)")
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
+
 with app.app_context():
     db.create_all()
+    print(f"✅ Database tables created successfully")
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
@@ -49,8 +64,8 @@ def serve(path):
         if os.path.exists(index_path):
             return send_from_directory(static_folder_path, 'index.html')
         else:
-            return "index.html not found", 404
-
+            return "Welcome to CoachSync API", 200
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(debug=True, host='0.0.0.0', port=5000)
+
