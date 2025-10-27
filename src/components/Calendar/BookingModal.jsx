@@ -117,7 +117,7 @@ const BookingModal = ({
                 <option value="">Choose a customer...</option>
                 {customers.map((customer) => (
                   <option key={customer.id} value={customer.id}>
-                    {customer.first_name} {customer.last_name}
+                    {customer.user?.first_name || customer.first_name} {customer.user?.last_name || customer.last_name}
                     {customer.session_credits !== undefined && ` (${customer.session_credits} credits)`}
                   </option>
                 ))}
