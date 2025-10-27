@@ -2,11 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { X, Plus, Trash2, Clock, Save } from 'lucide-react';
 import { availabilityApi } from '../../services/calendarApi';
 
-const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+// ✅ FIX: Use array with indices matching day numbers (0=Monday, 6=Sunday)
+const DAYS = [
+  { name: 'Monday', index: 0 },
+  { name: 'Tuesday', index: 1 },
+  { name: 'Wednesday', index: 2 },
+  { name: 'Thursday', index: 3 },
+  { name: 'Friday', index: 4 },
+  { name: 'Saturday', index: 5 },
+  { name: 'Sunday', index: 6 }
+];
 
 const AvailabilityManager = ({ onClose, onSave }) => {
   const [availability, setAvailabilityState] = useState({});
-  const [sessionDuration, setSessionDuration] = useState(60); // Default 60 minutes
+  const [sessionDuration, setSessionDuration] = useState(60);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -20,13 +29,13 @@ const AvailabilityManager = ({ onClose, onSave }) => {
       setLoading(true);
       const data = await availabilityApi.getCoachAvailability();
       
-      // Convert API format to component format
       const formattedAvailability = {};
       data.forEach(slot => {
-        if (!formattedAvailability[slot.day_of_week]) {
-          formattedAvailability[slot.day_of_week] = [];
+        const dayIndex = slot.day_of_week;
+        if (!formattedAvailability[dayIndex]) {
+          formattedAvailability[dayIndex] = [];
         }
-        formattedAvailability[slot.day_of_week].push({
+        formattedAvailability[dayIndex].push({
           start_time: slot.start_time,
           end_time: slot.end_time
         });
@@ -34,7 +43,6 @@ const AvailabilityManager = ({ onClose, onSave }) => {
       
       setAvailabilityState(formattedAvailability);
       
-      // Get session duration from first slot if available
       if (data.length > 0 && data[0].session_duration) {
         setSessionDuration(data[0].session_duration);
       }
@@ -48,28 +56,28 @@ const AvailabilityManager = ({ onClose, onSave }) => {
     }
   };
 
-  const addTimeSlot = (day) => {
+  const addTimeSlot = (dayIndex) => {
     setAvailabilityState(prev => ({
       ...prev,
-      [day]: [
-        ...(prev[day] || []),
+      [dayIndex]: [
+        ...(prev[dayIndex] || []),
         { start_time: '09:00', end_time: '17:00' }
       ]
     }));
   };
 
-  const removeTimeSlot = (day, index) => {
+  const removeTimeSlot = (dayIndex, slotIndex) => {
     setAvailabilityState(prev => ({
       ...prev,
-      [day]: prev[day].filter((_, i) => i !== index)
+      [dayIndex]: prev[dayIndex].filter((_, i) => i !== slotIndex)
     }));
   };
 
-  const updateTimeSlot = (day, index, field, value) => {
+  const updateTimeSlot = (dayIndex, slotIndex, field, value) => {
     setAvailabilityState(prev => ({
       ...prev,
-      [day]: prev[day].map((slot, i) => 
-        i === index ? { ...slot, [field]: value } : slot
+      [dayIndex]: prev[dayIndex].map((slot, i) => 
+        i === slotIndex ? { ...slot, [field]: value } : slot
       )
     }));
   };
@@ -79,19 +87,17 @@ const AvailabilityManager = ({ onClose, onSave }) => {
       setSaving(true);
       setError(null);
 
-      // Validate session duration
       if (sessionDuration < 15 || sessionDuration > 240) {
         setError('Session duration must be between 15 and 240 minutes');
         setSaving(false);
         return;
       }
 
-      // Convert to API format
       const slots = [];
-      Object.entries(availability).forEach(([day, timeSlots]) => {
+      Object.entries(availability).forEach(([dayIndex, timeSlots]) => {
         timeSlots.forEach(slot => {
           slots.push({
-            day_of_week: day,
+            day_of_week: parseInt(dayIndex),
             start_time: slot.start_time,
             end_time: slot.end_time,
             session_duration: sessionDuration
@@ -118,12 +124,10 @@ const AvailabilityManager = ({ onClose, onSave }) => {
 
   const handleSessionDurationChange = (e) => {
     const value = e.target.value;
-    // Allow empty string for editing
     if (value === '') {
       setSessionDuration('');
       return;
     }
-    // Parse and validate
     const numValue = parseInt(value);
     if (!isNaN(numValue)) {
       setSessionDuration(numValue);
@@ -131,7 +135,6 @@ const AvailabilityManager = ({ onClose, onSave }) => {
   };
 
   const handleSessionDurationBlur = () => {
-    // If empty or invalid, reset to default
     if (sessionDuration === '' || sessionDuration < 15) {
       setSessionDuration(60);
     } else if (sessionDuration > 240) {
@@ -154,43 +157,34 @@ const AvailabilityManager = ({ onClose, onSave }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <div>
             <h2 className="text-2xl font-bold text-gray-800">Manage Availability</h2>
             <p className="text-gray-600 mt-1">Set your weekly recurring availability schedule</p>
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
             <X className="w-6 h-6" />
           </button>
         </div>
 
-        {/* Error Message */}
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
             {error}
           </div>
         )}
 
-        {/* Session Duration Setting */}
         <div className="mb-8 p-6 bg-blue-50 border border-blue-200 rounded-lg">
           <div className="flex items-center gap-3 mb-3">
             <Clock className="w-5 h-5 text-blue-600" />
             <h3 className="text-lg font-semibold text-gray-800">Session Duration</h3>
           </div>
           <p className="text-gray-600 mb-4">
-            Set the default duration for each coaching session. This will be used when clients book appointments.
+            Set the default duration for each coaching session.
           </p>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <input
-                type="number"
-                min="15"
-                max="240"
-                step="5"
+                type="number" min="15" max="240" step="5"
                 value={sessionDuration}
                 onChange={handleSessionDurationChange}
                 onBlur={handleSessionDurationBlur}
@@ -198,52 +192,28 @@ const AvailabilityManager = ({ onClose, onSave }) => {
               />
               <span className="text-gray-700 font-medium">minutes</span>
             </div>
-            <div className="text-sm text-gray-500">
-              (15-240 minutes)
-            </div>
+            <div className="text-sm text-gray-500">(15-240 minutes)</div>
           </div>
           <div className="mt-3 flex gap-2">
-            <button
-              onClick={() => setSessionDuration(30)}
-              className="px-3 py-1 text-sm bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
-            >
-              30 min
-            </button>
-            <button
-              onClick={() => setSessionDuration(45)}
-              className="px-3 py-1 text-sm bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
-            >
-              45 min
-            </button>
-            <button
-              onClick={() => setSessionDuration(60)}
-              className="px-3 py-1 text-sm bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
-            >
-              60 min
-            </button>
-            <button
-              onClick={() => setSessionDuration(90)}
-              className="px-3 py-1 text-sm bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
-            >
-              90 min
-            </button>
-            <button
-              onClick={() => setSessionDuration(120)}
-              className="px-3 py-1 text-sm bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
-            >
-              120 min
-            </button>
+            {[30, 45, 60, 90, 120].map(duration => (
+              <button
+                key={duration}
+                onClick={() => setSessionDuration(duration)}
+                className="px-3 py-1 text-sm bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+              >
+                {duration} min
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Weekly Schedule */}
         <div className="space-y-6">
           {DAYS.map(day => (
-            <div key={day} className="border border-gray-200 rounded-lg p-4">
+            <div key={day.index} className="border border-gray-200 rounded-lg p-4">
               <div className="flex justify-between items-center mb-3">
-                <h3 className="text-lg font-semibold text-gray-800">{day}</h3>
+                <h3 className="text-lg font-semibold text-gray-800">{day.name}</h3>
                 <button
-                  onClick={() => addTimeSlot(day)}
+                  onClick={() => addTimeSlot(day.index)}
                   className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
                 >
                   <Plus className="w-4 h-4" />
@@ -251,27 +221,27 @@ const AvailabilityManager = ({ onClose, onSave }) => {
                 </button>
               </div>
 
-              {availability[day] && availability[day].length > 0 ? (
+              {availability[day.index] && availability[day.index].length > 0 ? (
                 <div className="space-y-2">
-                  {availability[day].map((slot, index) => (
+                  {availability[day.index].map((slot, index) => (
                     <div key={index} className="flex items-center gap-3 bg-gray-50 p-3 rounded-lg">
                       <div className="flex items-center gap-2 flex-1">
                         <input
                           type="time"
                           value={slot.start_time}
-                          onChange={(e) => updateTimeSlot(day, index, 'start_time', e.target.value)}
+                          onChange={(e) => updateTimeSlot(day.index, index, 'start_time', e.target.value)}
                           className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                         <span className="text-gray-600">to</span>
                         <input
                           type="time"
                           value={slot.end_time}
-                          onChange={(e) => updateTimeSlot(day, index, 'end_time', e.target.value)}
+                          onChange={(e) => updateTimeSlot(day.index, index, 'end_time', e.target.value)}
                           className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                       </div>
                       <button
-                        onClick={() => removeTimeSlot(day, index)}
+                        onClick={() => removeTimeSlot(day.index, index)}
                         className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -286,7 +256,6 @@ const AvailabilityManager = ({ onClose, onSave }) => {
           ))}
         </div>
 
-        {/* Footer */}
         <div className="mt-8 flex justify-end gap-3">
           <button
             onClick={onClose}
@@ -299,17 +268,8 @@ const AvailabilityManager = ({ onClose, onSave }) => {
             disabled={saving}
             className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {saving ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save className="w-4 h-4" />
-                Save Availability
-              </>
-            )}
+            <Save className="w-4 h-4" />
+            {saving ? 'Saving...' : 'Save Availability'}
           </button>
         </div>
       </div>
@@ -318,4 +278,3 @@ const AvailabilityManager = ({ onClose, onSave }) => {
 };
 
 export default AvailabilityManager;
-
