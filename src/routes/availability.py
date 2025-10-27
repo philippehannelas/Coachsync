@@ -61,30 +61,32 @@ def create_availability(current_user):
                 if field not in slot:
                     return jsonify({'message': f'{field} is required'}), 400
             
-            # Validate day_of_week (0-6 or day name)
+            # ✅ FIX v3: Handle day_of_week - accept numbers, string numbers, or day names
             day_of_week = slot['day_of_week']
             
-            # ✅ FIX: Convert day name to number if it's a string
+            # Day name mapping
             day_map = {
                 'Monday': 0, 'Tuesday': 1, 'Wednesday': 2, 'Thursday': 3,
                 'Friday': 4, 'Saturday': 5, 'Sunday': 6
             }
             
-            # Convert string day names to numbers
-            if isinstance(day_of_week, str):
-                if day_of_week in day_map:
-                    day_of_week = day_map[day_of_week]
-                else:
-                    return jsonify({'message': f'Invalid day_of_week: {day_of_week}. Must be 0-6 or day name'}), 400
-            
-            # ✅ FIX: Ensure it's an integer and validate range
+            # Try to convert to integer first (handles both int and string numbers like "0", "1", etc.)
             try:
                 day_of_week = int(day_of_week)
             except (ValueError, TypeError):
-                return jsonify({'message': f'Invalid day_of_week: {slot["day_of_week"]}. Must be 0-6 or day name'}), 400
+                # If conversion fails, check if it's a day name
+                if isinstance(day_of_week, str) and day_of_week in day_map:
+                    day_of_week = day_map[day_of_week]
+                else:
+                    return jsonify({
+                        'message': f'Invalid day_of_week: {slot["day_of_week"]}. Must be 0-6 or day name (Monday-Sunday)'
+                    }), 400
             
+            # Validate range
             if not (0 <= day_of_week <= 6):
-                return jsonify({'message': f'day_of_week must be between 0 (Monday) and 6 (Sunday), got {day_of_week}'}), 400
+                return jsonify({
+                    'message': f'day_of_week must be between 0 (Monday) and 6 (Sunday), got {day_of_week}'
+                }), 400
             
             # Parse time strings
             try:
