@@ -46,10 +46,14 @@ const WeekCalendar = ({
 
   function isSlotAvailable(date, time) {
     const dayOfWeek = date.getDay();
+    // ✅ FIX: Convert JS day (0=Sunday) to backend day (0=Monday)
+    // Backend: 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri, 5=Sat, 6=Sun
+    // JS getDay(): 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
+    const backendDay = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
     
     // Check availability
     const hasAvailability = availability.some(slot => {
-      if (slot.day_of_week !== dayOfWeek) return false;
+      if (slot.day_of_week !== backendDay) return false;
       const slotStart = slot.start_time;
       const slotEnd = slot.end_time;
       return time >= slotStart && time < slotEnd;
