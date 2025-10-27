@@ -4,6 +4,7 @@ import WeekCalendar from './WeekCalendar';
 import BookingModal from './BookingModal';
 import AvailabilityManager from './AvailabilityManager';
 import { availabilityApi, bookingApi } from '../../services/calendarApi';
+import { dateSpecificApi } from '../../services/dateSpecificApi';
 
 /**
  * CoachCalendarPage Component
@@ -11,6 +12,7 @@ import { availabilityApi, bookingApi } from '../../services/calendarApi';
  */
 const CoachCalendarPage = () => {
   const [availability, setAvailability] = useState([]);
+  const [dateSpecific, setDateSpecific] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -30,14 +32,16 @@ const CoachCalendarPage = () => {
       setIsLoading(true);
       setError('');
 
-      // Load availability, bookings, and customers
-      const [availabilityData, bookingsData, customersData] = await Promise.all([
+      // Load availability, bookings, customers, and date-specific availability
+      const [availabilityData, dateSpecificData, bookingsData, customersData] = await Promise.all([
         availabilityApi.getCoachAvailability(),
+        dateSpecificApi.getAll(),
         bookingApi.getCoachBookings(),
         fetchCustomers() // You'll need to implement this using your existing API
       ]);
 
       setAvailability(availabilityData);
+      setDateSpecific(dateSpecificData);
       setBookings(bookingsData);
       setCustomers(customersData);
     } catch (err) {
@@ -184,6 +188,7 @@ const CoachCalendarPage = () => {
               <WeekCalendar
                 mode="coach"
                 availability={availability}
+                dateSpecific={dateSpecific}
                 bookings={bookings}
                 onSlotClick={handleSlotClick}
                 onBookingClick={handleBookingClick}

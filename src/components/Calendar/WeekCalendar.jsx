@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, Plus, X, Check } from 'lucide-react';
+import { Calendar, Clock, Plus, X, Check, Ban } from 'lucide-react';
 
 /**
  * WeekCalendar Component
  * Displays a week view with time slots for booking/availability management
+ * Now supports date-specific availability (blocked dates and custom hours)
  */
 const WeekCalendar = ({ 
   mode = 'customer', // 'coach' or 'customer'
   availability = [],
+  dateSpecific = [], // NEW: Date-specific availability
   bookings = [],
   onSlotClick,
   onBookingClick,
@@ -44,11 +46,59 @@ const WeekCalendar = ({
     return slots;
   }
 
+  /**
+   * Check if a specific date has date-specific availability
+   * Returns: { type: 'blocked' | 'override' | null, data: {...} }
+   */
+  function getDateSpecificAvailability(date) {
+    const dateString = date.toISOString().split('T')[0];
+    const specific = dateSpecific.find(item => item.date === dateString);
+    
+    if (!specific) return { type: null, data: null };
+    
+    return {
+      type: specific.type,
+      data: specific
+    };
+  }
+
+  /**
+   * Check if a slot is available
+   * Priority: Date-specific > Recurring weekly
+   */
   function isSlotAvailable(date, time) {
+    const dateString = date.toISOString().split('T')[0];
+    
+    // Step 1: Check date-specific availability (highest priority)
+    const dateSpecificInfo = getDateSpecificAvailability(date);
+    
+    if (dateSpecificInfo.type === 'blocked') {
+      // Date is completely blocked
+      return false;
+    }
+    
+    if (dateSpecificInfo.type === 'override') {
+      // Check if time falls within override hours
+      const { start_time, end_time } = dateSpecificInfo.data;
+      const hasAvailability = time >= start_time && time < end_time;
+      
+      if (!hasAvailability) return false;
+      
+      // Check if booked
+      const isBooked = bookings.some(booking => {
+        if (booking.status === 'cancelled') return false;
+        const bookingDate = booking.start_time.split('T')[0];
+        if (bookingDate !== dateString) return false;
+        const bookingTime = booking.start_time.split('T')[1].substring(0, 5);
+        return time === bookingTime;
+      });
+      
+      return !isBooked;
+    }
+    
+    // Step 2: Use recurring weekly availability (fallback)
     const dayOfWeek = date.getDay();
-    // ✅ FIX: Convert JS day (0=Sunday) to backend day (0=Monday)
-    // Backend: 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri, 5=Sat, 6=Sun
-    // JS getDay(): 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
+    // Convert JS day (0=Sunday) to backend day (0=Monday)
     const backendDay = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
     
     // Check availability
@@ -62,7 +112,6 @@ const WeekCalendar = ({
     if (!hasAvailability) return false;
     
     // Check bookings
-    const dateString = date.toISOString().split('T')[0];
     const isBooked = bookings.some(booking => {
       if (booking.status === 'cancelled') return false;
       const bookingDate = booking.start_time.split('T')[0];
@@ -152,19 +201,43 @@ const WeekCalendar = ({
           {/* Day Headers */}
           <div className="grid grid-cols-8 gap-2 mb-2">
             <div className="text-center font-semibold text-gray-600 py-2">Time</div>
-            {currentWeek.map((date, index) => (
-              <div
-                key={index}
-                className={`text-center py-3 rounded-lg ${
-                  date.toDateString() === new Date().toDateString()
-                    ? 'bg-purple-100 text-purple-700 font-bold'
-                    : 'bg-gray-50 text-gray-700'
-                }`}
-              >
-                <div className="text-sm font-medium">{weekDays[index]}</div>
-                <div className="text-lg">{date.getDate()}</div>
-              </div>
-            ))}
+            {currentWeek.map((date, index) => {
+              const dateSpecificInfo = getDateSpecificAvailability(date);
+              const isToday = date.toDateString() === new Date().toDateString();
+              
+              return (
+                <div
+                  key={index}
+                  className={`text-center py-3 rounded-lg relative ${
+                    isToday
+                      ? 'bg-purple-100 text-purple-700 font-bold'
+                      : dateSpecificInfo.type === 'blocked'
+                      ? 'bg-red-50 text-red-700'
+                      : dateSpecificInfo.type === 'override'
+                      ? 'bg-yellow-50 text-yellow-700'
+                      : 'bg-gray-50 text-gray-700'
+                  }`}
+                >
+                  <div className="text-sm font-medium">{weekDays[index]}</div>
+                  <div className="text-lg">{date.getDate()}</div>
+                  {dateSpecificInfo.type === 'blocked' && (
+                    <div className="absolute top-1 right-1">
+                      <Ban className="w-4 h-4 text-red-600" />
+                    </div>
+                  )}
+                  {dateSpecificInfo.type === 'override' && (
+                    <div className="absolute top-1 right-1">
+                      <Clock className="w-4 h-4 text-yellow-600" />
+                    </div>
+                  )}
+                  {dateSpecificInfo.data?.reason && (
+                    <div className="text-xs mt-1 truncate px-1" title={dateSpecificInfo.data.reason}>
+                      {dateSpecificInfo.data.reason}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
 
           {/* Time Slots */}
@@ -178,26 +251,33 @@ const WeekCalendar = ({
                 const available = isSlotAvailable(date, time);
                 const booking = getBookingForSlot(date, time);
                 const isPast = new Date(date.toDateString() + ' ' + time) < new Date();
+                const dateSpecificInfo = getDateSpecificAvailability(date);
                 
                 return (
                   <button
                     key={dayIndex}
                     onClick={() => !isPast && handleSlotClick(date, time)}
-                    disabled={isPast}
+                    disabled={isPast || dateSpecificInfo.type === 'blocked'}
                     className={`
                       min-h-[60px] rounded-lg border-2 transition-all duration-200
                       ${isPast ? 'bg-gray-50 border-gray-200 cursor-not-allowed opacity-50' : ''}
+                      ${dateSpecificInfo.type === 'blocked' ? 'bg-red-50 border-red-200 cursor-not-allowed' : ''}
                       ${booking ? 'bg-blue-100 border-blue-400 hover:bg-blue-200' : ''}
-                      ${available && !booking && !isPast ? 'bg-green-50 border-green-300 hover:bg-green-100 cursor-pointer' : ''}
-                      ${!available && !booking && !isPast ? 'bg-gray-100 border-gray-300 cursor-not-allowed' : ''}
+                      ${available && !booking && !isPast && dateSpecificInfo.type !== 'blocked' ? 'bg-green-50 border-green-300 hover:bg-green-100 cursor-pointer' : ''}
+                      ${!available && !booking && !isPast && dateSpecificInfo.type !== 'blocked' ? 'bg-gray-100 border-gray-300 cursor-not-allowed' : ''}
                     `}
                   >
+                    {dateSpecificInfo.type === 'blocked' && (
+                      <div className="text-red-400">
+                        <Ban className="w-4 h-4 mx-auto" />
+                      </div>
+                    )}
                     {booking && (
                       <div className="text-xs font-medium text-blue-700 p-1">
                         {booking.customer?.name || 'Booked'}
                       </div>
                     )}
-                    {available && !booking && !isPast && (
+                    {available && !booking && !isPast && dateSpecificInfo.type !== 'blocked' && (
                       <div className="text-green-600">
                         <Plus className="w-4 h-4 mx-auto" />
                       </div>
@@ -211,7 +291,7 @@ const WeekCalendar = ({
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-6 mt-6 pt-6 border-t">
+      <div className="flex items-center gap-6 mt-6 pt-6 border-t flex-wrap">
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 bg-green-100 border-2 border-green-300 rounded"></div>
           <span className="text-sm text-gray-600">Available</span>
@@ -223,6 +303,14 @@ const WeekCalendar = ({
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 bg-gray-100 border-2 border-gray-300 rounded"></div>
           <span className="text-sm text-gray-600">Unavailable</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 bg-red-100 border-2 border-red-200 rounded"></div>
+          <span className="text-sm text-gray-600">Blocked</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 bg-yellow-100 border-2 border-yellow-300 rounded"></div>
+          <span className="text-sm text-gray-600">Custom Hours</span>
         </div>
       </div>
     </div>
