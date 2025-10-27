@@ -83,16 +83,19 @@ def create_customer(current_user):
             if not data.get(field):
                 return jsonify({'message': f'{field} is required'}), 400
         
-        # Validate that either email or phone is provided
-        if not data.get('email') and not data.get('phone'):
+        # ✅ FIX: Validate that either email or phone is provided (handle empty strings)
+        email = data.get('email', '').strip()
+        phone = data.get('phone', '').strip()
+        
+        if not email and not phone:
             return jsonify({'message': 'Either email or phone number is required'}), 400
         
         # Check if user already exists
         existing_user = None
-        if data.get('email'):
-            existing_user = User.query.filter_by(email=data['email']).first()
-        if not existing_user and data.get('phone'):
-            existing_user = User.query.filter_by(phone=data['phone']).first()
+        if email:
+            existing_user = User.query.filter_by(email=email).first()
+        if not existing_user and phone:
+            existing_user = User.query.filter_by(phone=phone).first()
         
         if existing_user:
             return jsonify({'message': 'User with this email or phone already exists'}), 400
@@ -105,8 +108,8 @@ def create_customer(current_user):
             id=str(uuid.uuid4()),
             first_name=data['first_name'],
             last_name=data['last_name'],
-            email=data.get('email'),
-            phone=data.get('phone'),
+            email=email if email else None,  # ✅ FIX: Store None instead of empty string
+            phone=phone if phone else None,  # ✅ FIX: Store None instead of empty string
             password_hash=generate_password_hash(password),
             role='customer'
         )
@@ -366,4 +369,5 @@ def delete_training_plan(current_user, plan_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'message': f'Failed to delete training plan: {str(e)}'}), 500
+
 

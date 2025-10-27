@@ -45,53 +45,66 @@ def create_availability(current_user):
         if not coach_profile:
             return jsonify({'message': 'Coach profile not found'}), 404
         
-        # Validate required fields
-        required_fields = ['day_of_week', 'start_time', 'end_time']
-        for field in required_fields:
-            if field not in data:
-                return jsonify({'message': f'{field} is required'}), 400
+        # ✅ FIX: Check if data is an array or single object
+        if not isinstance(data, list):
+            data = [data]  # Convert single object to array for uniform processing
         
-        # Validate day_of_week (0-6)
-        if not (0 <= data['day_of_week'] <= 6):
-            return jsonify({'message': 'day_of_week must be between 0 (Monday) and 6 (Sunday)'}), 400
+        # Delete existing availability for this coach (replace all slots)
+        Availability.query.filter_by(coach_id=coach_profile.id).delete()
         
-        # Parse time strings
-        try:
-            start_time = datetime.strptime(data['start_time'], '%H:%M').time()
-            end_time = datetime.strptime(data['end_time'], '%H:%M').time()
-        except ValueError:
-            return jsonify({'message': 'Invalid time format. Use HH:MM'}), 400
+        # Create new availability slots
+        created_slots = []
+        for slot in data:
+            # Validate required fields
+            required_fields = ['day_of_week', 'start_time', 'end_time']
+            for field in required_fields:
+                if field not in slot:
+                    return jsonify({'message': f'{field} is required'}), 400
+            
+            # Validate day_of_week (0-6 or day name)
+            day_of_week = slot['day_of_week']
+            
+            # ✅ FIX: Convert day name to number if it's a string
+            day_map = {
+                'Monday': 0, 'Tuesday': 1, 'Wednesday': 2, 'Thursday': 3,
+                'Friday': 4, 'Saturday': 5, 'Sunday': 6
+            }
+            
+            if isinstance(day_of_week, str):
+                if day_of_week in day_map:
+                    day_of_week = day_map[day_of_week]
+                else:
+                    return jsonify({'message': f'Invalid day_of_week: {day_of_week}'}), 400
+            
+            if not isinstance(day_of_week, int) or not (0 <= day_of_week <= 6):
+                return jsonify({'message': 'day_of_week must be between 0 (Monday) and 6 (Sunday)'}), 400
+            
+            # Parse time strings
+            try:
+                start_time = datetime.strptime(slot['start_time'], '%H:%M').time()
+                end_time = datetime.strptime(slot['end_time'], '%H:%M').time()
+            except ValueError:
+                return jsonify({'message': 'Invalid time format. Use HH:MM'}), 400
+            
+            if start_time >= end_time:
+                return jsonify({'message': 'Start time must be before end time'}), 400
+            
+            # Create availability slot
+            availability = Availability(
+                coach_id=coach_profile.id,
+                day_of_week=day_of_week,
+                start_time=start_time,
+                end_time=end_time
+            )
+            
+            db.session.add(availability)
+            created_slots.append(availability)
         
-        if start_time >= end_time:
-            return jsonify({'message': 'Start time must be before end time'}), 400
-        
-        # Check for overlapping availability
-        existing = Availability.query.filter_by(
-            coach_id=coach_profile.id,
-            day_of_week=data['day_of_week'],
-            is_active=True
-        ).filter(
-            ((Availability.start_time <= start_time) & (Availability.end_time > start_time)) |
-            ((Availability.start_time < end_time) & (Availability.end_time >= end_time)) |
-            ((Availability.start_time >= start_time) & (Availability.end_time <= end_time))
-        ).first()
-        
-        if existing:
-            return jsonify({'message': 'Overlapping availability slot exists'}), 400
-        
-        availability = Availability(
-            coach_id=coach_profile.id,
-            day_of_week=data['day_of_week'],
-            start_time=start_time,
-            end_time=end_time
-        )
-        
-        db.session.add(availability)
         db.session.commit()
         
         return jsonify({
             'message': 'Availability created successfully',
-            'availability': availability.to_dict()
+            'slots': [slot.to_dict() for slot in created_slots]
         }), 201
         
     except Exception as e:
@@ -199,4 +212,5 @@ def get_coach_availability_for_customer(current_user):
         
     except Exception as e:
         return jsonify({'message': f'Error fetching coach availability: {str(e)}'}), 500
+
 
