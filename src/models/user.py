@@ -50,6 +50,7 @@ class CoachProfile(db.Model):
     customers = db.relationship('CustomerProfile', backref='coach', lazy='dynamic')
     bookings = db.relationship('Booking', backref='coach', lazy='dynamic')
     availability = db.relationship('Availability', backref='coach', lazy='dynamic', cascade='all, delete-orphan')
+    date_specific_availability = db.relationship('DateSpecificAvailability', backref='coach', lazy='dynamic', cascade='all, delete-orphan')
 
     def to_dict(self):
         return {
@@ -143,6 +144,7 @@ class Booking(db.Model):
     end_time = db.Column(db.DateTime, nullable=False)
     status = db.Column(db.Enum('confirmed', 'pending', 'cancelled', name='booking_status'), default='confirmed')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    notes = db.Column(db.Text)
 
     def to_dict(self):
         return {
@@ -152,11 +154,13 @@ class Booking(db.Model):
             'start_time': self.start_time.isoformat() if self.start_time else None,
             'end_time': self.end_time.isoformat() if self.end_time else None,
             'status': self.status,
+            'notes': self.notes,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
 
 
 class Availability(db.Model):
+    """Recurring weekly availability (e.g., Every Monday 9-5)"""
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     coach_id = db.Column(db.String(36), db.ForeignKey('coach_profile.id'), nullable=False)
     day_of_week = db.Column(db.Integer, nullable=False)  # 0=Monday, 6=Sunday
@@ -175,4 +179,49 @@ class Availability(db.Model):
             'is_active': self.is_active,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
+
+
+class DateSpecificAvailability(db.Model):
+    """
+    Date-specific availability overrides and blocks
+    
+    Types:
+    - 'override': Custom hours for a specific date (overrides recurring schedule)
+    - 'blocked': Date is unavailable (vacation, holiday, etc.)
+    
+    Priority: Date-specific always overrides recurring weekly schedule
+    """
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    coach_id = db.Column(db.String(36), db.ForeignKey('coach_profile.id'), nullable=False)
+    date = db.Column(db.Date, nullable=False)  # Specific date (YYYY-MM-DD)
+    type = db.Column(db.Enum('override', 'blocked', name='date_specific_type'), nullable=False)
+    
+    # For 'override' type: custom hours for this date
+    start_time = db.Column(db.Time, nullable=True)  # Null if type='blocked'
+    end_time = db.Column(db.Time, nullable=True)    # Null if type='blocked'
+    
+    # Optional reason/note
+    reason = db.Column(db.String(200), nullable=True)  # e.g., "Christmas", "Vacation", "Short day"
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Unique constraint: one entry per coach per date
+    __table_args__ = (
+        db.UniqueConstraint('coach_id', 'date', name='unique_coach_date'),
+    )
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'coach_id': self.coach_id,
+            'date': self.date.isoformat() if self.date else None,
+            'type': self.type,
+            'start_time': self.start_time.strftime('%H:%M') if self.start_time else None,
+            'end_time': self.end_time.strftime('%H:%M') if self.end_time else None,
+            'reason': self.reason,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+
 
