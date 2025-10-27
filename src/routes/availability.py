@@ -70,14 +70,21 @@ def create_availability(current_user):
                 'Friday': 4, 'Saturday': 5, 'Sunday': 6
             }
             
+            # Convert string day names to numbers
             if isinstance(day_of_week, str):
                 if day_of_week in day_map:
                     day_of_week = day_map[day_of_week]
                 else:
-                    return jsonify({'message': f'Invalid day_of_week: {day_of_week}'}), 400
+                    return jsonify({'message': f'Invalid day_of_week: {day_of_week}. Must be 0-6 or day name'}), 400
             
-            if not isinstance(day_of_week, int) or not (0 <= day_of_week <= 6):
-                return jsonify({'message': 'day_of_week must be between 0 (Monday) and 6 (Sunday)'}), 400
+            # ✅ FIX: Ensure it's an integer and validate range
+            try:
+                day_of_week = int(day_of_week)
+            except (ValueError, TypeError):
+                return jsonify({'message': f'Invalid day_of_week: {slot["day_of_week"]}. Must be 0-6 or day name'}), 400
+            
+            if not (0 <= day_of_week <= 6):
+                return jsonify({'message': f'day_of_week must be between 0 (Monday) and 6 (Sunday), got {day_of_week}'}), 400
             
             # Parse time strings
             try:

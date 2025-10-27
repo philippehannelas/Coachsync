@@ -104,10 +104,10 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
   const openEditModal = (customer) => {
     setSelectedCustomer(customer);
     setFormData({
-      first_name: customer.first_name,
-      last_name: customer.last_name,
-      email: customer.email,
-      phone: customer.phone,
+      first_name: customer.user?.first_name || customer.first_name || '',
+      last_name: customer.user?.last_name || customer.last_name || '',
+      email: customer.user?.email || customer.email || '',
+      phone: customer.user?.phone || customer.phone || '',
       initial_credits: customer.session_credits || 0
     });
     setShowEditModal(true);
@@ -118,12 +118,16 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
     setShowCreditsModal(true);
   };
 
-  const filteredCustomers = customers.filter(customer =>
-    customer.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.phone?.includes(searchTerm)
-  );
+  const filteredCustomers = customers.filter(customer => {
+    const firstName = customer.user?.first_name || customer.first_name || '';
+    const lastName = customer.user?.last_name || customer.last_name || '';
+    const email = customer.user?.email || customer.email || '';
+    const phone = customer.user?.phone || customer.phone || '';
+    return firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      phone.includes(searchTerm);
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -270,7 +274,7 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
                     </div>
                     <div>
                       <h3 className="text-lg font-bold text-gray-900">
-                        {customer.first_name} {customer.last_name}
+                        {customer.user?.first_name || customer.first_name} {customer.user?.last_name || customer.last_name}
                       </h3>
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
                         Customer
@@ -282,12 +286,12 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
                 <div className="space-y-2 mb-4">
                   <div className="flex items-center space-x-2 text-gray-600">
                     <Mail className="h-4 w-4 text-gray-400" />
-                    <span className="text-sm">{customer.email}</span>
+                    <span className="text-sm">{customer.user?.email || customer.email || 'No email'}</span>
                   </div>
-                  {customer.phone && (
+                  {(customer.user?.phone || customer.phone) && (
                     <div className="flex items-center space-x-2 text-gray-600">
                       <Phone className="h-4 w-4 text-gray-400" />
-                      <span className="text-sm">{customer.phone}</span>
+                      <span className="text-sm">{customer.user?.phone || customer.phone}</span>
                     </div>
                   )}
                   <div className="flex items-center space-x-2">

@@ -141,6 +141,22 @@ def login():
         print(f"Login error: {str(e)}")
         return jsonify({'message': f'Login failed: {str(e)}'}), 500
 
+# ✅ NEW: Add logout endpoint
+@auth_bp.route('/logout', methods=['POST'])
+@token_required
+def logout(current_user):
+    """
+    Logout endpoint - In a JWT-based system, logout is handled client-side
+    by removing the token. This endpoint exists to validate the token and
+    provide a consistent API response.
+    """
+    try:
+        return jsonify({
+            'message': 'Logout successful'
+        }), 200
+    except Exception as e:
+        return jsonify({'message': f'Logout failed: {str(e)}'}), 500
+
 @auth_bp.route('/me', methods=['GET'])
 @token_required
 def get_current_user(current_user):
@@ -157,4 +173,5 @@ def get_current_user(current_user):
         
     except Exception as e:
         return jsonify({'message': f'Failed to get user data: {str(e)}'}), 500
+
 
