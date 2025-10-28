@@ -72,7 +72,8 @@ const BookingModal = ({
 
     // Validation based on event type
     if (eventType === 'customer_session') {
-      if (!selectedCustomer) {
+      // Only validate customer selection for coaches
+      if (isCoach && !selectedCustomer) {
         setError('Please select a customer');
         return;
       }
@@ -100,7 +101,11 @@ const BookingModal = ({
 
     // Add fields based on event type
     if (eventType === 'customer_session') {
-      bookingData.customer_id = selectedCustomer;
+      // Only add customer_id if coach is creating the booking
+      if (isCoach) {
+        bookingData.customer_id = selectedCustomer;
+      }
+      // For customers, backend will use their own profile
     } else if (eventType === 'personal_event') {
       bookingData.event_title = eventTitle;
       bookingData.is_recurring = isRecurring;
@@ -240,8 +245,8 @@ const BookingModal = ({
             </div>
           </div>
 
-          {/* Customer Session Fields */}
-          {mode === 'create' && eventType === 'customer_session' && (
+          {/* Customer Session Fields (Coach only) */}
+          {mode === 'create' && eventType === 'customer_session' && isCoach && (
             <>
               {/* Customer Selection */}
               <div>
