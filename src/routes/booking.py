@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, current_app
-from src.models.user import db, Booking, CoachProfile, CustomerProfile, User
+from src.models.user import db, Booking, CoachProfile, CustomerProfile, User, Availability
 from src.routes.auth import token_required
 import jwt
 from datetime import datetime, timedelta
@@ -137,6 +137,35 @@ def create_booking_as_coach(current_user):
         
         if start_time < datetime.utcnow():
             return jsonify({'message': 'Cannot book sessions in the past'}), 400
+        
+        # Validate customer sessions fall within coach's availability
+        if event_type == 'customer_session':
+            day_of_week = start_time.weekday()  # 0=Monday, 6=Sunday
+            start_time_only = start_time.time()
+            end_time_only = end_time.time()
+            
+            # Get coach's availability for this day
+            coach_availability = Availability.query.filter_by(
+                coach_id=coach_profile.id,
+                day_of_week=day_of_week
+            ).all()
+            
+            if not coach_availability:
+                return jsonify({'message': 'No availability set for this day. Please set your availability first.'}), 400
+            
+            # Check if booking falls within any availability slot
+            is_within_availability = False
+            for slot in coach_availability:
+                slot_start = datetime.strptime(slot.start_time, '%H:%M').time()
+                slot_end = datetime.strptime(slot.end_time, '%H:%M').time()
+                
+                # Booking must start and end within the same availability slot
+                if slot_start <= start_time_only and end_time_only <= slot_end:
+                    is_within_availability = True
+                    break
+            
+            if not is_within_availability:
+                return jsonify({'message': 'Selected time is outside your availability hours'}), 400
         
         # Check for conflicts
         conflict = Booking.query.filter_by(coach_id=coach_profile.id).filter(
@@ -449,6 +478,34 @@ def create_booking_as_customer(current_user):
         
         if start_time < datetime.utcnow():
             return jsonify({'message': 'Cannot book sessions in the past'}), 400
+        
+        # Validate that booking falls within coach's availability
+        day_of_week = start_time.weekday()  # 0=Monday, 6=Sunday
+        start_time_only = start_time.time()
+        end_time_only = end_time.time()
+        
+        # Get coach's availability for this day
+        coach_availability = Availability.query.filter_by(
+            coach_id=customer_profile.coach_id,
+            day_of_week=day_of_week
+        ).all()
+        
+        if not coach_availability:
+            return jsonify({'message': 'Coach is not available on this day'}), 400
+        
+        # Check if booking falls within any availability slot
+        is_within_availability = False
+        for slot in coach_availability:
+            slot_start = datetime.strptime(slot.start_time, '%H:%M').time()
+            slot_end = datetime.strptime(slot.end_time, '%H:%M').time()
+            
+            # Booking must start and end within the same availability slot
+            if slot_start <= start_time_only and end_time_only <= slot_end:
+                is_within_availability = True
+                break
+        
+        if not is_within_availability:
+            return jsonify({'message': 'Selected time is outside coach availability hours'}), 400
         
         # Check for conflicts with coach's schedule (including personal events)
         conflict = Booking.query.filter_by(coach_id=customer_profile.coach_id).filter(
