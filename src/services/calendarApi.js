@@ -69,8 +69,21 @@ export const availabilityApi = {
   },
 
   // Get coach availability (for customers)
-  getCoachAvailabilityForCustomer: async () => {
-    const response = await fetch(`${API_URL}/customer/coach/availability`, {
+  getCoachAvailabilityForCustomer: async (startDate, endDate) => {
+    // Default to current week if no dates provided
+    if (!startDate || !endDate) {
+      const today = new Date();
+      const dayOfWeek = today.getDay();
+      const monday = new Date(today);
+      monday.setDate(today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1));
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+      
+      startDate = monday.toISOString().split('T')[0];
+      endDate = sunday.toISOString().split('T')[0];
+    }
+    
+    const response = await fetch(`${API_URL}/customer/coach/availability?start_date=${startDate}&end_date=${endDate}`, {
       headers: {
         'Authorization': `Bearer ${getAuthToken()}`,
         'Content-Type': 'application/json'
