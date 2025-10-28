@@ -3,6 +3,9 @@ from src.models.user import User, CoachProfile, CustomerProfile, TrainingPlan, E
 from src.routes.auth import token_required
 from functools import wraps
 import uuid
+import jwt
+from datetime import datetime, timedelta
+from flask import current_app
 from werkzeug.security import generate_password_hash
 
 coach_bp = Blueprint('coach', __name__)
@@ -369,5 +372,65 @@ def delete_training_plan(current_user, plan_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'message': f'Failed to delete training plan: {str(e)}'}), 500
+# ✅ NEW: Generate invitation link for customer
+@coach_bp.route('/customers/<customer_id>/generate-invite', methods=['POST'])
+@token_required
+@coach_required
+def generate_customer_invite(current_user, customer_id):
+    """
+    Generate an invitation token and link for a customer.
+    Coach can share this link manually with the customer.
+    """
+    try:
+        # Verify customer belongs to this coach
+        customer = CustomerProfile.query.filter_by(
+            id=customer_id,
+            coach_id=current_user.coach_profile.id
+        ).first()
+        
+        if not customer:
+            return jsonify({'message': 'Customer not found'}), 404
+        
+        user = customer.user
+        
+        # Generate invitation token (valid for 7 days)
+        token = jwt.encode({
+            'user_id': user.id,
+            'type': 'customer_invite',
+            'exp': datetime.utcnow() + timedelta(days=7)
+        }, current_app.config['SECRET_KEY'], algorithm='HS256')
+        
+        # Generate invitation link
+        # In production, this would be your actual domain
+        frontend_url = request.headers.get('Origin', 'https://coachsync-web.onrender.com')
+        invite_link = f"{frontend_url}/accept-invite/{token}"
+        
+        return jsonify({
+            'message': 'Invitation link generated successfully',
+            'token': token,
+            'invite_link': invite_link,
+            'expires_in': '7 days',
+            'customer': {
+                'id': customer.id,
+                'name': f"{user.first_name} {user.last_name}",
+                'email': user.email,
+                'phone': user.phone
+            }
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'message': f'Failed to generate invitation: {str(e)}'}), 500
+
+
+# ✅ NEW: Resend invitation (regenerate token)
+@coach_bp.route('/customers/<customer_id>/resend-invite', methods=['POST'])
+@token_required
+@coach_required
+def resend_customer_invite(current_user, customer_id):
+    """
+    Regenerate invitation link (useful if previous link expired)
+    """
+    # This is the same as generate_customer_invite
+    return generate_customer_invite(current_user, customer_id)
 
 

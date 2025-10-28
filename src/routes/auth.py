@@ -173,5 +173,130 @@ def get_current_user(current_user):
         
     except Exception as e:
         return jsonify({'message': f'Failed to get user data: {str(e)}'}), 500
+# ✅ NEW: Validate invitation token
+@auth_bp.route('/validate-invite/<token>', methods=['GET'])
+def validate_invite_token(token):
+    """
+    Validate an invitation token and return customer information.
+    Used by the frontend to check if the invitation link is valid.
+    """
+    try:
+        # Decode the token
+        data = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])
+        
+        # Verify it's an invitation token
+        if data.get('type') != 'customer_invite':
+            return jsonify({'message': 'Invalid invitation token'}), 400
+        
+        # Get user information
+        user = User.query.get(data['user_id'])
+        if not user:
+            return jsonify({'message': 'User not found'}), 404
+        
+        if user.role != 'customer':
+            return jsonify({'message': 'Invalid invitation'}), 400
+        
+        # Get customer profile and coach info
+        customer_profile = CustomerProfile.query.filter_by(user_id=user.id).first()
+        if not customer_profile:
+            return jsonify({'message': 'Customer profile not found'}), 404
+        
+        coach_profile = CoachProfile.query.get(customer_profile.coach_id)
+        coach_user = User.query.get(coach_profile.user_id) if coach_profile else None
+        
+        return jsonify({
+            'valid': True,
+            'customer': {
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'email': user.email,
+                'phone': user.phone
+            },
+            'coach': {
+                'name': f"{coach_user.first_name} {coach_user.last_name}" if coach_user else 'Your Coach',
+                'email': coach_user.email if coach_user else None
+            } if coach_user else None
+        }), 200
+        
+    except jwt.ExpiredSignatureError:
+        return jsonify({
+            'valid': False,
+            'message': 'Invitation link has expired. Please contact your coach for a new invitation.'
+        }), 400
+    except jwt.InvalidTokenError:
+        return jsonify({
+            'valid': False,
+            'message': 'Invalid invitation link.'
+        }), 400
+    except Exception as e:
+        return jsonify({
+            'valid': False,
+            'message': f'Failed to validate invitation: {str(e)}'
+        }), 500
+
+
+# ✅ NEW: Accept invitation and set password
+@auth_bp.route('/accept-invite', methods=['POST'])
+def accept_invitation():
+    """
+    Customer accepts invitation by setting their password.
+    After this, they can log in normally.
+    """
+    try:
+        data = request.json
+        
+        # Validate required fields
+        if not data.get('token'):
+            return jsonify({'message': 'Invitation token is required'}), 400
+        
+        if not data.get('password'):
+            return jsonify({'message': 'Password is required'}), 400
+        
+        # Validate password strength (optional but recommended)
+        password = data['password']
+        if len(password) < 6:
+            return jsonify({'message': 'Password must be at least 6 characters'}), 400
+        
+        # Decode and validate token
+        try:
+            token_data = jwt.decode(data['token'], current_app.config['SECRET_KEY'], algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            return jsonify({'message': 'Invitation link has expired. Please contact your coach.'}), 400
+        except jwt.InvalidTokenError:
+            return jsonify({'message': 'Invalid invitation link.'}), 400
+        
+        # Verify it's an invitation token
+        if token_data.get('type') != 'customer_invite':
+            return jsonify({'message': 'Invalid invitation token'}), 400
+        
+        # Get user
+        user = User.query.get(token_data['user_id'])
+        if not user:
+            return jsonify({'message': 'User not found'}), 404
+        
+        if user.role != 'customer':
+            return jsonify({'message': 'Invalid invitation'}), 400
+        
+        # Update password
+        user.password_hash = generate_password_hash(password)
+        db.session.commit()
+        
+        # Generate login token
+        login_token = jwt.encode({
+            'user_id': user.id,
+            'role': user.role,
+            'exp': datetime.utcnow() + timedelta(days=7)
+        }, current_app.config['SECRET_KEY'], algorithm='HS256')
+        
+        return jsonify({
+            'message': 'Password set successfully. You can now log in.',
+            'token': login_token,
+            'user': user.to_dict()
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'Failed to accept invitation: {str(e)}'}), 500
+
 
 
