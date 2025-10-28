@@ -138,11 +138,22 @@ class Exercise(db.Model):
 
 class Booking(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    customer_id = db.Column(db.String(36), db.ForeignKey('customer_profile.id'), nullable=False)
+    customer_id = db.Column(db.String(36), db.ForeignKey('customer_profile.id'), nullable=True)  # Nullable for personal events
     coach_id = db.Column(db.String(36), db.ForeignKey('coach_profile.id'), nullable=False)
     start_time = db.Column(db.DateTime, nullable=False)
     end_time = db.Column(db.DateTime, nullable=False)
     status = db.Column(db.Enum('confirmed', 'pending', 'cancelled', name='booking_status'), default='confirmed')
+    
+    # Event type fields
+    event_type = db.Column(db.Enum('customer_session', 'personal_event', name='event_type'), default='customer_session')
+    event_title = db.Column(db.String(200), nullable=True)  # For personal events (e.g., "Gym Workout")
+    
+    # Recurring event fields
+    is_recurring = db.Column(db.Boolean, default=False)
+    recurring_days = db.Column(db.JSON, nullable=True)  # Array of day indices [0,1,2,3,4] for Mon-Fri
+    recurring_end_date = db.Column(db.Date, nullable=True)  # When to stop recurring
+    parent_event_id = db.Column(db.String(36), nullable=True)  # Links recurring instances to parent
+    
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     notes = db.Column(db.Text)
 
@@ -154,9 +165,16 @@ class Booking(db.Model):
             'start_time': self.start_time.isoformat() if self.start_time else None,
             'end_time': self.end_time.isoformat() if self.end_time else None,
             'status': self.status,
+            'event_type': self.event_type,
+            'event_title': self.event_title,
+            'is_recurring': self.is_recurring,
+            'recurring_days': self.recurring_days or [],
+            'recurring_end_date': self.recurring_end_date.isoformat() if self.recurring_end_date else None,
+            'parent_event_id': self.parent_event_id,
             'notes': self.notes,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
+
 
 
 
