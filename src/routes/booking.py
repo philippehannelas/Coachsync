@@ -484,11 +484,11 @@ def create_booking_as_customer(current_user):
         start_time_only = start_time.time()
         end_time_only = end_time.time()
         
-        print(f"\n=== AVAILABILITY VALIDATION ===")
-        print(f"Booking request: {start_time} to {end_time}")
-        print(f"Day of week: {day_of_week} (0=Mon, 4=Fri)")
-        print(f"Start time only: {start_time_only}")
-        print(f"End time only: {end_time_only}")
+        current_app.logger.info("=== AVAILABILITY VALIDATION ===")
+        current_app.logger.info(f"Booking request: {start_time} to {end_time}")
+        current_app.logger.info(f"Day of week: {day_of_week} (0=Mon, 4=Fri)")
+        current_app.logger.info(f"Start time only: {start_time_only}")
+        current_app.logger.info(f"End time only: {end_time_only}")
         
         # Get coach's availability for this day
         coach_availability = Availability.query.filter_by(
@@ -496,10 +496,10 @@ def create_booking_as_customer(current_user):
             day_of_week=day_of_week
         ).all()
         
-        print(f"Found {len(coach_availability)} availability slots for day {day_of_week}")
+        current_app.logger.info(f"Found {len(coach_availability)} availability slots for day {day_of_week}")
         
         if not coach_availability:
-            print("No availability found - REJECTING")
+            current_app.logger.info("No availability found - REJECTING")
             return jsonify({'message': 'Coach is not available on this day'}), 400
         
         # Check if booking falls within any availability slot
@@ -508,24 +508,24 @@ def create_booking_as_customer(current_user):
             slot_start = datetime.strptime(slot.start_time, '%H:%M').time()
             slot_end = datetime.strptime(slot.end_time, '%H:%M').time()
             
-            print(f"Checking slot: {slot_start} - {slot_end}")
-            print(f"  Start check: {slot_start} <= {start_time_only} = {slot_start <= start_time_only}")
-            print(f"  End check: {end_time_only} <= {slot_end} = {end_time_only <= slot_end}")
+            current_app.logger.info(f"Checking slot: {slot_start} - {slot_end}")
+            current_app.logger.info(f"  Start check: {slot_start} <= {start_time_only} = {slot_start <= start_time_only}")
+            current_app.logger.info(f"  End check: {end_time_only} <= {slot_end} = {end_time_only <= slot_end}")
             
             # Booking must start and end within the same availability slot
             if slot_start <= start_time_only and end_time_only <= slot_end:
-                print(f"  ✅ FITS IN THIS SLOT")
+                current_app.logger.info("  FITS IN THIS SLOT")
                 is_within_availability = True
                 break
             else:
-                print(f"  ❌ Does not fit")
+                current_app.logger.info("  Does not fit")
         
         if not is_within_availability:
-            print("No matching slot found - REJECTING")
+            current_app.logger.info("No matching slot found - REJECTING")
             return jsonify({'message': 'Selected time is outside coach availability hours'}), 400
         
-        print("Validation passed - ALLOWING booking")
-        print("=== END VALIDATION ===\n")
+        current_app.logger.info("Validation passed - ALLOWING booking")
+        current_app.logger.info("=== END VALIDATION ===")
         
         # Check for conflicts with coach's schedule (including personal events)
         conflict = Booking.query.filter_by(coach_id=customer_profile.coach_id).filter(
