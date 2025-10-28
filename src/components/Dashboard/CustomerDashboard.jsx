@@ -3,6 +3,7 @@ import { User, Mail, Phone, CreditCard, LogOut, Calendar, Dumbbell, TrendingUp }
 
 function CustomerDashboard({ userProfile, onLogout, onNavigate }) {
   const [customerData, setCustomerData] = useState(null);
+  const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -15,19 +16,33 @@ function CustomerDashboard({ userProfile, onLogout, onNavigate }) {
       setLoading(true);
       const token = localStorage.getItem('coachsync_token');
       
-      const response = await fetch('https://coachsync-pro.onrender.com/api/customer/profile', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      // Fetch both profile and bookings
+      const [profileResponse, bookingsResponse] = await Promise.all([
+        fetch('https://coachsync-pro.onrender.com/api/customer/profile', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }),
+        fetch('https://coachsync-pro.onrender.com/api/customer/bookings', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+      ]);
 
-      if (!response.ok) {
+      if (!profileResponse.ok) {
         throw new Error('Failed to fetch customer profile');
       }
 
-      const data = await response.json();
-      setCustomerData(data);
+      const profileData = await profileResponse.json();
+      setCustomerData(profileData);
+      
+      if (bookingsResponse.ok) {
+        const bookingsData = await bookingsResponse.json();
+        setBookings(bookingsData);
+      }
     } catch (err) {
       console.error('Error fetching customer profile:', err);
       setError(err.message);
@@ -72,6 +87,18 @@ function CustomerDashboard({ userProfile, onLogout, onNavigate }) {
   const user = userProfile || {};
   const credits = customerData?.session_credits || 0;
   const creditsStatus = credits > 5 ? 'good' : credits > 2 ? 'medium' : 'low';
+  
+  // Calculate booking stats
+  const now = new Date();
+  const upcomingBookings = bookings.filter(b => 
+    b.status === 'confirmed' && new Date(b.start_time) > now
+  );
+  const completedThisMonth = bookings.filter(b => {
+    const bookingDate = new Date(b.start_time);
+    return bookingDate.getMonth() === now.getMonth() && 
+           bookingDate.getFullYear() === now.getFullYear() &&
+           (b.status === 'completed' || new Date(b.start_time) < now);
+  }).length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -165,13 +192,15 @@ function CustomerDashboard({ userProfile, onLogout, onNavigate }) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-600 text-sm font-medium">Upcoming Sessions</p>
-                <p className="text-4xl font-bold text-gray-900 mt-1">0</p>
+                <p className="text-4xl font-bold text-gray-900 mt-1">{upcomingBookings.length}</p>
               </div>
               <div className="bg-blue-100 p-3 rounded-lg">
                 <Calendar className="h-8 w-8 text-blue-600" />
               </div>
             </div>
-            <p className="text-gray-500 text-xs mt-3">No sessions scheduled yet</p>
+            <p className="text-gray-500 text-xs mt-3">
+              {upcomingBookings.length === 0 ? 'No sessions scheduled yet' : `${upcomingBookings.length} session${upcomingBookings.length > 1 ? 's' : ''} booked`}
+            </p>
           </div>
 
           {/* Progress Card */}
@@ -179,7 +208,7 @@ function CustomerDashboard({ userProfile, onLogout, onNavigate }) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-600 text-sm font-medium">This Month</p>
-                <p className="text-4xl font-bold text-gray-900 mt-1">0</p>
+                <p className="text-4xl font-bold text-gray-900 mt-1">{completedThisMonth}</p>
               </div>
               <div className="bg-purple-100 p-3 rounded-lg">
                 <TrendingUp className="h-8 w-8 text-purple-600" />

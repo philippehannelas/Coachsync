@@ -215,7 +215,12 @@ const BookingModal = ({
             }`}>
               <Calendar className="w-5 h-5" />
               <span className="font-medium">
-                {selectedDate && formatDate(selectedDate)}
+                {mode === 'view' && booking
+                  ? new Date(booking.start_time).toLocaleDateString('en-US', { 
+                      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+                    })
+                  : selectedDate && formatDate(selectedDate)
+                }
               </span>
             </div>
             <div className={`flex items-center gap-2 ${
@@ -223,7 +228,14 @@ const BookingModal = ({
             }`}>
               <Clock className="w-5 h-5" />
               <span className="font-medium">
-                {selectedTime} - {addMinutes(selectedTime, duration)}
+                {mode === 'view' && booking
+                  ? `${new Date(booking.start_time).toLocaleTimeString('en-US', { 
+                      hour: '2-digit', minute: '2-digit', hour12: false 
+                    })} - ${new Date(booking.end_time).toLocaleTimeString('en-US', { 
+                      hour: '2-digit', minute: '2-digit', hour12: false 
+                    })}`
+                  : selectedTime && `${selectedTime} - ${addMinutes(selectedTime, duration)}`
+                }
               </span>
             </div>
           </div>

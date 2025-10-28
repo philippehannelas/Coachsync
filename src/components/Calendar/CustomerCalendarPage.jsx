@@ -29,11 +29,25 @@ const CustomerCalendarPage = ({ userProfile }) => {
       setIsLoading(true);
       setError('');
 
-      // Load coach availability and customer bookings
-      const [availabilityData, bookingsData] = await Promise.all([
+      const token = localStorage.getItem('coachsync_token');
+      
+      // Load profile, coach availability, and customer bookings
+      const [profileResponse, availabilityData, bookingsData] = await Promise.all([
+        fetch('https://coachsync-pro.onrender.com/api/customer/profile', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }),
         availabilityApi.getCoachAvailabilityForCustomer(),
         bookingApi.getCustomerBookings()
       ]);
+
+      // Update credits from latest profile data
+      if (profileResponse.ok) {
+        const profileData = await profileResponse.json();
+        setCredits(profileData.session_credits || 0);
+      }
 
       // Extract availability schedule and booked slots from response
       setAvailability(availabilityData.availability || []);

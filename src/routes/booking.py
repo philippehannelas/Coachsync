@@ -252,13 +252,29 @@ def create_booking_as_coach(current_user):
                 notes=data.get('notes')
             )
             
+            # Deduct credit for customer sessions
+            if event_type == 'customer_session' and customer_id:
+                customer_profile = CustomerProfile.query.get(customer_id)
+                if customer_profile:
+                    if customer_profile.session_credits <= 0:
+                        return jsonify({'message': 'Customer has insufficient session credits'}), 400
+                    customer_profile.session_credits -= 1
+            
             db.session.add(booking)
             db.session.commit()
             
-            return jsonify({
+            response_data = {
                 'message': 'Booking created successfully',
                 'booking': booking.to_dict()
-            }), 201
+            }
+            
+            # Include remaining credits for customer sessions
+            if event_type == 'customer_session' and customer_id:
+                customer_profile = CustomerProfile.query.get(customer_id)
+                if customer_profile:
+                    response_data['remaining_credits'] = customer_profile.session_credits
+            
+            return jsonify(response_data), 201
         
     except Exception as e:
         db.session.rollback()
@@ -287,6 +303,14 @@ def update_booking_as_coach(current_user, booking_id):
         if 'status' in data:
             if data['status'] not in ['confirmed', 'pending', 'cancelled']:
                 return jsonify({'message': 'Invalid status'}), 400
+            
+            # Refund credit if cancelling a customer session
+            if data['status'] == 'cancelled' and booking.status != 'cancelled':
+                if booking.event_type == 'customer_session' and booking.customer_id:
+                    customer_profile = CustomerProfile.query.get(booking.customer_id)
+                    if customer_profile:
+                        customer_profile.session_credits += 1
+            
             booking.status = data['status']
         
         # Update notes
@@ -342,6 +366,12 @@ def delete_booking_as_coach(current_user, booking_id):
         
         if not booking:
             return jsonify({'message': 'Booking not found'}), 404
+        
+        # Refund credit if deleting a customer session that's not already cancelled
+        if booking.event_type == 'customer_session' and booking.customer_id and booking.status != 'cancelled':
+            customer_profile = CustomerProfile.query.get(booking.customer_id)
+            if customer_profile:
+                customer_profile.session_credits += 1
         
         # Check if this is a recurring event
         if booking.is_recurring and booking.parent_event_id is None:
