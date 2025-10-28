@@ -305,7 +305,8 @@ const WeekCalendar = ({
                       min-h-[60px] rounded-lg border-2 transition-all duration-200
                       ${isPast ? 'bg-gray-50 border-gray-200 cursor-not-allowed opacity-50' : ''}
                       ${dateSpecificInfo.type === 'blocked' ? 'bg-red-50 border-red-200 cursor-not-allowed' : ''}
-                      ${booking ? 'bg-blue-100 border-blue-400 hover:bg-blue-200' : ''}
+                      ${booking && booking.event_type === 'customer_session' ? 'bg-blue-100 border-blue-400 hover:bg-blue-200' : ''}
+                      ${booking && booking.event_type === 'personal_event' ? 'bg-purple-100 border-purple-400 hover:bg-purple-200' : ''}
                       ${available && !booking && !isPast && dateSpecificInfo.type !== 'blocked' ? 'bg-green-50 border-green-300 hover:bg-green-100 cursor-pointer' : ''}
                       ${!available && !booking && !isPast && dateSpecificInfo.type !== 'blocked' ? 'bg-gray-100 border-gray-300 cursor-not-allowed' : ''}
                     `}
@@ -315,9 +316,14 @@ const WeekCalendar = ({
                         <Ban className="w-4 h-4 mx-auto" />
                       </div>
                     )}
-                    {booking && (
+                    {booking && booking.event_type === 'customer_session' && (
                       <div className="text-xs font-medium text-blue-700 p-1">
                         {booking.customer?.name || 'Booked'}
+                      </div>
+                    )}
+                    {booking && booking.event_type === 'personal_event' && (
+                      <div className="text-xs font-medium text-purple-700 p-1">
+                        {booking.event_title || 'Personal'}
                       </div>
                     )}
                     {available && !booking && !isPast && dateSpecificInfo.type !== 'blocked' && (
@@ -341,7 +347,11 @@ const WeekCalendar = ({
         </div>
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 bg-blue-100 border-2 border-blue-400 rounded"></div>
-          <span className="text-sm text-gray-600">Booked</span>
+          <span className="text-sm text-gray-600">Customer Session</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 bg-purple-100 border-2 border-purple-400 rounded"></div>
+          <span className="text-sm text-gray-600">Personal Event</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 bg-gray-100 border-2 border-gray-300 rounded"></div>
