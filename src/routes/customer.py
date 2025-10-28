@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from src.models.user import User, CoachProfile, CustomerProfile, TrainingPlan, Booking, db
+from src.models.user import User, CoachProfile, CustomerProfile, TrainingPlan, Booking, Availability, db
 from src.routes.auth import token_required
 from datetime import datetime
 from functools import wraps
@@ -241,6 +241,11 @@ def get_coach_availability(current_user):
         except ValueError:
             return jsonify({'message': 'Invalid date format'}), 400
         
+        # Get coach's recurring availability schedule
+        availability_slots = Availability.query.filter_by(
+            coach_id=customer_profile.coach_id
+        ).all()
+        
         # Get existing bookings for the coach in the date range
         bookings = Booking.query.filter(
             Booking.coach_id == customer_profile.coach_id,
@@ -249,12 +254,14 @@ def get_coach_availability(current_user):
             Booking.end_time <= end_dt
         ).all()
         
+        availability_data = [slot.to_dict() for slot in availability_slots]
         booked_slots = [booking.to_dict() for booking in bookings]
         
         return jsonify({
             'coach_id': customer_profile.coach_id,
             'start_date': start_date,
             'end_date': end_date,
+            'availability': availability_data,
             'booked_slots': booked_slots
         }), 200
         

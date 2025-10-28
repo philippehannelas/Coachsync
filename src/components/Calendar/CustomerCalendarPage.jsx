@@ -10,6 +10,7 @@ import { availabilityApi, bookingApi } from '../../services/calendarApi';
  */
 const CustomerCalendarPage = ({ userProfile }) => {
   const [availability, setAvailability] = useState([]);
+  const [bookedSlots, setBookedSlots] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showBookingModal, setShowBookingModal] = useState(false);
@@ -34,8 +35,9 @@ const CustomerCalendarPage = ({ userProfile }) => {
         bookingApi.getCustomerBookings()
       ]);
 
-      // Extract booked_slots array from availability response
-      setAvailability(availabilityData.booked_slots || []);
+      // Extract availability schedule and booked slots from response
+      setAvailability(availabilityData.availability || []);
+      setBookedSlots(availabilityData.booked_slots || []);
       setBookings(bookingsData);
     } catch (err) {
       setError(err.message || 'Failed to load calendar data');
@@ -160,6 +162,7 @@ const CustomerCalendarPage = ({ userProfile }) => {
               <WeekCalendar
                 mode="customer"
                 availability={availability}
+                bookedSlots={bookedSlots}
                 bookings={bookings}
                 onSlotClick={handleSlotClick}
                 onBookingClick={handleBookingClick}
