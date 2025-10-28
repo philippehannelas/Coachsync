@@ -445,7 +445,9 @@ def get_customer_bookings(current_user):
 @customer_required
 def create_booking_as_customer(current_user):
     try:
+        current_app.logger.info("\n\n>>> CUSTOMER BOOKING CREATION STARTED <<<")
         data = request.json
+        current_app.logger.info(f"Request data: {data}")
         customer_profile = CustomerProfile.query.filter_by(user_id=current_user.id).first()
         
         if not customer_profile:
