@@ -159,6 +159,7 @@ class Booking(db.Model):
         }
 
 
+
 class Availability(db.Model):
     """Recurring weekly availability (e.g., Every Monday 9-5)"""
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
