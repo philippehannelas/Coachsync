@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Search, Plus, Edit, Trash2, CreditCard, LogOut, Mail, Phone, User, Dumbbell, Calendar } from 'lucide-react';
 import { coachAPI } from '../../services/api.jsx';
+import InvitationLinkModal from '../Modals/InvitationLinkModal';
 
 function CoachDashboard({ user, onLogout, onNavigate }) {
   const [customers, setCustomers] = useState([]);
@@ -12,6 +13,11 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // ✅ NEW: Invitation modal states
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteLink, setInviteLink] = useState('');
+  const [inviteCustomerName, setInviteCustomerName] = useState('');
 
   // Form states
   const [formData, setFormData] = useState({
@@ -44,12 +50,39 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
   const handleAddCustomer = async (e) => {
     e.preventDefault();
     try {
-      await coachAPI.createCustomer(formData);
-      setSuccess('Customer added successfully!');
+      const response = await coachAPI.createCustomer(formData);
+      
+      // ✅ NEW: Generate invitation link after creating customer
+      if (response.data && response.data.customer) {
+        try {
+          const inviteResponse = await fetch(
+            `https://coachsync-pro.onrender.com/api/coach/customers/${response.data.customer.id}/generate-invite`,
+            {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${localStorage.getItem('coachsync_token')}`,
+                'Content-Type': 'application/json'
+              }
+            }
+          );
+
+          if (inviteResponse.ok) {
+            const inviteData = await inviteResponse.json();
+            setInviteLink(inviteData.invite_link);
+            setInviteCustomerName(`${formData.first_name} ${formData.last_name}`);
+            setShowInviteModal(true);
+          }
+        } catch (inviteErr) {
+          console.error('Failed to generate invitation:', inviteErr);
+          // Still show success for customer creation
+          setSuccess('Customer added successfully!');
+          setTimeout(() => setSuccess(''), 3000);
+        }
+      }
+
       setShowAddModal(false);
       setFormData({ first_name: '', last_name: '', email: '', phone: '', initial_credits: 0 });
       fetchCustomers();
-      setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to add customer');
       setTimeout(() => setError(''), 3000);
@@ -229,13 +262,13 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
             <Plus className="h-5 w-5" />
             <span>Add Customer</span>
           </button>
-<button
-  onClick={() => onNavigate && onNavigate('calendar')}
-  className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105"
->
-  <Calendar className="h-5 w-5" />
-  <span>View Calendar</span>
-</button>
+          <button
+            onClick={() => onNavigate && onNavigate('calendar')}
+            className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105"
+          >
+            <Calendar className="h-5 w-5" />
+            <span>View Calendar</span>
+          </button>
         </div>
 
         {/* Customers Grid */}
@@ -516,8 +549,17 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
           </div>
         </div>
       )}
+
+      {/* ✅ NEW: Invitation Link Modal */}
+      <InvitationLinkModal
+        isOpen={showInviteModal}
+        onClose={() => setShowInviteModal(false)}
+        inviteLink={inviteLink}
+        customerName={inviteCustomerName}
+      />
     </div>
   );
 }
 
 export default CoachDashboard;
+
