@@ -117,13 +117,18 @@ const WeekCalendar = ({
       
       if (!hasAvailability) return false;
       
-      // Check if booked
+      // Check if booked - consider booking duration
       const isBooked = bookings.some(booking => {
         if (booking.status === 'cancelled') return false;
         const bookingDate = booking.start_time.split('T')[0];
         if (bookingDate !== dateString) return false;
-        const bookingTime = booking.start_time.split('T')[1].substring(0, 5);
-        return time === bookingTime;
+        
+        // Get booking start and end times
+        const bookingStartTime = booking.start_time.split('T')[1].substring(0, 5);
+        const bookingEndTime = booking.end_time.split('T')[1].substring(0, 5);
+        
+        // Check if current time slot falls within booking duration
+        return time >= bookingStartTime && time < bookingEndTime;
       });
       
       return !isBooked;
@@ -144,13 +149,18 @@ const WeekCalendar = ({
     
     if (!hasAvailability) return false;
     
-    // Check bookings
+    // Check bookings - consider booking duration
     const isBooked = bookings.some(booking => {
       if (booking.status === 'cancelled') return false;
       const bookingDate = booking.start_time.split('T')[0];
       if (bookingDate !== dateString) return false;
-      const bookingTime = booking.start_time.split('T')[1].substring(0, 5);
-      return time === bookingTime;
+      
+      // Get booking start and end times
+      const bookingStartTime = booking.start_time.split('T')[1].substring(0, 5);
+      const bookingEndTime = booking.end_time.split('T')[1].substring(0, 5);
+      
+      // Check if current time slot falls within booking duration
+      return time >= bookingStartTime && time < bookingEndTime;
     });
     
     return !isBooked;
