@@ -34,7 +34,8 @@ const CustomerCalendarPage = ({ userProfile }) => {
         bookingApi.getCustomerBookings()
       ]);
 
-      setAvailability(availabilityData);
+      // Extract booked_slots array from availability response
+      setAvailability(availabilityData.booked_slots || []);
       setBookings(bookingsData);
     } catch (err) {
       setError(err.message || 'Failed to load calendar data');
