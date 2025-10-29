@@ -129,6 +129,39 @@ def create_booking(current_user):
         except ValueError:
             return jsonify({'message': 'Invalid datetime format'}), 400
         
+        # Validate that booking falls within coach's availability
+        day_of_week = start_time.weekday()  # 0=Monday, 6=Sunday
+        start_time_only = start_time.time()
+        end_time_only = end_time.time()
+        
+        # Get coach's availability for this day
+        coach_availability = Availability.query.filter_by(
+            coach_id=customer_profile.coach_id,
+            day_of_week=day_of_week
+        ).all()
+        
+        if not coach_availability:
+            return jsonify({'message': 'Coach is not available on this day'}), 400
+        
+        # Check if booking falls within any availability slot
+        is_within_availability = False
+        for slot in coach_availability:
+            # Handle both string and time object formats
+            if isinstance(slot.start_time, str):
+                slot_start = datetime.strptime(slot.start_time, '%H:%M').time()
+                slot_end = datetime.strptime(slot.end_time, '%H:%M').time()
+            else:
+                slot_start = slot.start_time
+                slot_end = slot.end_time
+            
+            # Booking must start and end within the same availability slot
+            if slot_start <= start_time_only and end_time_only <= slot_end:
+                is_within_availability = True
+                break
+        
+        if not is_within_availability:
+            return jsonify({'message': 'Selected time is outside coach availability hours'}), 400
+        
         # Check for conflicting bookings
         conflicting_booking = Booking.query.filter(
             Booking.coach_id == customer_profile.coach_id,
