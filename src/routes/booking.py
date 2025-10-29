@@ -157,8 +157,13 @@ def create_booking_as_coach(current_user):
             # Check if booking falls within any availability slot
             is_within_availability = False
             for slot in coach_availability:
-                slot_start = datetime.strptime(slot.start_time, '%H:%M').time()
-                slot_end = datetime.strptime(slot.end_time, '%H:%M').time()
+                # Handle both string and time object formats
+                if isinstance(slot.start_time, str):
+                    slot_start = datetime.strptime(slot.start_time, '%H:%M').time()
+                    slot_end = datetime.strptime(slot.end_time, '%H:%M').time()
+                else:
+                    slot_start = slot.start_time
+                    slot_end = slot.end_time
                 
                 # Booking must start and end within the same availability slot
                 if slot_start <= start_time_only and end_time_only <= slot_end:
@@ -508,8 +513,13 @@ def create_booking_as_customer(current_user):
         # Check if booking falls within any availability slot
         is_within_availability = False
         for slot in coach_availability:
-            slot_start = datetime.strptime(slot.start_time, '%H:%M').time()
-            slot_end = datetime.strptime(slot.end_time, '%H:%M').time()
+            # Handle both string and time object formats
+            if isinstance(slot.start_time, str):
+                slot_start = datetime.strptime(slot.start_time, '%H:%M').time()
+                slot_end = datetime.strptime(slot.end_time, '%H:%M').time()
+            else:
+                slot_start = slot.start_time
+                slot_end = slot.end_time
             
             print(f"Checking slot: {slot_start} - {slot_end}", file=sys.stderr, flush=True)
             print(f"  Start check: {slot_start} <= {start_time_only} = {slot_start <= start_time_only}", file=sys.stderr, flush=True)
