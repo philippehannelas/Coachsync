@@ -498,6 +498,9 @@ def create_booking_as_customer(current_user):
         print(f"Start time only: {start_time_only}", file=sys.stderr, flush=True)
         print(f"End time only: {end_time_only}", file=sys.stderr, flush=True)
         
+        # TEMPORARY TEST: Force rejection to confirm this code runs
+        return jsonify({'message': 'VALIDATION TEST: This booking was intentionally blocked to test validation'}), 400
+        
         # Get coach's availability for this day
         coach_availability = Availability.query.filter_by(
             coach_id=customer_profile.coach_id,
