@@ -1,7 +1,26 @@
 from flask import Blueprint, request, jsonify
 from src.models.user import db, TrainingPlan, Exercise, WorkoutLog, ExerciseLog, CustomerProfile
-from src.middleware.auth import token_required, coach_required, customer_required
+from src.routes.auth import token_required
+from functools import wraps
 from datetime import datetime, date
+
+# Coach-specific decorator
+def coach_required(f):
+    @wraps(f)
+    def coach_decorated(current_user, *args, **kwargs):
+        if current_user.role != 'coach':
+            return jsonify({'message': 'Coach access required'}), 403
+        return f(current_user, *args, **kwargs)
+    return coach_decorated
+
+# Customer-specific decorator
+def customer_required(f):
+    @wraps(f)
+    def customer_decorated(current_user, *args, **kwargs):
+        if current_user.role != 'customer':
+            return jsonify({'message': 'Customer access required'}), 403
+        return f(current_user, *args, **kwargs)
+    return customer_decorated
 
 training_plan_bp = Blueprint('training_plan', __name__)
 
