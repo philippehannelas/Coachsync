@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from src.models.user import User, CoachProfile, CustomerProfile, TrainingPlan, Exercise, db
+from src.models.user import User, CoachProfile, CustomerProfile, TrainingPlan, Exercise, Booking, db
 from src.routes.auth import token_required
 from functools import wraps
 import uuid
