@@ -137,3 +137,78 @@ def add_session_notes():
             'message': f'Migration failed: {str(e)}'
         }), 500
 
+
+
+
+"""
+Migration for Training Plans enhancements
+Adds: rest_seconds, tempo, instructions, video_url, day_number to Exercise
+Creates: WorkoutLog and ExerciseLog tables
+"""
+
+migrate_training_plans_bp = Blueprint('migrate_training_plans', __name__)
+
+@migrate_training_plans_bp.route('/migrate/enhance-training-plans', methods=['POST', 'GET'])
+def migrate_enhance_training_plans():
+    """
+    Add new fields to Exercise table and create WorkoutLog and ExerciseLog tables
+    Safe to run multiple times (uses IF NOT EXISTS)
+    """
+    try:
+        # Add new columns to Exercise table
+        sql_exercise = """
+        ALTER TABLE exercise 
+        ADD COLUMN IF NOT EXISTS rest_seconds INTEGER DEFAULT 60,
+        ADD COLUMN IF NOT EXISTS tempo VARCHAR(20),
+        ADD COLUMN IF NOT EXISTS instructions TEXT,
+        ADD COLUMN IF NOT EXISTS video_url VARCHAR(500),
+        ADD COLUMN IF NOT EXISTS day_number INTEGER DEFAULT 1;
+        """
+        
+        # Create WorkoutLog table
+        sql_workout_log = """
+        CREATE TABLE IF NOT EXISTS workout_log (
+            id VARCHAR(36) PRIMARY KEY,
+            customer_id VARCHAR(36) NOT NULL REFERENCES customer_profile(id),
+            training_plan_id VARCHAR(36) NOT NULL REFERENCES training_plan(id),
+            workout_date DATE NOT NULL,
+            completed BOOLEAN DEFAULT FALSE,
+            notes TEXT,
+            duration_minutes INTEGER,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            completed_at TIMESTAMP
+        );
+        """
+        
+        # Create ExerciseLog table
+        sql_exercise_log = """
+        CREATE TABLE IF NOT EXISTS exercise_log (
+            id VARCHAR(36) PRIMARY KEY,
+            workout_log_id VARCHAR(36) NOT NULL REFERENCES workout_log(id),
+            exercise_id VARCHAR(36) NOT NULL,
+            exercise_name VARCHAR(100) NOT NULL,
+            set_number INTEGER NOT NULL,
+            reps_completed INTEGER,
+            weight_used FLOAT,
+            notes TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        """
+        
+        db.session.execute(db.text(sql_exercise))
+        db.session.execute(db.text(sql_workout_log))
+        db.session.execute(db.text(sql_exercise_log))
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Migration completed successfully. Training plan features enhanced.'
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'message': f'Migration failed: {str(e)}'
+        }), 500
+

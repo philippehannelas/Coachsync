@@ -122,8 +122,13 @@ class Exercise(db.Model):
     name = db.Column(db.String(100), nullable=False)
     sets = db.Column(db.Integer)
     reps = db.Column(db.String(50))  # Can be "10-12" or "to failure"
+    rest_seconds = db.Column(db.Integer, default=60)  # Rest between sets
+    tempo = db.Column(db.String(20))  # e.g., "3-1-1-0" (eccentric-pause-concentric-pause)
+    instructions = db.Column(db.Text)  # Exercise instructions/form cues
+    video_url = db.Column(db.String(500))  # Link to demo video
     notes = db.Column(db.Text)
     order = db.Column(db.Integer, default=0)  # For ordering exercises
+    day_number = db.Column(db.Integer, default=1)  # Which day in the plan (1-7 for week)
 
     def to_dict(self):
         return {
@@ -132,8 +137,13 @@ class Exercise(db.Model):
             'name': self.name,
             'sets': self.sets,
             'reps': self.reps,
+            'rest_seconds': self.rest_seconds,
+            'tempo': self.tempo,
+            'instructions': self.instructions,
+            'video_url': self.video_url,
             'notes': self.notes,
-            'order': self.order
+            'order': self.order,
+            'day_number': self.day_number
         }
 
 class Booking(db.Model):
@@ -263,4 +273,57 @@ class DateSpecificAvailability(db.Model):
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
 
+
+
+
+class WorkoutLog(db.Model):
+    """Track customer workout completions"""
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    customer_id = db.Column(db.String(36), db.ForeignKey('customer_profile.id'), nullable=False)
+    training_plan_id = db.Column(db.String(36), db.ForeignKey('training_plan.id'), nullable=False)
+    workout_date = db.Column(db.Date, nullable=False)
+    completed = db.Column(db.Boolean, default=False)
+    notes = db.Column(db.Text)  # Customer notes about the workout
+    duration_minutes = db.Column(db.Integer)  # How long the workout took
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    completed_at = db.Column(db.DateTime)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'customer_id': self.customer_id,
+            'training_plan_id': self.training_plan_id,
+            'workout_date': self.workout_date.isoformat() if self.workout_date else None,
+            'completed': self.completed,
+            'notes': self.notes,
+            'duration_minutes': self.duration_minutes,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'completed_at': self.completed_at.isoformat() if self.completed_at else None
+        }
+
+
+class ExerciseLog(db.Model):
+    """Track individual exercise performance"""
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    workout_log_id = db.Column(db.String(36), db.ForeignKey('workout_log.id'), nullable=False)
+    exercise_id = db.Column(db.String(36), nullable=False)  # Reference to exercise in training plan
+    exercise_name = db.Column(db.String(100), nullable=False)  # Store name for history
+    set_number = db.Column(db.Integer, nullable=False)  # Which set (1, 2, 3, etc.)
+    reps_completed = db.Column(db.Integer)  # Actual reps completed
+    weight_used = db.Column(db.Float)  # Weight in kg or lbs
+    notes = db.Column(db.Text)  # Notes about this specific set
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'workout_log_id': self.workout_log_id,
+            'exercise_id': self.exercise_id,
+            'exercise_name': self.exercise_name,
+            'set_number': self.set_number,
+            'reps_completed': self.reps_completed,
+            'weight_used': self.weight_used,
+            'notes': self.notes,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
 

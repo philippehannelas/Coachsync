@@ -354,7 +354,7 @@ function CustomerDashboard({ userProfile, onLogout, onNavigate }) {
             </div>
 
             {/* Quick Actions */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <button
                 onClick={() => onNavigate('calendar')}
                 className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 text-left group"
@@ -366,6 +366,21 @@ function CustomerDashboard({ userProfile, onLogout, onNavigate }) {
                   <div>
                     <h3 className="text-xl font-bold text-gray-900 mb-1">Book a Session</h3>
                     <p className="text-gray-600">Schedule your next training session</p>
+                  </div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => onNavigate('training-plans')}
+                className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 text-left group"
+              >
+                <div className="flex items-center space-x-4">
+                  <div className="bg-purple-100 p-4 rounded-lg group-hover:bg-purple-200 transition-colors">
+                    <Dumbbell className="h-8 w-8 text-purple-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-1">My Workouts</h3>
+                    <p className="text-gray-600">View training plans and log workouts</p>
                   </div>
                 </div>
               </button>
