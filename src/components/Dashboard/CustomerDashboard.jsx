@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Phone, CreditCard, LogOut, Calendar, Dumbbell, TrendingUp } from 'lucide-react';
+import { User, Mail, Phone, CreditCard, LogOut, Calendar, Dumbbell, TrendingUp, FileText, Star } from 'lucide-react';
+import SessionHistoryView from '../SessionNotes/SessionHistoryView'; // NEW IMPORT
 
 function CustomerDashboard({ userProfile, onLogout, onNavigate }) {
   const [customerData, setCustomerData] = useState(null);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState('overview'); // NEW STATE
 
   useEffect(() => {
     fetchCustomerProfile();
@@ -100,6 +102,12 @@ function CustomerDashboard({ userProfile, onLogout, onNavigate }) {
            (b.status === 'completed' || new Date(b.start_time) < now);
   }).length;
 
+  // NEW: Calculate session notes stats
+  const sessionsWithNotes = bookings.filter(b => b.has_session_notes);
+  const pendingActionItems = bookings
+    .filter(b => b.action_items && b.action_items.length > 0)
+    .reduce((count, b) => count + b.action_items.filter(item => !item.completed).length, 0);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Header */}
@@ -147,178 +155,243 @@ function CustomerDashboard({ userProfile, onLogout, onNavigate }) {
           </div>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {/* Session Credits Card */}
-          <div className={`bg-white rounded-xl shadow-md p-6 border-l-4 transform hover:-translate-y-1 transition-all duration-300 ${
-            creditsStatus === 'good' ? 'border-green-500' :
-            creditsStatus === 'medium' ? 'border-yellow-500' :
-            'border-red-500'
-          }`}>
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Session Credits</p>
-                <p className={`text-4xl font-bold mt-1 ${
-                  creditsStatus === 'good' ? 'text-green-600' :
-                  creditsStatus === 'medium' ? 'text-yellow-600' :
-                  'text-red-600'
-                }`}>
-                  {credits}
-                </p>
-              </div>
-              <div className={`p-3 rounded-lg ${
-                creditsStatus === 'good' ? 'bg-green-100' :
-                creditsStatus === 'medium' ? 'bg-yellow-100' :
-                'bg-red-100'
-              }`}>
-                <CreditCard className={`h-8 w-8 ${
-                  creditsStatus === 'good' ? 'text-green-600' :
-                  creditsStatus === 'medium' ? 'text-yellow-600' :
-                  'text-red-600'
-                }`} />
-              </div>
-            </div>
-            {credits <= 2 && (
-              <div className="mt-3 p-2 bg-red-50 rounded-lg">
-                <p className="text-red-700 text-xs font-medium">
-                  ⚠️ Low credits! Contact your coach to add more.
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Upcoming Sessions Card */}
-          <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500 transform hover:-translate-y-1 transition-all duration-300">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Upcoming Sessions</p>
-                <p className="text-4xl font-bold text-gray-900 mt-1">{upcomingBookings.length}</p>
-              </div>
-              <div className="bg-blue-100 p-3 rounded-lg">
-                <Calendar className="h-8 w-8 text-blue-600" />
-              </div>
-            </div>
-            <p className="text-gray-500 text-xs mt-3">
-              {upcomingBookings.length === 0 ? 'No sessions scheduled yet' : `${upcomingBookings.length} session${upcomingBookings.length > 1 ? 's' : ''} booked`}
-            </p>
-          </div>
-
-          {/* Progress Card */}
-          <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-purple-500 transform hover:-translate-y-1 transition-all duration-300">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">This Month</p>
-                <p className="text-4xl font-bold text-gray-900 mt-1">{completedThisMonth}</p>
-              </div>
-              <div className="bg-purple-100 p-3 rounded-lg">
-                <TrendingUp className="h-8 w-8 text-purple-600" />
-              </div>
-            </div>
-            <p className="text-gray-500 text-xs mt-3">Sessions completed</p>
-          </div>
-        </div>
-
-        {/* Profile Card */}
-        <div className="bg-white rounded-xl shadow-md p-8 mb-8">
-          <div className="flex items-center space-x-4 mb-6">
-            <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-4 rounded-full">
-              <User className="h-8 w-8 text-white" />
-            </div>
-            <div>
-              <h3 className="text-2xl font-bold text-gray-900">Your Profile</h3>
-              <p className="text-gray-600">Manage your personal information</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Name */}
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="flex items-center space-x-3 mb-2">
-                <User className="h-5 w-5 text-gray-400" />
-                <label className="text-sm font-medium text-gray-700">Full Name</label>
-              </div>
-              <p className="text-lg font-semibold text-gray-900 ml-8">
-                {user.first_name} {user.last_name}
-              </p>
-            </div>
-
-            {/* Email */}
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="flex items-center space-x-3 mb-2">
-                <Mail className="h-5 w-5 text-gray-400" />
-                <label className="text-sm font-medium text-gray-700">Email Address</label>
-              </div>
-              <p className="text-lg font-semibold text-gray-900 ml-8 break-all">
-                {user.email || 'N/A'}
-              </p>
-            </div>
-
-            {/* Phone */}
-            {user.phone && (
-              <div className="bg-gray-50 rounded-lg p-4">
-                <div className="flex items-center space-x-3 mb-2">
-                  <Phone className="h-5 w-5 text-gray-400" />
-                  <label className="text-sm font-medium text-gray-700">Phone Number</label>
-                </div>
-                <p className="text-lg font-semibold text-gray-900 ml-8">
-                  {user.phone}
-                </p>
-              </div>
-            )}
-
-            {/* Role */}
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="flex items-center space-x-3 mb-2">
-                <User className="h-5 w-5 text-gray-400" />
-                <label className="text-sm font-medium text-gray-700">Account Type</label>
-              </div>
-              <div className="ml-8">
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-blue-100 text-blue-800">
-                  Customer
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="bg-white rounded-xl shadow-md p-8">
-          <h3 className="text-xl font-bold text-gray-900 mb-6">Quick Actions</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button 
-              onClick={() => onNavigate && onNavigate('calendar')}
-              className="flex items-center justify-center space-x-3 p-6 bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 rounded-xl border border-blue-200 transition-all duration-200 transform hover:scale-105"
+        {/* NEW: Tab Navigation */}
+        <div className="mb-6 border-b border-gray-200">
+          <nav className="flex space-x-8">
+            <button
+              onClick={() => setActiveTab('overview')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'overview'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
             >
-              <Calendar className="h-6 w-6 text-blue-600" />
-              <span className="font-semibold text-blue-900">Book Session</span>
+              <div className="flex items-center gap-2">
+                <User className="w-4 h-4" />
+                Overview
+              </div>
             </button>
-            
-            <button className="flex items-center justify-center space-x-3 p-6 bg-gradient-to-r from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 rounded-xl border border-purple-200 transition-all duration-200 transform hover:scale-105">
-              <Dumbbell className="h-6 w-6 text-purple-600" />
-              <span className="font-semibold text-purple-900">View Plans</span>
+            <button
+              onClick={() => setActiveTab('sessions')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors relative ${
+                activeTab === 'sessions'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <FileText className="w-4 h-4" />
+                Session History
+                {sessionsWithNotes.length > 0 && (
+                  <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-blue-600 rounded-full">
+                    {sessionsWithNotes.length}
+                  </span>
+                )}
+              </div>
+              {pendingActionItems > 0 && (
+                <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
+                  {pendingActionItems}
+                </span>
+              )}
             </button>
-            
-            <button className="flex items-center justify-center space-x-3 p-6 bg-gradient-to-r from-green-50 to-green-100 hover:from-green-100 hover:to-green-200 rounded-xl border border-green-200 transition-all duration-200 transform hover:scale-105">
-              <TrendingUp className="h-6 w-6 text-green-600" />
-              <span className="font-semibold text-green-900">Track Progress</span>
-            </button>
-          </div>
+          </nav>
         </div>
 
-        {/* Coming Soon Notice */}
-        <div className="mt-8 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-6 border border-gray-200">
-          <div className="flex items-center space-x-3">
-            <div className="bg-blue-500 rounded-full p-2">
-              <span className="text-white text-sm font-bold">ℹ️</span>
+        {/* Tab Content */}
+        {activeTab === 'overview' && (
+          <>
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+              {/* Session Credits Card */}
+              <div className={`bg-white rounded-xl shadow-md p-6 border-l-4 transform hover:-translate-y-1 transition-all duration-300 ${
+                creditsStatus === 'good' ? 'border-green-500' :
+                creditsStatus === 'medium' ? 'border-yellow-500' :
+                'border-red-500'
+              }`}>
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <p className="text-gray-600 text-sm font-medium">Session Credits</p>
+                    <p className={`text-4xl font-bold mt-1 ${
+                      creditsStatus === 'good' ? 'text-green-600' :
+                      creditsStatus === 'medium' ? 'text-yellow-600' :
+                      'text-red-600'
+                    }`}>
+                      {credits}
+                    </p>
+                  </div>
+                  <div className={`p-3 rounded-lg ${
+                    creditsStatus === 'good' ? 'bg-green-100' :
+                    creditsStatus === 'medium' ? 'bg-yellow-100' :
+                    'bg-red-100'
+                  }`}>
+                    <CreditCard className={`h-8 w-8 ${
+                      creditsStatus === 'good' ? 'text-green-600' :
+                      creditsStatus === 'medium' ? 'text-yellow-600' :
+                      'text-red-600'
+                    }`} />
+                  </div>
+                </div>
+                {credits <= 2 && (
+                  <div className="mt-3 p-2 bg-red-50 rounded-lg">
+                    <p className="text-red-700 text-xs font-medium">
+                      ⚠️ Low credits! Contact your coach to add more.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Upcoming Sessions Card */}
+              <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500 transform hover:-translate-y-1 transition-all duration-300">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-600 text-sm font-medium">Upcoming Sessions</p>
+                    <p className="text-4xl font-bold text-gray-900 mt-1">{upcomingBookings.length}</p>
+                  </div>
+                  <div className="bg-blue-100 p-3 rounded-lg">
+                    <Calendar className="h-8 w-8 text-blue-600" />
+                  </div>
+                </div>
+                <p className="text-gray-500 text-xs mt-3">
+                  {upcomingBookings.length === 0 ? 'No sessions scheduled yet' : `${upcomingBookings.length} session${upcomingBookings.length > 1 ? 's' : ''} booked`}
+                </p>
+              </div>
+
+              {/* Progress Card */}
+              <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-purple-500 transform hover:-translate-y-1 transition-all duration-300">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-600 text-sm font-medium">This Month</p>
+                    <p className="text-4xl font-bold text-gray-900 mt-1">{completedThisMonth}</p>
+                  </div>
+                  <div className="bg-purple-100 p-3 rounded-lg">
+                    <TrendingUp className="h-8 w-8 text-purple-600" />
+                  </div>
+                </div>
+                <p className="text-gray-500 text-xs mt-3">Sessions completed</p>
+              </div>
+
+              {/* NEW: Session Notes Card */}
+              <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-orange-500 transform hover:-translate-y-1 transition-all duration-300">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-600 text-sm font-medium">Session Notes</p>
+                    <p className="text-4xl font-bold text-gray-900 mt-1">{sessionsWithNotes.length}</p>
+                  </div>
+                  <div className="bg-orange-100 p-3 rounded-lg">
+                    <FileText className="h-8 w-8 text-orange-600" />
+                  </div>
+                </div>
+                <p className="text-gray-500 text-xs mt-3">
+                  {pendingActionItems > 0 && (
+                    <span className="text-red-600 font-medium">{pendingActionItems} pending tasks</span>
+                  )}
+                  {pendingActionItems === 0 && 'All tasks complete'}
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="font-semibold text-gray-900">Session Booking Now Available!</p>
-              <p className="text-gray-600 text-sm">
-                Click "Book Session" above to view your coach's availability and schedule training sessions.
-              </p>
+
+            {/* Profile Card */}
+            <div className="bg-white rounded-xl shadow-md p-8 mb-8">
+              <div className="flex items-center space-x-4 mb-6">
+                <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-4 rounded-full">
+                  <User className="h-8 w-8 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-gray-900">Your Profile</h3>
+                  <p className="text-gray-600">Manage your personal information</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Name */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex items-center space-x-3 mb-2">
+                    <User className="h-5 w-5 text-gray-400" />
+                    <label className="text-sm font-medium text-gray-700">Full Name</label>
+                  </div>
+                  <p className="text-lg font-semibold text-gray-900 ml-8">
+                    {user.first_name} {user.last_name}
+                  </p>
+                </div>
+
+                {/* Email */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex items-center space-x-3 mb-2">
+                    <Mail className="h-5 w-5 text-gray-400" />
+                    <label className="text-sm font-medium text-gray-700">Email Address</label>
+                  </div>
+                  <p className="text-lg font-semibold text-gray-900 ml-8 break-all">
+                    {user.email || 'N/A'}
+                  </p>
+                </div>
+
+                {/* Phone */}
+                {user.phone && (
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <div className="flex items-center space-x-3 mb-2">
+                      <Phone className="h-5 w-5 text-gray-400" />
+                      <label className="text-sm font-medium text-gray-700">Phone Number</label>
+                    </div>
+                    <p className="text-lg font-semibold text-gray-900 ml-8">
+                      {user.phone}
+                    </p>
+                  </div>
+                )}
+
+                {/* Role */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex items-center space-x-3 mb-2">
+                    <User className="h-5 w-5 text-gray-400" />
+                    <label className="text-sm font-medium text-gray-700">Account Type</label>
+                  </div>
+                  <div className="ml-8">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                      Customer
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+
+            {/* Quick Actions */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <button
+                onClick={() => onNavigate('calendar')}
+                className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 text-left group"
+              >
+                <div className="flex items-center space-x-4">
+                  <div className="bg-blue-100 p-4 rounded-lg group-hover:bg-blue-200 transition-colors">
+                    <Calendar className="h-8 w-8 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-1">Book a Session</h3>
+                    <p className="text-gray-600">Schedule your next training session</p>
+                  </div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('sessions')}
+                className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 text-left group"
+              >
+                <div className="flex items-center space-x-4">
+                  <div className="bg-orange-100 p-4 rounded-lg group-hover:bg-orange-200 transition-colors">
+                    <FileText className="h-8 w-8 text-orange-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-1">View Session Notes</h3>
+                    <p className="text-gray-600">Review your progress and action items</p>
+                  </div>
+                </div>
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* NEW: Session History Tab */}
+        {activeTab === 'sessions' && (
+          <SessionHistoryView userProfile={userProfile} />
+        )}
       </main>
     </div>
   );
