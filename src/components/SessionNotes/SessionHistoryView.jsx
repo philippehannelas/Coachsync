@@ -7,6 +7,7 @@ function SessionHistoryView({ userProfile }) {
   const [selectedSession, setSelectedSession] = useState(null);
   const [customerNotes, setCustomerNotes] = useState('');
   const [savingNotes, setSavingNotes] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
   useEffect(() => {
     fetchSessions();
@@ -94,6 +95,15 @@ function SessionHistoryView({ userProfile }) {
         const data = await response.json();
         setSelectedSession(data.booking);
         setSessions(sessions.map(s => s.id === data.booking.id ? data.booking : s));
+        
+        // Show success feedback
+        setSaveSuccess(true);
+        
+        // Close the detail view after 1 second
+        setTimeout(() => {
+          setSaveSuccess(false);
+          setSelectedSession(null);
+        }, 1000);
       }
     } catch (error) {
       console.error('Error saving notes:', error);
@@ -254,13 +264,20 @@ function SessionHistoryView({ userProfile }) {
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                 rows="4"
               />
-              <button
-                onClick={handleSaveCustomerNotes}
-                disabled={savingNotes}
-                className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
-              >
-                {savingNotes ? 'Saving...' : 'Save Notes'}
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleSaveCustomerNotes}
+                  disabled={savingNotes || saveSuccess}
+                  className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+                >
+                  {savingNotes ? 'Saving...' : saveSuccess ? '✓ Saved!' : 'Save Notes'}
+                </button>
+                {saveSuccess && (
+                  <span className="text-green-600 text-sm font-medium animate-fade-in">
+                    Notes saved successfully!
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         ) : (
