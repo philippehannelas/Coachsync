@@ -95,3 +95,45 @@ def add_event_types():
             'message': f'Migration failed: {str(e)}'
         }), 500
 
+
+
+"""
+Migration to add session notes fields to bookings
+Adds: session_summary, performance_rating, coach_notes, action_items, customer_notes, notes_added_at
+"""
+
+migrate_session_notes_bp = Blueprint('migrate_session_notes', __name__)
+
+@migrate_session_notes_bp.route('/migrate/add-session-notes', methods=['POST', 'GET'])
+def add_session_notes():
+    """
+    Add session notes fields to booking table
+    Safe to run multiple times (uses IF NOT EXISTS)
+    """
+    try:
+        # Add session notes columns
+        sql_columns = """
+        ALTER TABLE booking 
+        ADD COLUMN IF NOT EXISTS session_summary TEXT,
+        ADD COLUMN IF NOT EXISTS performance_rating INTEGER,
+        ADD COLUMN IF NOT EXISTS coach_notes TEXT,
+        ADD COLUMN IF NOT EXISTS action_items JSONB,
+        ADD COLUMN IF NOT EXISTS customer_notes TEXT,
+        ADD COLUMN IF NOT EXISTS notes_added_at TIMESTAMP;
+        """
+        
+        db.session.execute(db.text(sql_columns))
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Migration completed successfully. Session notes fields added to booking table.'
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'message': f'Migration failed: {str(e)}'
+        }), 500
+

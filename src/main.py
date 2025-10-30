@@ -15,6 +15,7 @@ from src.routes.availability import availability_bp
 from src.routes.date_specific_availability import date_specific_bp
 from src.routes.migrate import migrate_bp
 from src.routes.migrate import migrate_events_bp
+from src.routes.migrate import migrate_session_notes_bp
 
 
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
@@ -33,6 +34,7 @@ app.register_blueprint(availability_bp, url_prefix='/api')
 app.register_blueprint(date_specific_bp, url_prefix='/api')
 app.register_blueprint(migrate_bp, url_prefix='/api')
 app.register_blueprint(migrate_events_bp, url_prefix='/api')
+app.register_blueprint(migrate_session_notes_bp, url_prefix='/api')
 
 # Database configuration for production
 # Use PostgreSQL if DATABASE_URL is set, otherwise fall back to SQLite
