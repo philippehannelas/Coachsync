@@ -156,9 +156,17 @@ class Booking(db.Model):
     
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     notes = db.Column(db.Text)
+    
+    # Session notes fields (added after session completion)
+    session_summary = db.Column(db.Text, nullable=True)  # What was covered in the session
+    performance_rating = db.Column(db.Integer, nullable=True)  # 1-5 star rating
+    coach_notes = db.Column(db.Text, nullable=True)  # Private notes for coach only
+    action_items = db.Column(db.JSON, nullable=True)  # List of action items for customer
+    customer_notes = db.Column(db.Text, nullable=True)  # Customer's reflections
+    notes_added_at = db.Column(db.DateTime, nullable=True)  # When coach added notes
 
-    def to_dict(self):
-        return {
+    def to_dict(self, include_coach_notes=False):
+        result = {
             'id': self.id,
             'customer_id': self.customer_id,
             'coach_id': self.coach_id,
@@ -172,8 +180,20 @@ class Booking(db.Model):
             'recurring_end_date': self.recurring_end_date.isoformat() if self.recurring_end_date else None,
             'parent_event_id': self.parent_event_id,
             'notes': self.notes,
-            'created_at': self.created_at.isoformat() if self.created_at else None
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'session_summary': self.session_summary,
+            'performance_rating': self.performance_rating,
+            'action_items': self.action_items or [],
+            'customer_notes': self.customer_notes,
+            'notes_added_at': self.notes_added_at.isoformat() if self.notes_added_at else None,
+            'has_session_notes': self.session_summary is not None
         }
+        
+        # Only include coach_notes if explicitly requested (for coach view)
+        if include_coach_notes:
+            result['coach_notes'] = self.coach_notes
+        
+        return result
 
 
 

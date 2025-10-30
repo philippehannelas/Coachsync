@@ -434,3 +434,126 @@ def resend_customer_invite(current_user, customer_id):
     return generate_customer_invite(current_user, customer_id)
 
 
+
+
+# ========================================
+# SESSION NOTES ENDPOINTS
+# ========================================
+
+@coach_bp.route('/bookings/<booking_id>/session-notes', methods=['POST'])
+@token_required
+@coach_required
+def add_session_notes(current_user, booking_id):
+    """
+    Add session notes after a session is completed
+    """
+    try:
+        data = request.json
+        
+        # Get the booking
+        booking = Booking.query.filter_by(
+            id=booking_id,
+            coach_id=current_user.coach_profile.id
+        ).first()
+        
+        if not booking:
+            return jsonify({'message': 'Booking not found'}), 404
+        
+        # Validate that session has ended
+        if booking.end_time > datetime.utcnow():
+            return jsonify({'message': 'Cannot add notes to future sessions'}), 400
+        
+        # Validate performance rating if provided
+        if 'performance_rating' in data:
+            rating = data['performance_rating']
+            if rating is not None and (rating < 1 or rating > 5):
+                return jsonify({'message': 'Performance rating must be between 1 and 5'}), 400
+        
+        # Update session notes
+        booking.session_summary = data.get('session_summary')
+        booking.performance_rating = data.get('performance_rating')
+        booking.coach_notes = data.get('coach_notes')
+        booking.action_items = data.get('action_items', [])
+        booking.notes_added_at = datetime.utcnow()
+        
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Session notes added successfully',
+            'booking': booking.to_dict(include_coach_notes=True)
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'Failed to add session notes: {str(e)}'}), 500
+
+
+@coach_bp.route('/bookings/<booking_id>/session-notes', methods=['GET'])
+@token_required
+@coach_required
+def get_session_notes(current_user, booking_id):
+    """
+    Get session notes for a specific booking (coach view - includes private notes)
+    """
+    try:
+        booking = Booking.query.filter_by(
+            id=booking_id,
+            coach_id=current_user.coach_profile.id
+        ).first()
+        
+        if not booking:
+            return jsonify({'message': 'Booking not found'}), 404
+        
+        return jsonify(booking.to_dict(include_coach_notes=True)), 200
+        
+    except Exception as e:
+        return jsonify({'message': f'Failed to get session notes: {str(e)}'}), 500
+
+
+@coach_bp.route('/bookings/<booking_id>/session-notes', methods=['PUT'])
+@token_required
+@coach_required
+def update_session_notes(current_user, booking_id):
+    """
+    Update existing session notes
+    """
+    try:
+        data = request.json
+        
+        booking = Booking.query.filter_by(
+            id=booking_id,
+            coach_id=current_user.coach_profile.id
+        ).first()
+        
+        if not booking:
+            return jsonify({'message': 'Booking not found'}), 404
+        
+        # Validate performance rating if provided
+        if 'performance_rating' in data:
+            rating = data['performance_rating']
+            if rating is not None and (rating < 1 or rating > 5):
+                return jsonify({'message': 'Performance rating must be between 1 and 5'}), 400
+        
+        # Update fields
+        if 'session_summary' in data:
+            booking.session_summary = data['session_summary']
+        if 'performance_rating' in data:
+            booking.performance_rating = data['performance_rating']
+        if 'coach_notes' in data:
+            booking.coach_notes = data['coach_notes']
+        if 'action_items' in data:
+            booking.action_items = data['action_items']
+        
+        booking.notes_added_at = datetime.utcnow()
+        
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Session notes updated successfully',
+            'booking': booking.to_dict(include_coach_notes=True)
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'Failed to update session notes: {str(e)}'}), 500
+

@@ -301,3 +301,97 @@ def get_coach_availability(current_user):
     except Exception as e:
         return jsonify({'message': f'Failed to get availability: {str(e)}'}), 500
 
+
+
+# ========================================
+# SESSION NOTES ENDPOINTS (Customer View)
+# ========================================
+
+@customer_bp.route('/bookings/<booking_id>/session-notes', methods=['GET'])
+@token_required
+@customer_required
+def get_customer_session_notes(current_user, booking_id):
+    """
+    Get session notes for a specific booking (customer view - excludes private coach notes)
+    """
+    try:
+        booking = Booking.query.filter_by(
+            id=booking_id,
+            customer_id=current_user.customer_profile.id
+        ).first()
+        
+        if not booking:
+            return jsonify({'message': 'Booking not found'}), 404
+        
+        # Return booking without coach's private notes
+        return jsonify(booking.to_dict(include_coach_notes=False)), 200
+        
+    except Exception as e:
+        return jsonify({'message': f'Failed to get session notes: {str(e)}'}), 500
+
+
+@customer_bp.route('/bookings/<booking_id>/customer-notes', methods=['PUT'])
+@token_required
+@customer_required
+def update_customer_notes(current_user, booking_id):
+    """
+    Customer adds their own reflections/notes to a session
+    """
+    try:
+        data = request.json
+        
+        booking = Booking.query.filter_by(
+            id=booking_id,
+            customer_id=current_user.customer_profile.id
+        ).first()
+        
+        if not booking:
+            return jsonify({'message': 'Booking not found'}), 404
+        
+        # Update customer notes
+        booking.customer_notes = data.get('customer_notes')
+        
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Notes updated successfully',
+            'booking': booking.to_dict(include_coach_notes=False)
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'Failed to update notes: {str(e)}'}), 500
+
+
+@customer_bp.route('/bookings/<booking_id>/action-items', methods=['PUT'])
+@token_required
+@customer_required
+def update_action_items(current_user, booking_id):
+    """
+    Customer updates action items (marks as complete/incomplete)
+    """
+    try:
+        data = request.json
+        
+        booking = Booking.query.filter_by(
+            id=booking_id,
+            customer_id=current_user.customer_profile.id
+        ).first()
+        
+        if not booking:
+            return jsonify({'message': 'Booking not found'}), 404
+        
+        # Update action items
+        booking.action_items = data.get('action_items', [])
+        
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Action items updated successfully',
+            'booking': booking.to_dict(include_coach_notes=False)
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'Failed to update action items: {str(e)}'}), 500
+
