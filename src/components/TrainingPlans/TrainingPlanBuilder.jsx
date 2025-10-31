@@ -328,7 +328,9 @@ function TrainingPlanBuilder({ plan, customers, onSave, onCancel }) {
                         onChange={() => toggleCustomerAssignment(customer.id)}
                         className="w-4 h-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
                       />
-                      <span className="ml-3 text-sm text-gray-700">{customer.name}</span>
+                      <span className="ml-3 text-sm text-gray-700">
+                        {customer.user ? `${customer.user.first_name} ${customer.user.last_name}` : 'Unknown'}
+                      </span>
                     </label>
                   ))
                 )}
