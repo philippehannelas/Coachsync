@@ -41,7 +41,8 @@ function TrainingPlansPage({ userProfile }) {
       
       if (customersResponse.ok) {
         const customersData = await customersResponse.json();
-        setCustomers(customersData.data || []);
+        // API returns array directly, not wrapped in .data
+        setCustomers(Array.isArray(customersData) ? customersData : customersData.data || []);
       }
     } catch (error) {
       console.error('Error loading data:', error);
