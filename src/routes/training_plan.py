@@ -293,16 +293,33 @@ def unassign_plan_from_customer(current_user, plan_id):
 def get_customer_training_plans(current_user):
     """Get all training plans assigned to the customer"""
     try:
-        if not current_user.customer_profile or not current_user.customer_profile.coach_id:
-            return jsonify([]), 200 # Return empty list if no profile or coach
-
+        print(f"DEBUG: current_user.id = {current_user.id}")
+        print(f"DEBUG: current_user.role = {current_user.role}")
+        print(f"DEBUG: current_user.customer_profile = {current_user.customer_profile}")
+        
+        if not current_user.customer_profile:
+            return jsonify({'message': 'Customer profile not found'}), 404
+        
+        print(f"DEBUG: customer_profile.id = {current_user.customer_profile.id}")
+        print(f"DEBUG: customer_profile.coach_id = {current_user.customer_profile.coach_id}")
+        
+        if not current_user.customer_profile.coach_id:
+            return jsonify([]), 200  # Return empty list if no coach assigned
+        
         # Find plans where customer is in assigned_customer_ids
         all_plans = TrainingPlan.query.filter_by(coach_id=current_user.customer_profile.coach_id).all()
+        print(f"DEBUG: Found {len(all_plans)} plans for coach")
+        
         assigned_plans = [plan for plan in all_plans if current_user.customer_profile.id in (plan.assigned_customer_ids or [])]
+        print(f"DEBUG: {len(assigned_plans)} plans assigned to customer")
         
         return jsonify([plan.to_dict() for plan in assigned_plans]), 200
     except Exception as e:
+        print(f"ERROR in get_customer_training_plans: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'message': f'Error fetching training plans: {str(e)}'}), 500
+
 
 
 @training_plan_bp.route('/customer/training-plans/<plan_id>/exercises', methods=['GET'])
