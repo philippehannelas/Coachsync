@@ -66,6 +66,10 @@ with app.app_context():
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve(path):
+    # Don't intercept API routes - let blueprints handle them
+    if path.startswith('api/'):
+        return "Not Found", 404
+    
     static_folder_path = app.static_folder
     if static_folder_path is None:
             return "Static folder not configured", 404
