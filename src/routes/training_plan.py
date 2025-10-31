@@ -294,8 +294,8 @@ def get_customer_training_plans(current_user):
     """Get all training plans assigned to the customer"""
     try:
         # Find plans where customer is in assigned_customer_ids
-        all_plans = TrainingPlan.query.filter_by(coach_id=current_user.coach_id).all()
-        assigned_plans = [plan for plan in all_plans if current_user.id in (plan.assigned_customer_ids or [])]
+        all_plans = TrainingPlan.query.filter_by(coach_id=current_user.customer_profile.coach_id).all()
+        assigned_plans = [plan for plan in all_plans if current_user.customer_profile.id in (plan.assigned_customer_ids or [])]
         
         return jsonify([plan.to_dict() for plan in assigned_plans]), 200
     except Exception as e:
@@ -310,7 +310,7 @@ def get_customer_plan_exercises(current_user, plan_id):
     try:
         # Verify customer has access to this plan
         plan = TrainingPlan.query.get(plan_id)
-        if not plan or current_user.id not in (plan.assigned_customer_ids or []):
+        if not plan or current_user.customer_profile.id not in (plan.assigned_customer_ids or []):
             return jsonify({'message': 'Training plan not found'}), 404
         
         exercises = Exercise.query.filter_by(training_plan_id=plan_id).order_by(Exercise.day_number, Exercise.order).all()
