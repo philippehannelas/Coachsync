@@ -32,7 +32,10 @@ training_plan_bp = Blueprint('training_plan', __name__)
 def get_coach_training_plans(current_user):
     """Get all training plans created by the coach"""
     try:
-        plans = TrainingPlan.query.filter_by(coach_id=current_user.id).all()
+        if not current_user.coach_profile:
+            return jsonify({'message': 'Coach profile not found'}), 404
+        
+        plans = TrainingPlan.query.filter_by(coach_id=current_user.coach_profile.id).all()
         return jsonify([plan.to_dict() for plan in plans]), 200
     except Exception as e:
         return jsonify({'message': f'Error fetching training plans: {str(e)}'}), 500
@@ -46,8 +49,12 @@ def create_training_plan(current_user):
     try:
         data = request.json
         
+        # Get coach profile ID
+        if not current_user.coach_profile:
+            return jsonify({'message': 'Coach profile not found'}), 404
+        
         new_plan = TrainingPlan(
-            coach_id=current_user.id,
+            coach_id=current_user.coach_profile.id,
             name=data.get('name'),
             description=data.get('description'),
             difficulty=data.get('difficulty', 'beginner'),
