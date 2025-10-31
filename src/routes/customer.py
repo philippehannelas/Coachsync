@@ -34,37 +34,8 @@ def get_customer_profile(current_user):
     except Exception as e:
         return jsonify({'message': f'Failed to get customer profile: {str(e)}'}), 500
 
-@customer_bp.route('/training-plans', methods=['GET'])
-@token_required
-@customer_required
-def get_training_plans(current_user):
-    try:
-        if not current_user.customer_profile:
-            return jsonify({'message': 'Customer profile not found'}), 404
-        
-        training_plans = current_user.customer_profile.training_plans.all()
-        return jsonify([plan.to_dict() for plan in training_plans]), 200
-        
-    except Exception as e:
-        return jsonify({'message': f'Failed to get training plans: {str(e)}'}), 500
-
-@customer_bp.route('/training-plans/<plan_id>', methods=['GET'])
-@token_required
-@customer_required
-def get_training_plan(current_user, plan_id):
-    try:
-        training_plan = TrainingPlan.query.filter_by(
-            id=plan_id,
-            customer_id=current_user.customer_profile.id
-        ).first()
-        
-        if not training_plan:
-            return jsonify({'message': 'Training plan not found'}), 404
-        
-        return jsonify(training_plan.to_dict()), 200
-        
-    except Exception as e:
-        return jsonify({'message': f'Failed to get training plan: {str(e)}'}), 500
+# Training plans endpoints have been moved to training_plan.py
+# These old endpoints are removed to avoid conflicts
 
 @customer_bp.route('/bookings', methods=['GET'])
 @token_required
