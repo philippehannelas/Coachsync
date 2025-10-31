@@ -108,32 +108,32 @@ function TrainingPlanBuilder({ plan, customers, onSave, onCancel }) {
       }
       
       // Handle customer assignments
-      if (plan) {
-        const currentAssigned = plan.assigned_customer_ids || [];
-        const toAssign = assignedCustomers.filter(id => !currentAssigned.includes(id));
-        const toUnassign = currentAssigned.filter(id => !assignedCustomers.includes(id));
-        
-        for (const customerId of toAssign) {
-          await fetch(`https://coachsync-pro.onrender.com/api/coach/training-plans/${planId}/assign`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('coachsync_token')}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ customer_id: customerId })
-          });
-        }
-        
-        for (const customerId of toUnassign) {
-          await fetch(`https://coachsync-pro.onrender.com/api/coach/training-plans/${planId}/unassign`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('coachsync_token')}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ customer_id: customerId })
-          });
-        }
+      const currentAssigned = plan?.assigned_customer_ids || [];
+      const toAssign = assignedCustomers.filter(id => !currentAssigned.includes(id));
+      const toUnassign = currentAssigned.filter(id => !assignedCustomers.includes(id));
+      
+      // Assign new customers
+      for (const customerId of toAssign) {
+        await fetch(`https://coachsync-pro.onrender.com/api/coach/training-plans/${planId}/assign`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('coachsync_token')}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ customer_id: customerId })
+        });
+      }
+      
+      // Unassign removed customers
+      for (const customerId of toUnassign) {
+        await fetch(`https://coachsync-pro.onrender.com/api/coach/training-plans/${planId}/unassign`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('coachsync_token')}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ customer_id: customerId })
+        });
       }
       
       onSave();
