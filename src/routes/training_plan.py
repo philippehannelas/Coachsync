@@ -78,7 +78,7 @@ def create_training_plan(current_user):
 def update_training_plan(current_user, plan_id):
     """Update a training plan"""
     try:
-        plan = TrainingPlan.query.filter_by(id=plan_id, coach_id=current_user.coach_profile.id).first()
+        plan = TrainingPlan.query.filter_by(id=plan_id, coach_id=current_user.id).first()
         if not plan:
             return jsonify({'message': 'Training plan not found'}), 404
         
@@ -103,7 +103,7 @@ def update_training_plan(current_user, plan_id):
 def delete_training_plan(current_user, plan_id):
     """Delete a training plan"""
     try:
-        plan = TrainingPlan.query.filter_by(id=plan_id, coach_id=current_user.coach_profile.id).first()
+        plan = TrainingPlan.query.filter_by(id=plan_id, coach_id=current_user.id).first()
         if not plan:
             return jsonify({'message': 'Training plan not found'}), 404
         
@@ -124,7 +124,7 @@ def delete_training_plan(current_user, plan_id):
 def get_plan_exercises(current_user, plan_id):
     """Get all exercises for a training plan"""
     try:
-        plan = TrainingPlan.query.filter_by(id=plan_id, coach_id=current_user.coach_profile.id).first()
+        plan = TrainingPlan.query.filter_by(id=plan_id, coach_id=current_user.id).first()
         if not plan:
             return jsonify({'message': 'Training plan not found'}), 404
         
@@ -140,7 +140,7 @@ def get_plan_exercises(current_user, plan_id):
 def add_exercise_to_plan(current_user, plan_id):
     """Add an exercise to a training plan"""
     try:
-        plan = TrainingPlan.query.filter_by(id=plan_id, coach_id=current_user.coach_profile.id).first()
+        plan = TrainingPlan.query.filter_by(id=plan_id, coach_id=current_user.id).first()
         if not plan:
             return jsonify({'message': 'Training plan not found'}), 404
         
@@ -180,7 +180,7 @@ def update_exercise(current_user, exercise_id):
             return jsonify({'message': 'Exercise not found'}), 404
         
         # Verify coach owns the training plan
-        plan = TrainingPlan.query.filter_by(id=exercise.training_plan_id, coach_id=current_user.coach_profile.id).first()
+        plan = TrainingPlan.query.filter_by(id=exercise.training_plan_id, coach_id=current_user.id).first()
         if not plan:
             return jsonify({'message': 'Unauthorized'}), 403
         
@@ -214,7 +214,7 @@ def delete_exercise(current_user, exercise_id):
             return jsonify({'message': 'Exercise not found'}), 404
         
         # Verify coach owns the training plan
-        plan = TrainingPlan.query.filter_by(id=exercise.training_plan_id, coach_id=current_user.coach_profile.id).first()
+        plan = TrainingPlan.query.filter_by(id=exercise.training_plan_id, coach_id=current_user.id).first()
         if not plan:
             return jsonify({'message': 'Unauthorized'}), 403
         
@@ -232,7 +232,7 @@ def delete_exercise(current_user, exercise_id):
 def assign_plan_to_customer(current_user, plan_id):
     """Assign a training plan to a customer"""
     try:
-        plan = TrainingPlan.query.filter_by(id=plan_id, coach_id=current_user.coach_profile.id).first()
+        plan = TrainingPlan.query.filter_by(id=plan_id, coach_id=current_user.id).first()
         if not plan:
             return jsonify({'message': 'Training plan not found'}), 404
         
@@ -240,7 +240,7 @@ def assign_plan_to_customer(current_user, plan_id):
         customer_id = data.get('customer_id')
         
         # Verify customer exists and belongs to this coach
-        customer = CustomerProfile.query.filter_by(id=customer_id, coach_id=current_user.coach_profile.id).first()
+        customer = CustomerProfile.query.filter_by(id=customer_id, coach_id=current_user.id).first()
         if not customer:
             return jsonify({'message': 'Customer not found'}), 404
         
@@ -264,7 +264,7 @@ def assign_plan_to_customer(current_user, plan_id):
 def unassign_plan_from_customer(current_user, plan_id):
     """Unassign a training plan from a customer"""
     try:
-        plan = TrainingPlan.query.filter_by(id=plan_id, coach_id=current_user.coach_profile.id).first()
+        plan = TrainingPlan.query.filter_by(id=plan_id, coach_id=current_user.id).first()
         if not plan:
             return jsonify({'message': 'Training plan not found'}), 404
         
