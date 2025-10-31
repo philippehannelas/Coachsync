@@ -293,6 +293,9 @@ def unassign_plan_from_customer(current_user, plan_id):
 def get_customer_training_plans(current_user):
     """Get all training plans assigned to the customer"""
     try:
+        if not current_user.customer_profile or not current_user.customer_profile.coach_id:
+            return jsonify([]), 200 # Return empty list if no profile or coach
+
         # Find plans where customer is in assigned_customer_ids
         all_plans = TrainingPlan.query.filter_by(coach_id=current_user.customer_profile.coach_id).all()
         assigned_plans = [plan for plan in all_plans if current_user.customer_profile.id in (plan.assigned_customer_ids or [])]
@@ -308,6 +311,9 @@ def get_customer_training_plans(current_user):
 def get_customer_plan_exercises(current_user, plan_id):
     """Get all exercises for a training plan"""
     try:
+        if not current_user.customer_profile:
+            return jsonify({'message': 'Customer profile not found'}), 404
+
         # Verify customer has access to this plan
         plan = TrainingPlan.query.get(plan_id)
         if not plan or current_user.customer_profile.id not in (plan.assigned_customer_ids or []):
