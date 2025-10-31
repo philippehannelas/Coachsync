@@ -300,7 +300,16 @@ def get_customer_training_plans(current_user):
         all_plans = TrainingPlan.query.filter_by(coach_id=current_user.customer_profile.coach_id).all()
         assigned_plans = [plan for plan in all_plans if current_user.customer_profile.id in (plan.assigned_customer_ids or [])]
         
-        return jsonify([plan.to_dict() for plan in assigned_plans]), 200
+        # Include exercises for each plan
+        plans_with_exercises = []
+        for plan in assigned_plans:
+            plan_dict = plan.to_dict()
+            # Fetch exercises from Exercise table
+            exercises = Exercise.query.filter_by(training_plan_id=plan.id).order_by(Exercise.day_number, Exercise.order).all()
+            plan_dict['exercises'] = [ex.to_dict() for ex in exercises]
+            plans_with_exercises.append(plan_dict)
+        
+        return jsonify(plans_with_exercises), 200
     except Exception as e:
         return jsonify({'message': f'Error fetching training plans: {str(e)}'}), 500
 
