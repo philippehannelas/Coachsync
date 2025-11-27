@@ -1,0 +1,255 @@
+/* AthleteHub Theme - Modern Athletic Design */
+
+:root {
+  /* Primary Colors */
+  --athletehub-primary: #0066FF;
+  --athletehub-primary-dark: #0047B3;
+  --athletehub-primary-light: #3385FF;
+  
+  /* Secondary Colors */
+  --athletehub-navy: #0A1F44;
+  --athletehub-orange: #FF6B35;
+  --athletehub-orange-light: #FF8C5F;
+  
+  /* Neutral Colors */
+  --athletehub-slate: #64748B;
+  --athletehub-slate-light: #94A3B8;
+  --athletehub-slate-dark: #475569;
+  --athletehub-gray-50: #F8FAFC;
+  --athletehub-gray-100: #F1F5F9;
+  --athletehub-gray-200: #E2E8F0;
+  --athletehub-gray-300: #CBD5E1;
+  
+  /* Status Colors */
+  --athletehub-success: #10B981;
+  --athletehub-success-light: #34D399;
+  --athletehub-warning: #F59E0B;
+  --athletehub-error: #EF4444;
+  --athletehub-info: #3B82F6;
+  
+  /* Gradients */
+  --athletehub-gradient-primary: linear-gradient(135deg, #0066FF 0%, #0047B3 100%);
+  --athletehub-gradient-hero: linear-gradient(135deg, #0A1F44 0%, #0066FF 100%);
+  --athletehub-gradient-accent: linear-gradient(135deg, #FF6B35 0%, #FF8C5F 100%);
+  
+  /* Shadows */
+  --athletehub-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --athletehub-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --athletehub-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --athletehub-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --athletehub-shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  
+  /* Border Radius */
+  --athletehub-radius-sm: 0.375rem;
+  --athletehub-radius: 0.5rem;
+  --athletehub-radius-md: 0.75rem;
+  --athletehub-radius-lg: 1rem;
+  --athletehub-radius-xl: 1.5rem;
+  --athletehub-radius-full: 9999px;
+  
+  /* Spacing */
+  --athletehub-space-xs: 0.5rem;
+  --athletehub-space-sm: 0.75rem;
+  --athletehub-space-md: 1rem;
+  --athletehub-space-lg: 1.5rem;
+  --athletehub-space-xl: 2rem;
+  --athletehub-space-2xl: 3rem;
+  
+  /* Typography */
+  --athletehub-font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  --athletehub-font-heading: 'Poppins', var(--athletehub-font-sans);
+}
+
+/* Global Styles */
+body {
+  font-family: var(--athletehub-font-sans);
+  color: var(--athletehub-navy);
+  background-color: var(--athletehub-gray-50);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--athletehub-font-heading);
+  font-weight: 700;
+}
+
+/* Primary Button */
+.btn-primary {
+  background: var(--athletehub-gradient-primary);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--athletehub-radius);
+  font-weight: 600;
+  box-shadow: var(--athletehub-shadow-md);
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  box-shadow: var(--athletehub-shadow-lg);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* Secondary Button */
+.btn-secondary {
+  background: white;
+  color: var(--athletehub-primary);
+  border: 2px solid var(--athletehub-primary);
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--athletehub-radius);
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: var(--athletehub-primary);
+  color: white;
+}
+
+/* Accent Button */
+.btn-accent {
+  background: var(--athletehub-gradient-accent);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--athletehub-radius);
+  font-weight: 600;
+  box-shadow: var(--athletehub-shadow-md);
+  transition: all 0.2s ease;
+}
+
+/* Card Styles */
+.card {
+  background: white;
+  border-radius: var(--athletehub-radius-lg);
+  box-shadow: var(--athletehub-shadow);
+  padding: var(--athletehub-space-lg);
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: var(--athletehub-shadow-md);
+}
+
+/* Header Gradient */
+.header-gradient {
+  background: var(--athletehub-gradient-hero);
+  color: white;
+}
+
+/* Status Badges */
+.badge-success {
+  background: var(--athletehub-success);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--athletehub-radius-full);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.badge-warning {
+  background: var(--athletehub-warning);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--athletehub-radius-full);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.badge-error {
+  background: var(--athletehub-error);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--athletehub-radius-full);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* Mobile Optimization */
+@media (max-width: 768px) {
+  :root {
+    /* Increase touch target sizes for mobile */
+    --athletehub-touch-target: 44px;
+  }
+  
+  .btn-primary,
+  .btn-secondary,
+  .btn-accent {
+    min-height: var(--athletehub-touch-target);
+    min-width: var(--athletehub-touch-target);
+  }
+  
+  /* Larger text for mobile readability */
+  body {
+    font-size: 16px;
+  }
+  
+  h1 {
+    font-size: 1.875rem;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+  }
+  
+  h3 {
+    font-size: 1.25rem;
+  }
+}
+
+/* PWA Install Banner */
+.pwa-install-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--athletehub-gradient-primary);
+  color: white;
+  padding: var(--athletehub-space-lg);
+  box-shadow: var(--athletehub-shadow-xl);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--athletehub-space-md);
+}
+
+.pwa-install-banner button {
+  background: white;
+  color: var(--athletehub-primary);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: var(--athletehub-radius);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Loading Spinner */
+.spinner {
+  border: 3px solid var(--athletehub-gray-200);
+  border-top-color: var(--athletehub-primary);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Progress Bar */
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--athletehub-gray-200);
+  border-radius: var(--athletehub-radius-full);
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--athletehub-gradient-primary);
+  transition: width 0.3s ease;
+}
