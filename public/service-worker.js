@@ -21,6 +21,11 @@ self.addEventListener('install', (event) => {
 
 // Fetch from cache, fallback to network
 self.addEventListener('fetch', (event) => {
+  // Skip chrome-extension and other non-http(s) requests
+  if (!event.request.url.startsWith('http')) {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
@@ -41,12 +46,20 @@ self.addEventListener('fetch', (event) => {
 
             caches.open(CACHE_NAME)
               .then((cache) => {
-                cache.put(event.request, responseToCache);
+                // Wrap in try-catch to prevent errors from breaking the app
+                try {
+                  cache.put(event.request, responseToCache);
+                } catch (error) {
+                  console.warn('Failed to cache:', event.request.url, error);
+                }
               });
 
             return response;
           }
-        );
+        ).catch((error) => {
+          console.error('Fetch failed:', error);
+          throw error;
+        });
       })
   );
 });
