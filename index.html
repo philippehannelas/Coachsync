@@ -4,10 +4,27 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CoachSync - Personal Training Management</title>
+    <title>AthleteHub - Training Management Platform</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="AthleteHub - Professional coaching and training management platform" />
+    <meta name="theme-color" content="#0066FF" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="AthleteHub" />
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
   </head>
   <body>
     <div id="root"></div>
+    
+    <!-- PWA Registration -->
+    <script src="/pwa-register.js"></script>
+    
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
