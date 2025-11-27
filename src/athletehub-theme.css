@@ -1,5 +1,61 @@
 /* AthleteHub Theme - Modern Athletic Design */
 
+/* Override Tailwind colors with AthleteHub branding */
+.bg-blue-600,
+.bg-blue-500 {
+  background-color: #0066FF !important;
+}
+
+.bg-blue-700,
+.bg-blue-800 {
+  background-color: #0047B3 !important;
+}
+
+.hover\:bg-blue-700:hover,
+.hover\:bg-blue-600:hover {
+  background-color: #0047B3 !important;
+}
+
+.hover\:bg-blue-800:hover {
+  background-color: #003580 !important;
+}
+
+.text-blue-600,
+.text-blue-500 {
+  color: #0066FF !important;
+}
+
+.text-blue-700 {
+  color: #0047B3 !important;
+}
+
+.border-blue-600,
+.border-blue-500 {
+  border-color: #0066FF !important;
+}
+
+.focus\:ring-blue-500:focus {
+  --tw-ring-color: #0066FF !important;
+}
+
+.focus\:border-blue-500:focus {
+  border-color: #0066FF !important;
+}
+
+/* Primary button styling */
+button.bg-blue-600,
+button.bg-blue-500 {
+  background: linear-gradient(135deg, #0066FF 0%, #0047B3 100%) !important;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  transition: all 0.2s ease;
+}
+
+button.bg-blue-600:hover,
+button.bg-blue-500:hover {
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  transform: translateY(-1px);
+}
+
 :root {
   /* Primary Colors */
   --athletehub-primary: #0066FF;
