@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth.jsx';
-import { Mail, Phone, Lock, User, UserPlus, LogIn, Dumbbell } from 'lucide-react';
+import { Mail, Phone, Lock, User, UserPlus, LogIn, Mountain } from 'lucide-react';
 
 const AuthForm = () => {
   const { login, register } = useAuth();
@@ -88,10 +88,10 @@ const AuthForm = () => {
         {/* Logo and Title */}
         <div className="text-center mb-8 animate-fade-in">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-2xl shadow-2xl mb-4 transform hover:scale-110 transition-transform duration-300">
-            <Dumbbell className="h-8 w-8 text-purple-600" />
+            <Mountain className="h-8 w-8 text-blue-600" />
           </div>
-          <h1 className="text-4xl font-bold text-white mb-2">CoachSync</h1>
-          <p className="text-blue-100 text-lg">Your personal training management platform</p>
+          <h1 className="text-4xl font-bold text-white mb-2">AthleteHub</h1>
+          <p className="text-blue-100 text-lg">Peak Performance Training Platform</p>
         </div>
 
         {/* Main Card */}
@@ -395,7 +395,7 @@ const AuthForm = () => {
 
         {/* Footer */}
         <p className="text-center text-blue-100 text-sm mt-6">
-          © 2025 CoachSync. All rights reserved.
+          © 2025 AthleteHub. All rights reserved.
         </p>
       </div>
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Search, Plus, Edit, Trash2, CreditCard, LogOut, Mail, Phone, User, Dumbbell, Calendar, Clock, ChevronRight } from 'lucide-react';
+import { Users, Search, Plus, Edit, Trash2, CreditCard, LogOut, Mail, Phone, User, Mountain, Calendar, Clock, ChevronRight } from 'lucide-react';
 import { coachAPI } from '../../services/api.jsx';
 import InvitationLinkModal from '../Modals/InvitationLinkModal';
 
@@ -187,10 +187,10 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-3">
               <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-2 rounded-lg">
-                <Dumbbell className="h-6 w-6 text-white" />
+                <Mountain className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">CoachSync</h1>
+                <h1 className="text-2xl font-bold text-gray-900">AthleteHub</h1>
                 <p className="text-sm text-gray-600">Welcome back, {user.first_name}!</p>
               </div>
             </div>
