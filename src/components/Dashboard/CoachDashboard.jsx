@@ -188,7 +188,7 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-3">
               <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-2 rounded-lg">
-                <AthleteHubLogo className="h-6 w-6" color="white" />
+                <AthleteHubLogo className="h-6 w-auto" color="white" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">AthleteHub</h1>
@@ -403,21 +403,21 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
             onClick={() => setShowAddModal(true)}
             className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105"
           >
-            <Plus className="h-5 w-5" />
+            <Plus className="h-5 w-auto" />
             <span>Add Customer</span>
           </button>
           <button
             onClick={() => onNavigate && onNavigate('training-plans')}
             className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105"
           >
-            <AthleteHubLogo className="h-5 w-5" color="currentColor" />
+            <AthleteHubLogo className="h-5 w-auto" color="currentColor" />
             <span>Training Plans</span>
           </button>
           <button
             onClick={() => onNavigate && onNavigate('calendar')}
             className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-pink-600 to-pink-700 hover:from-pink-700 hover:to-pink-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105"
           >
-            <AthleteHubLogo className="h-5 w-5" color="currentColor" />
+            <AthleteHubLogo className="h-5 w-auto" color="currentColor" />
             <span>View Calendar</span>
           </button>
         </div>
@@ -439,7 +439,7 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
                 onClick={() => setShowAddModal(true)}
                 className="inline-flex items-center space-x-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
               >
-                <Plus className="h-5 w-5" />
+                <Plus className="h-5 w-auto" />
                 <span>Add Your First Customer</span>
               </button>
             )}

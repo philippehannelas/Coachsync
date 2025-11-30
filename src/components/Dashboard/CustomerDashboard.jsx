@@ -117,7 +117,7 @@ function CustomerDashboard({ userProfile, onLogout, onNavigate }) {
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-3">
               <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-2 rounded-lg">
-                <AthleteHubLogo className="h-6 w-6" color="white" />
+                <AthleteHubLogo className="h-6 w-auto" color="white" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">AthleteHub</h1>
