@@ -290,8 +290,8 @@ const AvailabilityManager = ({ onClose, onSave }) => {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-4 sm:p-8 max-w-4xl w-full mx-2 sm:mx-4 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-0 overflow-hidden">
+      <div className="bg-white rounded-lg p-4 sm:p-8 w-[calc(100vw-16px)] sm:max-w-4xl max-h-[90vh] overflow-y-auto overflow-x-hidden">
         {/* Header */}
         <div className="flex justify-between items-start mb-4 sm:mb-6">
           <div>
@@ -381,16 +381,16 @@ const AvailabilityManager = ({ onClose, onSave }) => {
             </div>
 
             {/* Weekly Schedule */}
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {DAYS.map(day => (
-                <div key={day.index} className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex justify-between items-center mb-3">
-                    <h3 className="text-lg font-semibold text-gray-800">{day.name}</h3>
+                <div key={day.index} className="border border-gray-200 rounded-lg p-3 sm:p-4">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-800">{day.name}</h3>
                     <button
                       onClick={() => addTimeSlot(day.index)}
-                      className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                      className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs sm:text-sm whitespace-nowrap"
                     >
-                      <Plus className="w-4 h-4" />
+                      <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
                       Add Time Slot
                     </button>
                   </div>
@@ -398,25 +398,25 @@ const AvailabilityManager = ({ onClose, onSave }) => {
                   {availability[day.index] && availability[day.index].length > 0 ? (
                     <div className="space-y-2">
                       {availability[day.index].map((slot, index) => (
-                        <div key={index} className="flex items-center gap-3 bg-gray-50 p-3 rounded-lg">
-                          <div className="flex items-center gap-2 flex-1">
+                        <div key={index} className="flex items-center gap-2 bg-gray-50 p-2 sm:p-3 rounded-lg">
+                          <div className="flex items-center gap-1 sm:gap-2 flex-1 min-w-0">
                             <input
                               type="time"
                               value={slot.start_time}
                               onChange={(e) => updateTimeSlot(day.index, index, 'start_time', e.target.value)}
-                              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              className="px-2 py-1.5 sm:px-3 sm:py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-24 sm:w-auto"
                             />
-                            <span className="text-gray-600">to</span>
+                            <span className="text-gray-600 text-xs sm:text-base">to</span>
                             <input
                               type="time"
                               value={slot.end_time}
                               onChange={(e) => updateTimeSlot(day.index, index, 'end_time', e.target.value)}
-                              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              className="px-2 py-1.5 sm:px-3 sm:py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-24 sm:w-auto"
                             />
                           </div>
                           <button
                             onClick={() => removeTimeSlot(day.index, index)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            className="p-1.5 sm:p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
