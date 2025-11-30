@@ -220,33 +220,33 @@ function TrainingPlanBuilder({ plan, customers, onSave, onCancel }) {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
+          <div className="flex items-center justify-between gap-2">
+            <h1 className="text-lg sm:text-2xl font-bold text-gray-900 truncate">
               {plan ? 'Edit Training Plan' : 'Create Training Plan'}
             </h1>
-            <div className="flex gap-3">
+            <div className="flex gap-2 sm:gap-3 flex-shrink-0">
               <button
                 onClick={onCancel}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="px-3 sm:px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1 sm:gap-2"
               >
-                <X className="w-5 h-5 inline mr-2" />
-                Cancel
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="hidden sm:inline">Cancel</span>
               </button>
               <button
                 onClick={handleSavePlan}
                 disabled={saving || !planData.name}
-                className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 sm:px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 sm:gap-2"
               >
-                <Save className="w-5 h-5 inline mr-2" />
-                {saving ? 'Saving...' : 'Save Plan'}
+                <Save className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="text-sm sm:text-base">{saving ? 'Saving...' : 'Save Plan'}</span>
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Plan Details */}
           <div className="lg:col-span-1 space-y-6">
@@ -420,65 +420,65 @@ function TrainingPlanBuilder({ plan, customers, onSave, onCancel }) {
                 ) : (
                   dayExercises.map((exercise, index) => (
                     <div key={exercise.id} className="border border-gray-200 rounded-lg p-3 sm:p-4">
-                      <div className="flex items-start gap-3">
-                        <GripVertical className="w-5 h-5 text-gray-400 mt-2 flex-shrink-0" />
+                      <div className="flex items-start gap-2 sm:gap-3">
+                        <GripVertical className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 mt-2 flex-shrink-0" />
                         
-                        <div className="flex-1 space-y-3">
-                          <div className="flex gap-3">
+                        <div className="flex-1 min-w-0 space-y-3">
+                          <div className="flex gap-2">
                             <input
                               type="text"
                               value={exercise.name}
                               onChange={(e) => updateExercise(exercise.id, 'name', e.target.value)}
                               placeholder="Exercise name"
-                              className="flex-1 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                              className="flex-1 min-w-0 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                             />
                             <button
                               onClick={() => deleteExercise(exercise.id)}
-                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg flex-shrink-0"
                             >
-                              <Trash2 className="w-5 h-5" />
+                              <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
                             </button>
                           </div>
 
-                          <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                            <div>
+                          <div className="grid grid-cols-3 gap-1.5 sm:gap-3">
+                            <div className="min-w-0">
                               <label className="block text-xs text-gray-600 mb-1">Sets</label>
                               <input
                                 type="number"
                                 value={exercise.sets}
                                 onChange={(e) => updateExercise(exercise.id, 'sets', parseInt(e.target.value))}
-                                className="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm"
+                                className="w-full px-1.5 sm:px-3 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm"
                               />
                             </div>
-                            <div>
+                            <div className="min-w-0">
                               <label className="block text-xs text-gray-600 mb-1">Reps</label>
                               <input
                                 type="text"
                                 value={exercise.reps}
                                 onChange={(e) => updateExercise(exercise.id, 'reps', e.target.value)}
                                 placeholder="10-12"
-                                className="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm"
+                                className="w-full px-1.5 sm:px-3 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm"
                               />
                             </div>
-                            <div>
-                              <label className="block text-xs text-gray-600 mb-1">Rest (sec)</label>
+                            <div className="min-w-0">
+                              <label className="block text-xs text-gray-600 mb-1 truncate">Rest</label>
                               <input
                                 type="number"
                                 value={exercise.rest_seconds}
                                 onChange={(e) => updateExercise(exercise.id, 'rest_seconds', parseInt(e.target.value))}
-                                className="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm"
+                                className="w-full px-1.5 sm:px-3 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm"
                               />
                             </div>
                           </div>
 
-                          <div>
+                          <div className="min-w-0">
                             <label className="block text-xs text-gray-600 mb-1">Instructions</label>
                             <textarea
                               value={exercise.instructions}
                               onChange={(e) => updateExercise(exercise.id, 'instructions', e.target.value)}
                               placeholder="Form cues and technique notes..."
                               rows={2}
-                              className="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm"
+                              className="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm resize-none"
                             />
                           </div>
                         </div>
