@@ -319,11 +319,13 @@ const WeekCalendar = ({
                         handleSlotClick(date, time);
                       }
                     }}
-                    disabled={isPast || dateSpecificInfo.type === 'blocked'}
+                    disabled={!booking && (isPast || dateSpecificInfo.type === 'blocked')}
+                    style={booking && isPast ? { cursor: 'pointer', opacity: 0.7 } : {}}
                     className={`
                       min-h-[50px] sm:min-h-[60px] rounded text-xs sm:text-sm border-2 transition-all duration-200
-                      ${isPast ? 'bg-gray-50 border-gray-200 cursor-not-allowed opacity-50' : ''}
-                      ${dateSpecificInfo.type === 'blocked' ? 'bg-red-50 border-red-200 cursor-not-allowed' : ''}
+                      ${booking ? 'cursor-pointer' : ''}
+                      ${isPast && !booking ? 'bg-gray-50 border-gray-200 cursor-not-allowed opacity-50' : ''}
+                      ${dateSpecificInfo.type === 'blocked' && !booking ? 'bg-red-50 border-red-200 cursor-not-allowed' : ''}
                       ${booking && booking.event_type === 'customer_session' ? 'bg-blue-100 border-blue-400 hover:bg-blue-200' : ''}
                       ${booking && booking.event_type === 'personal_event' ? 'bg-purple-100 border-purple-400 hover:bg-purple-200' : ''}
                       ${available && !booking && !isPast && dateSpecificInfo.type !== 'blocked' ? 'bg-green-50 border-green-300 hover:bg-green-100 cursor-pointer' : ''}
