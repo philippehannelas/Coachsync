@@ -311,7 +311,14 @@ const WeekCalendar = ({
                 return (
                   <button
                     key={dayIndex}
-                    onClick={() => !isPast && handleSlotClick(date, time)}
+                    onClick={() => {
+                      if (booking) {
+                        setSelectedBooking(booking);
+                        setIsModalOpen(true);
+                      } else if (!isPast) {
+                        handleSlotClick(date, time);
+                      }
+                    }}
                     disabled={isPast || dateSpecificInfo.type === 'blocked'}
                     className={`
                       min-h-[50px] sm:min-h-[60px] rounded text-xs sm:text-sm border-2 transition-all duration-200
