@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Save, X, Plus, Trash2, GripVertical, Users, Calendar } from 'lucide-react';
+import { Save, X, Plus, Trash2, GripVertical, Users, Calendar, Dumbbell } from 'lucide-react';
+import ExercisePicker from './ExercisePicker';
 
 function TrainingPlanBuilder({ plan, customers, onSave, onCancel }) {
   const [planData, setPlanData] = useState({
@@ -14,6 +15,7 @@ function TrainingPlanBuilder({ plan, customers, onSave, onCancel }) {
   const [selectedDay, setSelectedDay] = useState(1);
   const [assignedCustomers, setAssignedCustomers] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [showExercisePicker, setShowExercisePicker] = useState(false);
 
   useEffect(() => {
     if (plan) {
@@ -156,6 +158,23 @@ function TrainingPlanBuilder({ plan, customers, onSave, onCancel }) {
       instructions: '',
       video_url: '',
       notes: '',
+      order: exercises.filter(e => e.day_number === selectedDay).length,
+      day_number: selectedDay
+    };
+    setExercises([...exercises, newExercise]);
+  };
+
+  const addExerciseFromLibrary = (exerciseData) => {
+    const newExercise = {
+      id: `new-${Date.now()}`,
+      name: exerciseData.name,
+      sets: exerciseData.sets || 3,
+      reps: exerciseData.reps || '10-12',
+      rest_seconds: exerciseData.rest_seconds || 60,
+      tempo: exerciseData.tempo || '',
+      instructions: exerciseData.instructions || '',
+      video_url: '',
+      notes: exerciseData.notes || '',
       order: exercises.filter(e => e.day_number === selectedDay).length,
       day_number: selectedDay
     };
@@ -346,13 +365,22 @@ function TrainingPlanBuilder({ plan, customers, onSave, onCancel }) {
                   <Calendar className="w-5 h-5" />
                   Workout Days
                 </h2>
-                <button
-                  onClick={addExercise}
-                  className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
-                  Add Exercise
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowExercisePicker(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    <Dumbbell className="w-4 h-4" />
+                    <span className="hidden sm:inline">From Library</span>
+                  </button>
+                  <button
+                    onClick={addExercise}
+                    className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span className="hidden sm:inline">Custom</span>
+                  </button>
+                </div>
               </div>
 
               {/* Day Selector */}
@@ -463,6 +491,13 @@ function TrainingPlanBuilder({ plan, customers, onSave, onCancel }) {
           </div>
         </div>
       </div>
+
+      {/* Exercise Picker Modal */}
+      <ExercisePicker
+        isOpen={showExercisePicker}
+        onClose={() => setShowExercisePicker(false)}
+        onSelectExercise={addExerciseFromLibrary}
+      />
     </div>
   );
 }
