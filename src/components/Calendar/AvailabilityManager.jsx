@@ -280,7 +280,7 @@ const AvailabilityManager = ({ onClose, onSave }) => {
   if (loading) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="bg-white rounded-lg p-4 sm:p-8 max-w-4xl w-full mx-2 sm:mx-4 max-h-[90vh] overflow-y-auto">
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
@@ -291,12 +291,12 @@ const AvailabilityManager = ({ onClose, onSave }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-lg p-4 sm:p-8 max-w-4xl w-full mx-2 sm:mx-4 max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-start mb-4 sm:mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-gray-800">Manage Availability</h2>
-            <p className="text-gray-600 mt-1">Set your schedule and special dates</p>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Manage Availability</h2>
+            <p className="text-sm sm:text-base text-gray-600 mt-1">Set your schedule and special dates</p>
           </div>
           <button
             onClick={onClose}
@@ -343,15 +343,15 @@ const AvailabilityManager = ({ onClose, onSave }) => {
         {activeTab === 'weekly' && (
           <div>
             {/* Session Duration Setting */}
-            <div className="mb-8 p-6 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="flex items-center gap-3 mb-3">
-                <Clock className="w-5 h-5 text-blue-600" />
-                <h3 className="text-lg font-semibold text-gray-800">Session Duration</h3>
+            <div className="mb-6 sm:mb-8 p-4 sm:p-6 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center gap-2 sm:gap-3 mb-3">
+                <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                <h3 className="text-base sm:text-lg font-semibold text-gray-800">Session Duration</h3>
               </div>
-              <p className="text-gray-600 mb-4">
+              <p className="text-sm sm:text-base text-gray-600 mb-4">
                 Set the default duration for each coaching session.
               </p>
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
                 <div className="flex items-center gap-2">
                   <input
                     type="number"
@@ -361,18 +361,18 @@ const AvailabilityManager = ({ onClose, onSave }) => {
                     value={sessionDuration}
                     onChange={handleSessionDurationChange}
                     onBlur={handleSessionDurationBlur}
-                    className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-20 sm:w-24 px-2 sm:px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
-                  <span className="text-gray-700 font-medium">minutes</span>
+                  <span className="text-sm sm:text-base text-gray-700 font-medium">minutes</span>
                 </div>
-                <div className="text-sm text-gray-500">(15-240 minutes)</div>
+                <div className="text-xs sm:text-sm text-gray-500">(15-240 min)</div>
               </div>
-              <div className="mt-3 flex gap-2">
-                {[30, 45, 60, 90, 120].map(duration => (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {[30, 45, 60, 90].map(duration => (
                   <button
                     key={duration}
                     onClick={() => setSessionDuration(duration)}
-                    className="px-3 py-1 text-sm bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+                    className="px-2 sm:px-3 py-1 text-xs sm:text-sm bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
                   >
                     {duration} min
                   </button>
