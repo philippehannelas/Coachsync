@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, X, Dumbbell, Filter } from 'lucide-react';
-import { getExerciseTemplates, getExerciseCategories } from '../../services/exerciseTemplateApi';
+import { Search, Plus, X, Dumbbell, Filter, Edit2, Trash2 } from 'lucide-react';
+import { getExerciseTemplates, getExerciseCategories, deleteExerciseTemplate } from '../../services/exerciseTemplateApi';
+import CustomExerciseForm from './CustomExerciseForm';
 
 const ExercisePicker = ({ isOpen, onClose, onSelectExercise }) => {
   const [exercises, setExercises] = useState([]);
@@ -15,6 +16,8 @@ const ExercisePicker = ({ isOpen, onClose, onSelectExercise }) => {
   });
   const [showFilters, setShowFilters] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState(null);
+  const [showCustomForm, setShowCustomForm] = useState(false);
+  const [editingExercise, setEditingExercise] = useState(null);
 
   // Fetch categories on mount
   useEffect(() => {
@@ -102,6 +105,39 @@ const ExercisePicker = ({ isOpen, onClose, onSelectExercise }) => {
     setSearchTerm('');
   };
 
+  const handleCreateCustomExercise = () => {
+    setEditingExercise(null);
+    setShowCustomForm(true);
+  };
+
+  const handleEditExercise = (exercise, e) => {
+    e.stopPropagation();
+    setEditingExercise(exercise);
+    setShowCustomForm(true);
+  };
+
+  const handleDeleteExercise = async (exercise, e) => {
+    e.stopPropagation();
+    if (!window.confirm(`Are you sure you want to delete "${exercise.name}"?`)) {
+      return;
+    }
+    try {
+      await deleteExerciseTemplate(exercise.id);
+      // Refresh exercise list
+      fetchExercises();
+    } catch (error) {
+      console.error('Error deleting exercise:', error);
+      alert('Failed to delete exercise. Please try again.');
+    }
+  };
+
+  const handleSaveCustomExercise = () => {
+    // Refresh exercise list after creating/updating
+    fetchExercises();
+    setShowCustomForm(false);
+    setEditingExercise(null);
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -113,12 +149,22 @@ const ExercisePicker = ({ isOpen, onClose, onSelectExercise }) => {
             <Dumbbell className="w-6 h-6 text-blue-600" />
             <h2 className="text-xl sm:text-2xl font-bold">Exercise Library</h2>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleCreateCustomExercise}
+              className="px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2 text-sm sm:text-base"
+            >
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">Create Custom</span>
+              <span className="sm:hidden">New</span>
+            </button>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Search and Filters */}
@@ -216,10 +262,35 @@ const ExercisePicker = ({ isOpen, onClose, onSelectExercise }) => {
                         }`}
                       >
                         <div className="flex items-start justify-between mb-2">
-                          <h4 className="font-medium text-gray-900">{exercise.name}</h4>
-                          <span className="text-xs px-2 py-1 bg-gray-100 rounded text-gray-600">
-                            {exercise.category}
-                          </span>
+                          <div className="flex-1">
+                            <h4 className="font-medium text-gray-900">{exercise.name}</h4>
+                            {exercise.is_custom && (
+                              <span className="text-xs text-green-600 font-medium">Custom Exercise</span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs px-2 py-1 bg-gray-100 rounded text-gray-600">
+                              {exercise.category}
+                            </span>
+                            {exercise.is_custom && (
+                              <>
+                                <button
+                                  onClick={(e) => handleEditExercise(exercise, e)}
+                                  className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                  title="Edit exercise"
+                                >
+                                  <Edit2 className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={(e) => handleDeleteExercise(exercise, e)}
+                                  className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
+                                  title="Delete exercise"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </>
+                            )}
+                          </div>
                         </div>
                         
                         <div className="text-sm text-gray-600 space-y-1">
@@ -287,6 +358,17 @@ const ExercisePicker = ({ isOpen, onClose, onSelectExercise }) => {
           </div>
         </div>
       </div>
+
+      {/* Custom Exercise Form Modal */}
+      <CustomExerciseForm
+        isOpen={showCustomForm}
+        onClose={() => {
+          setShowCustomForm(false);
+          setEditingExercise(null);
+        }}
+        onSave={handleSaveCustomExercise}
+        editExercise={editingExercise}
+      />
     </div>
   );
 };
