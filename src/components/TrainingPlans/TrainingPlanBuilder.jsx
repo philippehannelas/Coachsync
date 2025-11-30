@@ -356,7 +356,7 @@ function TrainingPlanBuilder({ plan, customers, onSave, onCancel }) {
               </div>
 
               {/* Day Selector */}
-              <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+              <div className="flex gap-2 mb-6 overflow-x-auto pb-2 -mx-4 sm:mx-0 px-4 sm:px-0">
                 {[1, 2, 3, 4, 5, 6, 7].map(day => (
                   <button
                     key={day}
@@ -391,7 +391,7 @@ function TrainingPlanBuilder({ plan, customers, onSave, onCancel }) {
                   </div>
                 ) : (
                   dayExercises.map((exercise, index) => (
-                    <div key={exercise.id} className="border border-gray-200 rounded-lg p-4">
+                    <div key={exercise.id} className="border border-gray-200 rounded-lg p-3 sm:p-4">
                       <div className="flex items-start gap-3">
                         <GripVertical className="w-5 h-5 text-gray-400 mt-2 flex-shrink-0" />
                         
@@ -402,7 +402,7 @@ function TrainingPlanBuilder({ plan, customers, onSave, onCancel }) {
                               value={exercise.name}
                               onChange={(e) => updateExercise(exercise.id, 'name', e.target.value)}
                               placeholder="Exercise name"
-                              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                              className="flex-1 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-sm sm:text-base focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                             />
                             <button
                               onClick={() => deleteExercise(exercise.id)}
@@ -412,14 +412,14 @@ function TrainingPlanBuilder({ plan, customers, onSave, onCancel }) {
                             </button>
                           </div>
 
-                          <div className="grid grid-cols-3 gap-3">
+                          <div className="grid grid-cols-3 gap-2 sm:gap-3">
                             <div>
                               <label className="block text-xs text-gray-600 mb-1">Sets</label>
                               <input
                                 type="number"
                                 value={exercise.sets}
                                 onChange={(e) => updateExercise(exercise.id, 'sets', parseInt(e.target.value))}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                className="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm"
                               />
                             </div>
                             <div>
@@ -429,7 +429,7 @@ function TrainingPlanBuilder({ plan, customers, onSave, onCancel }) {
                                 value={exercise.reps}
                                 onChange={(e) => updateExercise(exercise.id, 'reps', e.target.value)}
                                 placeholder="10-12"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                className="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm"
                               />
                             </div>
                             <div>
@@ -438,7 +438,7 @@ function TrainingPlanBuilder({ plan, customers, onSave, onCancel }) {
                                 type="number"
                                 value={exercise.rest_seconds}
                                 onChange={(e) => updateExercise(exercise.id, 'rest_seconds', parseInt(e.target.value))}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                className="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm"
                               />
                             </div>
                           </div>
@@ -450,7 +450,7 @@ function TrainingPlanBuilder({ plan, customers, onSave, onCancel }) {
                               onChange={(e) => updateExercise(exercise.id, 'instructions', e.target.value)}
                               placeholder="Form cues and technique notes..."
                               rows={2}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                              className="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm"
                             />
                           </div>
                         </div>

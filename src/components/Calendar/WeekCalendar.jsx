@@ -206,20 +206,20 @@ const WeekCalendar = ({
   const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6">
+    <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-4">
         <div className="flex items-center gap-3">
           <Calendar className="w-6 h-6 text-purple-600" />
-          <h2 className="text-2xl font-bold text-gray-800">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
             {currentWeek[0].toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
           </h2>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <button
-            onClick={goToPreviousWeek}
-            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+          >
+            ← <span className="hidden sm:inline">Previous</span>
           >
             ← Previous
           </button>
@@ -231,19 +231,19 @@ const WeekCalendar = ({
           </button>
           <button
             onClick={goToNextWeek}
-            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
           >
+            <span className="hidden sm:inline">Next</span> →
             Next →
           </button>
         </div>
       </div>
 
       {/* Calendar Grid */}
-      <div className="overflow-x-auto">
-        <div className="min-w-[800px]">
+      <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+        <div className="min-w-full">
           {/* Day Headers */}
-          <div className="grid grid-cols-8 gap-2 mb-2">
-            <div className="text-center font-semibold text-gray-600 py-2">Time</div>
+          <div className="grid grid-cols-8 gap-1 sm:gap-2 mb-2">
+            <div className="text-center font-semibold text-gray-600 py-2 text-xs sm:text-sm">Time</div>
             {currentWeek.map((date, index) => {
               const dateSpecificInfo = getDateSpecificAvailability(date);
               const isToday = date.toDateString() === new Date().toDateString();
@@ -261,8 +261,8 @@ const WeekCalendar = ({
                       : 'bg-gray-50 text-gray-700'
                   }`}
                 >
-                  <div className="text-sm font-medium">{weekDays[index]}</div>
-                  <div className="text-lg">{date.getDate()}</div>
+                  <div className="text-xs sm:text-sm font-medium">{weekDays[index]}</div>
+                  <div className="text-sm sm:text-lg">{date.getDate()}</div>
                   {dateSpecificInfo.type === 'blocked' && (
                     <div className="absolute top-1 right-1">
                       <Ban className="w-4 h-4 text-red-600" />
@@ -285,8 +285,8 @@ const WeekCalendar = ({
 
           {/* Time Slots */}
           {timeSlots.map((time) => (
-            <div key={time} className="grid grid-cols-8 gap-2 mb-2">
-              <div className="flex items-center justify-center text-sm font-medium text-gray-600">
+            <div key={time} className="grid grid-cols-8 gap-1 sm:gap-2 mb-2">
+              <div className="flex items-center justify-center text-xs sm:text-sm font-medium text-gray-600">
                 {time}
               </div>
               
@@ -302,7 +302,7 @@ const WeekCalendar = ({
                     onClick={() => !isPast && handleSlotClick(date, time)}
                     disabled={isPast || dateSpecificInfo.type === 'blocked'}
                     className={`
-                      min-h-[60px] rounded-lg border-2 transition-all duration-200
+                      min-h-[50px] sm:min-h-[60px] rounded text-xs sm:text-sm border-2 transition-all duration-200
                       ${isPast ? 'bg-gray-50 border-gray-200 cursor-not-allowed opacity-50' : ''}
                       ${dateSpecificInfo.type === 'blocked' ? 'bg-red-50 border-red-200 cursor-not-allowed' : ''}
                       ${booking && booking.event_type === 'customer_session' ? 'bg-blue-100 border-blue-400 hover:bg-blue-200' : ''}
