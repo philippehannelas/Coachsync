@@ -317,12 +317,12 @@ const WeekCalendar = ({
                       </div>
                     )}
                     {booking && booking.event_type === 'customer_session' && (
-                      <div className="text-xs font-medium text-blue-700 p-1">
+                      <div className="text-xs font-medium text-blue-700 p-1 truncate">
                         {booking.customer?.name || 'Booked'}
                       </div>
                     )}
                     {booking && booking.event_type === 'personal_event' && (
-                      <div className="text-xs font-medium text-purple-700 p-1">
+                      <div className="text-xs font-medium text-purple-700 p-1 truncate">
                         {booking.event_title || 'Personal'}
                       </div>
                     )}
