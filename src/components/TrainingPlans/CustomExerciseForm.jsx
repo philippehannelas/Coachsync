@@ -14,6 +14,7 @@ const CustomExerciseForm = ({ isOpen, onClose, onSave, editExercise = null }) =>
     default_tempo: '',
     instructions: '',
     tips: '',
+    video_url: '',
     difficulty: 'intermediate'
   });
 
@@ -53,6 +54,7 @@ const CustomExerciseForm = ({ isOpen, onClose, onSave, editExercise = null }) =>
         default_tempo: editExercise.default_tempo || '',
         instructions: editExercise.instructions || '',
         tips: editExercise.tips || '',
+        video_url: editExercise.video_url || '',
         difficulty: editExercise.difficulty || 'intermediate'
       });
     } else {
@@ -68,6 +70,7 @@ const CustomExerciseForm = ({ isOpen, onClose, onSave, editExercise = null }) =>
         default_tempo: '',
         instructions: '',
         tips: '',
+        video_url: '',
         difficulty: 'intermediate'
       });
     }
@@ -311,6 +314,23 @@ const CustomExerciseForm = ({ isOpen, onClose, onSave, editExercise = null }) =>
                 rows="3"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
+            </div>
+
+            {/* Video URL */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Video URL (Optional)
+              </label>
+              <input
+                type="url"
+                value={formData.video_url}
+                onChange={(e) => handleChange('video_url', e.target.value)}
+                placeholder="https://example.com/exercise-video.mp4"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Add a direct link to an MP4 video file (10-15 seconds recommended)
+              </p>
             </div>
           </div>
         </form>

@@ -1,0 +1,18 @@
+# Requirements for exercise video processing tools
+
+# Video processing
+moviepy>=1.0.3
+imageio>=2.31.1
+imageio-ffmpeg>=0.4.9
+
+# API requests
+requests>=2.31.0
+
+# Environment variables
+python-dotenv>=1.0.0
+
+# Optional: For AWS S3 upload
+# boto3>=1.28.0
+
+# Optional: For progress bars
+# tqdm>=4.66.0

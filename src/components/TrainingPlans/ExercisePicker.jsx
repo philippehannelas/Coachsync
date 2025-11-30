@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, Plus, X, Dumbbell, Filter, Edit2, Trash2 } from 'lucide-react';
 import { getExerciseTemplates, getExerciseCategories, deleteExerciseTemplate } from '../../services/exerciseTemplateApi';
 import CustomExerciseForm from './CustomExerciseForm';
+import ExerciseVideoPlayer from './ExerciseVideoPlayer';
 
 const ExercisePicker = ({ isOpen, onClose, onSelectExercise }) => {
   const [exercises, setExercises] = useState([]);
@@ -261,6 +262,19 @@ const ExercisePicker = ({ isOpen, onClose, onSelectExercise }) => {
                             : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
                         }`}
                       >
+                        {/* Video Player */}
+                        {exercise.video_url && (
+                          <div className="mb-3">
+                            <ExerciseVideoPlayer
+                              videoUrl={exercise.video_url}
+                              exerciseName={exercise.name}
+                              autoPlay={false}
+                              showControls={true}
+                              className="h-48 w-full"
+                            />
+                          </div>
+                        )}
+
                         <div className="flex items-start justify-between mb-2">
                           <div className="flex-1">
                             <h4 className="font-medium text-gray-900">{exercise.name}</h4>
