@@ -95,6 +95,34 @@ const CoachCalendarPage = () => {
     setShowNotesModal(true);
   };
 
+  const handleCancelBooking = async (bookingId) => {
+    try {
+      await bookingApi.updateBooking(bookingId, { status: 'cancelled' });
+      setSuccess('Booking cancelled successfully');
+      await loadData(); // Refresh bookings
+    } catch (error) {
+      setError('Failed to cancel booking: ' + error.message);
+      throw error;
+    }
+  };
+
+  const handleCompleteBooking = async (bookingId) => {
+    try {
+      await bookingApi.updateBooking(bookingId, { status: 'completed' });
+      setSuccess('Booking marked as complete');
+      await loadData(); // Refresh bookings
+    } catch (error) {
+      setError('Failed to complete booking: ' + error.message);
+      throw error;
+    }
+  };
+
+  const handleEditBooking = (booking) => {
+    setSelectedBooking(booking);
+    setSelectedSlot(null);
+    setShowBookingModal(true);
+  };
+
   const handleNotesSaved = (updatedBooking) => {
     setSuccess('Session notes saved successfully!');
     setShowNotesModal(false);
@@ -245,6 +273,9 @@ const CoachCalendarPage = () => {
                 bookings={bookings}
                 onSlotClick={handleSlotClick}
                 onBookingClick={handleBookingClick}
+                onCancelBooking={handleCancelBooking}
+                onCompleteBooking={handleCompleteBooking}
+                onEditBooking={handleEditBooking}
               />
             )}
           </div>

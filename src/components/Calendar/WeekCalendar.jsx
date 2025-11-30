@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, Plus, X, Check, Ban } from 'lucide-react';
+import BookingDetailModal from './BookingDetailModal';
 
 /**
  * WeekCalendar Component
@@ -13,9 +14,14 @@ const WeekCalendar = ({
   bookings = [],
   onSlotClick,
   onBookingClick,
+  onCancelBooking,
+  onCompleteBooking,
+  onEditBooking,
   selectedDate = new Date()
 }) => {
   const [currentWeek, setCurrentWeek] = useState(getWeekDates(selectedDate));
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const timeSlots = generateDynamicTimeSlots(availability, dateSpecific, currentWeek);
 
   function getWeekDates(date) {
@@ -180,8 +186,14 @@ const WeekCalendar = ({
   function handleSlotClick(date, time) {
     const booking = getBookingForSlot(date, time);
     
-    if (booking && onBookingClick) {
-      onBookingClick(booking);
+    if (booking) {
+      // Open modal with booking details
+      setSelectedBooking(booking);
+      setIsModalOpen(true);
+      // Also call the callback if provided
+      if (onBookingClick) {
+        onBookingClick(booking);
+      }
     } else if (isSlotAvailable(date, time) && onSlotClick) {
       onSlotClick(date, time);
     }
@@ -366,6 +378,17 @@ const WeekCalendar = ({
           <span className="text-sm text-gray-600">Custom Hours</span>
         </div>
       </div>
+
+      {/* Booking Detail Modal */}
+      <BookingDetailModal
+        booking={selectedBooking}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onEdit={onEditBooking}
+        onCancel={onCancelBooking}
+        onComplete={onCompleteBooking}
+        mode={mode}
+      />
     </div>
   );
 };

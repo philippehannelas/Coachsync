@@ -96,7 +96,7 @@ const CustomerCalendarPage = ({ userProfile }) => {
     try {
       setError('');
       const response = await bookingApi.cancelBookingAsCustomer(bookingId);
-      setSuccess('Booking cancelled successfully!');
+      setSuccess('Session cancelled successfully!');
       setCredits(response.remaining_credits);
       setShowBookingModal(false);
       await loadData();
@@ -180,6 +180,7 @@ const CustomerCalendarPage = ({ userProfile }) => {
                 bookings={bookings}
                 onSlotClick={handleSlotClick}
                 onBookingClick={handleBookingClick}
+                onCancelBooking={handleCancelBooking}
               />
             )}
           </div>
