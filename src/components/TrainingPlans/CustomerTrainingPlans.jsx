@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, TrendingUp, CheckCircle, Circle, Play, ChevronRight } from 'lucide-react';
-import AthleteHubLogo from './AthleteHubLogo';
+import AthleteHubLogo from '../AthleteHubLogo';
 import WorkoutLogger from './WorkoutLogger';
 
 function CustomerTrainingPlans({ userProfile }) {

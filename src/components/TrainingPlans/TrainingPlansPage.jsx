@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Users, Calendar, ChevronRight, Search } from 'lucide-react';
-import AthleteHubLogo from './AthleteHubLogo';
+import AthleteHubLogo from '../AthleteHubLogo';
 import TrainingPlanBuilder from './TrainingPlanBuilder';
 
 function TrainingPlansPage({ userProfile }) {
