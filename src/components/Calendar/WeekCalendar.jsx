@@ -218,22 +218,22 @@ const WeekCalendar = ({
         
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <button
+            onClick={goToPreviousWeek}
+            className="px-2 sm:px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors text-sm"
           >
             ← <span className="hidden sm:inline">Previous</span>
-          >
-            ← Previous
           </button>
           <button
             onClick={goToToday}
-            className="px-4 py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg transition-colors font-medium"
+            className="px-2 sm:px-4 py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg transition-colors font-medium text-sm flex-1 sm:flex-none"
           >
             Today
           </button>
           <button
             onClick={goToNextWeek}
+            className="px-2 sm:px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors text-sm"
           >
             <span className="hidden sm:inline">Next</span> →
-            Next →
           </button>
         </div>
       </div>
