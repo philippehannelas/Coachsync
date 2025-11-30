@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Search, Plus, Edit, Trash2, CreditCard, LogOut, Mail, Phone, User, Mountain, Calendar, Clock, ChevronRight } from 'lucide-react';
+import { Users, Search, Plus, Edit, Trash2, CreditCard, LogOut, Mail, Phone, User, Calendar, Clock, ChevronRight } from 'lucide-react';
+import AthleteHubLogo from '../AthleteHubLogo';
 import { coachAPI } from '../../services/api.jsx';
 import InvitationLinkModal from '../Modals/InvitationLinkModal';
 
@@ -187,7 +188,7 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-3">
               <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-2 rounded-lg">
-                <Mountain className="h-6 w-6 text-white" />
+                <AthleteHubLogo className="h-6 w-6" color="white" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">AthleteHub</h1>
@@ -409,14 +410,14 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
             onClick={() => onNavigate && onNavigate('training-plans')}
             className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105"
           >
-            <Mountain className="h-5 w-5" />
+            <Dumbbell className="h-5 w-5" />
             <span>Training Plans</span>
           </button>
           <button
             onClick={() => onNavigate && onNavigate('calendar')}
             className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-pink-600 to-pink-700 hover:from-pink-700 hover:to-pink-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105"
           >
-            <Calendar className="h-5 w-5" />
+            <AthleteHubLogo className="h-5 w-5" color="currentColor" />
             <span>View Calendar</span>
           </button>
         </div>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth.jsx';
-import { Mail, Phone, Lock, User, UserPlus, LogIn, Mountain } from 'lucide-react';
+import { Mail, Phone, Lock, User, UserPlus, LogIn } from 'lucide-react';
+import AthleteHubLogo from './AthleteHubLogo';
 
 const AuthForm = () => {
   const { login, register } = useAuth();
@@ -87,8 +88,8 @@ const AuthForm = () => {
       <div className="w-full max-w-md relative z-10">
         {/* Logo and Title */}
         <div className="text-center mb-8 animate-fade-in">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-2xl shadow-2xl mb-4 transform hover:scale-110 transition-transform duration-300">
-            <Mountain className="h-8 w-8 text-blue-600" />
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-2xl shadow-2xl mb-4 transform hover:scale-110 transition-transform duration-300">
+            <AthleteHubLogo className="h-16 w-16" color="#0066FF" />
           </div>
           <h1 className="text-4xl font-bold text-white mb-2">AthleteHub</h1>
           <p className="text-blue-100 text-lg">Peak Performance Training Platform</p>

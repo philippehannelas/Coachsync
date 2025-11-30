@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Phone, CreditCard, LogOut, Calendar, Mountain, TrendingUp, FileText, Star } from 'lucide-react';
+import { User, Mail, Phone, CreditCard, LogOut, Calendar, TrendingUp, FileText, Star } from 'lucide-react';
+import AthleteHubLogo from '../AthleteHubLogo';
 import SessionHistoryView from '../SessionNotes/SessionHistoryView'; // NEW IMPORT
 
 function CustomerDashboard({ userProfile, onLogout, onNavigate }) {
@@ -116,7 +117,7 @@ function CustomerDashboard({ userProfile, onLogout, onNavigate }) {
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-3">
               <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-2 rounded-lg">
-                <Mountain className="h-6 w-6 text-white" />
+                <AthleteHubLogo className="h-6 w-6" color="white" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">AthleteHub</h1>
@@ -149,7 +150,7 @@ function CustomerDashboard({ userProfile, onLogout, onNavigate }) {
             </div>
             <div className="hidden md:block">
               <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-6">
-                <Mountain className="h-16 w-16 text-white" />
+                <AthleteHubLogo className="h-16 w-16" color="white" />
               </div>
             </div>
           </div>
@@ -248,7 +249,7 @@ function CustomerDashboard({ userProfile, onLogout, onNavigate }) {
                     <p className="text-4xl font-bold text-gray-900 mt-1">{upcomingBookings.length}</p>
                   </div>
                   <div className="bg-blue-100 p-3 rounded-lg">
-                    <Calendar className="h-8 w-8 text-blue-600" />
+                    <AthleteHubLogo className="h-8 w-8" color="#0066FF" />
                   </div>
                 </div>
                 <p className="text-gray-500 text-xs mt-3">
@@ -376,7 +377,7 @@ function CustomerDashboard({ userProfile, onLogout, onNavigate }) {
               >
                 <div className="flex items-center space-x-4">
                   <div className="bg-purple-100 p-4 rounded-lg group-hover:bg-purple-200 transition-colors">
-                    <Mountain className="h-8 w-8 text-blue-600" />
+                    <Dumbbell className="h-8 w-8 text-purple-600" />
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-gray-900 mb-1">My Workouts</h3>
