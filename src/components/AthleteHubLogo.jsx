@@ -3,62 +3,66 @@ import React from 'react';
 const AthleteHubLogo = ({ className = "h-8 w-8", color = "currentColor" }) => {
   return (
     <svg 
-      viewBox="0 0 120 120" 
+      viewBox="0 0 100 100" 
       className={className}
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
     >
-      {/* Background Mountain Peaks */}
+      {/* Main Mountain Peak - Bold and Clear */}
       <path 
-        d="M 20 85 L 40 55 L 60 75 L 80 45 L 100 75 L 120 85 L 120 120 L 0 120 L 0 85 Z" 
-        fill={color}
-        opacity="0.15"
-      />
-      
-      {/* Middle Mountain Peak */}
-      <path 
-        d="M 30 90 L 60 40 L 90 90 Z" 
-        fill={color}
-        opacity="0.35"
-      />
-      
-      {/* Main Mountain Peak (Tallest) */}
-      <path 
-        d="M 40 95 L 60 25 L 80 95 Z" 
-        fill={color}
-        opacity="0.6"
-      />
-      
-      {/* Peak Highlight */}
-      <path 
-        d="M 55 25 L 60 15 L 65 25 Z" 
+        d="M 50 15 L 20 75 L 80 75 Z" 
         fill={color}
         opacity="0.9"
       />
       
-      {/* Athlete Silhouette at Peak - Victory Pose */}
-      <g transform="translate(60, 20)" fill="white">
+      {/* Left Secondary Peak */}
+      <path 
+        d="M 30 75 L 10 75 L 20 55 Z" 
+        fill={color}
+        opacity="0.6"
+      />
+      
+      {/* Right Secondary Peak */}
+      <path 
+        d="M 70 75 L 90 75 L 80 55 Z" 
+        fill={color}
+        opacity="0.6"
+      />
+      
+      {/* Snow Cap/Highlight on Main Peak */}
+      <path 
+        d="M 50 15 L 42 30 L 58 30 Z" 
+        fill="white"
+        opacity="0.8"
+      />
+      
+      {/* Athlete Silhouette - Victory Pose at Summit */}
+      <g transform="translate(50, 20)" fill="white" opacity="0.95">
         {/* Head */}
-        <circle cx="0" cy="0" r="3.5" />
+        <circle cx="0" cy="0" r="2.5" />
         
         {/* Body */}
-        <rect x="-1.5" y="3" width="3" height="8" rx="1.5" />
+        <rect x="-1" y="2.5" width="2" height="6" rx="1" />
         
-        {/* Arms - Raised in Victory */}
-        <path d="M -1.5 5 L -6 0 L -5 -1 L -1 4 Z" />
-        <path d="M 1.5 5 L 6 0 L 5 -1 L 1 4 Z" />
+        {/* Left Arm - Raised */}
+        <path d="M -1 4 L -4.5 0.5 L -3.5 -0.5 L -0.5 3 Z" />
         
-        {/* Legs */}
-        <path d="M -1 11 L -3 17 L -1.5 17.5 L 0 12 Z" />
-        <path d="M 1 11 L 3 17 L 1.5 17.5 L 0 12 Z" />
+        {/* Right Arm - Raised */}
+        <path d="M 1 4 L 4.5 0.5 L 3.5 -0.5 L 0.5 3 Z" />
+        
+        {/* Left Leg */}
+        <path d="M -0.8 8.5 L -2 13 L -0.8 13.2 L 0 9 Z" />
+        
+        {/* Right Leg */}
+        <path d="M 0.8 8.5 L 2 13 L 0.8 13.2 L 0 9 Z" />
       </g>
       
-      {/* Base/Ground */}
-      <rect x="0" y="95" width="120" height="25" fill={color} opacity="0.2" />
+      {/* Base/Ground Line */}
+      <rect x="0" y="75" width="100" height="5" fill={color} opacity="0.3" />
       
       {/* Accent Lines for Depth */}
-      <line x1="60" y1="25" x2="40" y2="95" stroke={color} strokeWidth="0.5" opacity="0.3" />
-      <line x1="60" y1="25" x2="80" y2="95" stroke={color} strokeWidth="0.5" opacity="0.3" />
+      <line x1="50" y1="15" x2="35" y2="50" stroke="white" strokeWidth="0.5" opacity="0.4" />
+      <line x1="50" y1="15" x2="65" y2="50" stroke="white" strokeWidth="0.5" opacity="0.4" />
     </svg>
   );
 };

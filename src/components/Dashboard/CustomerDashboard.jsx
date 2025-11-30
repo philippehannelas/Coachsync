@@ -377,7 +377,7 @@ function CustomerDashboard({ userProfile, onLogout, onNavigate }) {
               >
                 <div className="flex items-center space-x-4">
                   <div className="bg-purple-100 p-4 rounded-lg group-hover:bg-purple-200 transition-colors">
-                    <Dumbbell className="h-8 w-8 text-purple-600" />
+                    <AthleteHubLogo className="h-8 w-8" color="#0066FF" />
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-gray-900 mb-1">My Workouts</h3>
