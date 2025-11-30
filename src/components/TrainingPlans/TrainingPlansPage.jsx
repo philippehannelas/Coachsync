@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Users, Dumbbell, Calendar, ChevronRight, Search } from 'lucide-react';
+import { Plus, Edit, Trash2, Users, Mountain, Calendar, ChevronRight, Search } from 'lucide-react';
 import TrainingPlanBuilder from './TrainingPlanBuilder';
 
 function TrainingPlansPage({ userProfile }) {
@@ -114,7 +114,7 @@ function TrainingPlansPage({ userProfile }) {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-                <Dumbbell className="w-8 h-8 text-purple-600" />
+                <Mountain className="w-8 h-8 text-blue-600" />
                 Training Plans
               </h1>
               <p className="text-gray-600 mt-1">Create and manage workout programs for your clients</p>
@@ -155,7 +155,7 @@ function TrainingPlansPage({ userProfile }) {
                 <p className="text-3xl font-bold text-gray-900 mt-1">{trainingPlans.length}</p>
               </div>
               <div className="bg-purple-100 p-3 rounded-lg">
-                <Dumbbell className="h-8 w-8 text-purple-600" />
+                <Mountain className="h-8 w-8 text-blue-600" />
               </div>
             </div>
           </div>
@@ -197,7 +197,7 @@ function TrainingPlansPage({ userProfile }) {
           </div>
         ) : filteredPlans.length === 0 ? (
           <div className="bg-white rounded-xl shadow-md p-12 text-center">
-            <Dumbbell className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <Mountain className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 mb-2">No Training Plans Yet</h3>
             <p className="text-gray-600 mb-6">
               {searchTerm ? 'No plans match your search.' : 'Create your first training plan to get started!'}

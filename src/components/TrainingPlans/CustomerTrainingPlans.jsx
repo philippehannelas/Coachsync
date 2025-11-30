@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Dumbbell, Calendar, TrendingUp, CheckCircle, Circle, Play, ChevronRight } from 'lucide-react';
+import { Mountain, Calendar, TrendingUp, CheckCircle, Circle, Play, ChevronRight } from 'lucide-react';
 import WorkoutLogger from './WorkoutLogger';
 
 function CustomerTrainingPlans({ userProfile }) {
@@ -107,7 +107,7 @@ function CustomerTrainingPlans({ userProfile }) {
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="bg-white rounded-xl shadow-md p-12 text-center">
-            <Dumbbell className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <Mountain className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-900 mb-2">No Training Plans Yet</h2>
             <p className="text-gray-600">
               Your coach hasn't assigned you a training plan yet. Check back soon!
@@ -124,7 +124,7 @@ function CustomerTrainingPlans({ userProfile }) {
       <div className="bg-gradient-to-r from-purple-600 to-purple-700 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <h1 className="text-3xl font-bold flex items-center gap-3">
-            <Dumbbell className="w-8 h-8" />
+            <Mountain className="w-8 h-8" />
             My Training Plans
           </h1>
           <p className="text-purple-100 mt-2">Track your workouts and progress</p>

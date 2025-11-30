@@ -149,7 +149,7 @@ function CustomerDashboard({ userProfile, onLogout, onNavigate }) {
             </div>
             <div className="hidden md:block">
               <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-6">
-                <Dumbbell className="h-16 w-16 text-white" />
+                <Mountain className="h-16 w-16 text-white" />
               </div>
             </div>
           </div>
@@ -376,7 +376,7 @@ function CustomerDashboard({ userProfile, onLogout, onNavigate }) {
               >
                 <div className="flex items-center space-x-4">
                   <div className="bg-purple-100 p-4 rounded-lg group-hover:bg-purple-200 transition-colors">
-                    <Dumbbell className="h-8 w-8 text-purple-600" />
+                    <Mountain className="h-8 w-8 text-blue-600" />
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-gray-900 mb-1">My Workouts</h3>

@@ -409,7 +409,7 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
             onClick={() => onNavigate && onNavigate('training-plans')}
             className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105"
           >
-            <Dumbbell className="h-5 w-5" />
+            <Mountain className="h-5 w-5" />
             <span>Training Plans</span>
           </button>
           <button
