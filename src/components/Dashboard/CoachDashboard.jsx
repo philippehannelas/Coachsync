@@ -20,6 +20,7 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteLink, setInviteLink] = useState('');
   const [inviteCustomerName, setInviteCustomerName] = useState('');
+  const [showCustomerList, setShowCustomerList] = useState(false);
 
   // Form states
   const [formData, setFormData] = useState({
@@ -353,9 +354,12 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
           <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500 transform hover:-translate-y-1 transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-600 text-sm font-medium">Total Credits</p>
+                <p className="text-gray-600 text-sm font-medium">Active Credits</p>
                 <p className="text-3xl font-bold text-gray-900 mt-1">
                   {customers.reduce((sum, c) => sum + (c.session_credits || 0), 0)}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                 </p>
               </div>
               <div className="bg-green-100 p-3 rounded-lg">
@@ -422,29 +426,87 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
           </button>
         </div>
 
-        {/* Customers Grid */}
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        {/* Customers Section - Collapsible */}
+        <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+          {/* Header */}
+          <div 
+            className="p-6 cursor-pointer hover:bg-gray-50 transition-colors border-b border-gray-200"
+            onClick={() => setShowCustomerList(!showCustomerList)}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-3 rounded-lg">
+                  <Users className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">Customer Management</h2>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {customers.length} {customers.length === 1 ? 'customer' : 'customers'} total
+                    {filteredCustomers.length !== customers.length && (
+                      <span className="text-blue-600 font-medium"> • {filteredCustomers.length} matching search</span>
+                    )}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-gray-500">
+                  {showCustomerList ? 'Click to hide' : 'Click to view all'}
+                </span>
+                <ChevronRight className={`h-5 w-5 text-gray-400 transition-transform duration-200 ${showCustomerList ? 'rotate-90' : ''}`} />
+              </div>
+            </div>
           </div>
-        ) : filteredCustomers.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-md p-12 text-center">
-            <Users className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">No customers found</h3>
-            <p className="text-gray-500 mb-6">
-              {searchTerm ? 'Try adjusting your search' : 'Get started by adding your first customer'}
-            </p>
-            {!searchTerm && (
-              <button
-                onClick={() => setShowAddModal(true)}
-                className="inline-flex items-center space-x-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
-              >
-                <Plus className="h-5 w-auto" />
-                <span>Add Your First Customer</span>
-              </button>
-            )}
-          </div>
-        ) : (
+
+          {/* Collapsible Content */}
+          {showCustomerList && (
+            <div className="p-6 bg-gray-50">
+              {/* Quick Stats */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+                  <p className="text-xs text-gray-600 font-medium mb-1">Active Customers</p>
+                  <p className="text-2xl font-bold text-blue-600">
+                    {customers.filter(c => (c.session_credits || 0) > 0).length}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">with credits</p>
+                </div>
+                <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+                  <p className="text-xs text-gray-600 font-medium mb-1">Inactive Customers</p>
+                  <p className="text-2xl font-bold text-gray-600">
+                    {customers.filter(c => (c.session_credits || 0) === 0).length}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">no credits</p>
+                </div>
+                <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+                  <p className="text-xs text-gray-600 font-medium mb-1">Average Credits</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {customers.length > 0 ? Math.round(customers.reduce((sum, c) => sum + (c.session_credits || 0), 0) / customers.length) : 0}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">per customer</p>
+                </div>
+              </div>
+
+              {loading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                </div>
+              ) : filteredCustomers.length === 0 ? (
+                <div className="bg-white rounded-xl shadow-sm p-12 text-center">
+                  <Users className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-700 mb-2">No customers found</h3>
+                  <p className="text-gray-500 mb-6">
+                    {searchTerm ? 'Try adjusting your search' : 'Get started by adding your first customer'}
+                  </p>
+                  {!searchTerm && (
+                    <button
+                      onClick={() => setShowAddModal(true)}
+                      className="inline-flex items-center space-x-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+                    >
+                      <Plus className="h-5 w-auto" />
+                      <span>Add Your First Customer</span>
+                    </button>
+                  )}
+                </div>
+              ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredCustomers.map((customer) => (
               <div
@@ -511,7 +573,10 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
               </div>
             ))}
           </div>
-        )}
+              )}
+            </div>
+          )}
+        </div>
       </main>
 
       {/* Add Customer Modal */}
