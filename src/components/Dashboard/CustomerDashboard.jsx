@@ -362,12 +362,10 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
           </button>
         </div>
 
-        {/* Session History Tab */}
-        {activeTab === 'sessions' && (
-          <div className="mt-8">
-            <SessionHistoryView userProfile={userProfile} />
-          </div>
-        )}
+        {/* Session History - Always visible */}
+        <div className="mt-8">
+          <SessionHistoryView userProfile={userProfile} />
+        </div>
       </main>
 
       {/* Bottom Navigation - Visible on all devices */}
