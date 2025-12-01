@@ -13,29 +13,10 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Safety check: if user is not loaded yet, show loading
-  if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  useEffect(() => {
-    if (user) {
-      fetchUserProfile();
-      fetchUpcomingBookings();
-    }
-  }, [user]);
-
   const fetchUserProfile = async () => {
     try {
       const token = localStorage.getItem('coachsync_token');
-      const response = await fetch('/api/customers/profile', {
+      const response = await fetch('/api/customer/profile', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -53,7 +34,7 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
   const fetchUpcomingBookings = async () => {
     try {
       const token = localStorage.getItem('coachsync_token');
-      const response = await fetch('/api/bookings/upcoming', {
+      const response = await fetch('/api/customer/bookings', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -66,6 +47,30 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
       console.error('Error fetching bookings:', error);
     }
   };
+
+  useEffect(() => {
+    if (user) {
+      setLoading(true);
+      Promise.all([
+        fetchUserProfile(),
+        fetchUpcomingBookings()
+      ]).finally(() => {
+        setLoading(false);
+      });
+    }
+  }, [user]);
+
+  // Safety check: if user is not loaded yet, show loading
+  if (!user || loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   const creditsStatus = credits > 5 ? 'good' : credits > 2 ? 'medium' : 'low';
 
