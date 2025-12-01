@@ -15,7 +15,7 @@ function StartWorkoutPage() {
   const fetchTrainingPlans = async () => {
     try {
       const token = localStorage.getItem('coachsync_token');
-      const response = await fetch('https://coachsync-pro.onrender.com/api/customer/training-plans', {
+      const response = await fetch('/api/customer/training-plans', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

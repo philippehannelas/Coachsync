@@ -41,7 +41,7 @@ function WorkoutViewer({ trainingPlanId, dayNumber, onComplete, onCancel }) {
   const loadWorkout = async () => {
     try {
       const response = await fetch(
-        `https://coachsync-pro.onrender.com/api/customer/workouts/${trainingPlanId}/day/${dayNumber}`,
+        `/api/customer/workouts/${trainingPlanId}/day/${dayNumber}`,
         {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('coachsync_token')}`,
@@ -140,7 +140,7 @@ function WorkoutViewer({ trainingPlanId, dayNumber, onComplete, onCancel }) {
 
     try {
       const response = await fetch(
-        'https://coachsync-pro.onrender.com/api/customer/workouts/complete',
+        '/api/customer/workouts/complete',
         {
           method: 'POST',
           headers: {
