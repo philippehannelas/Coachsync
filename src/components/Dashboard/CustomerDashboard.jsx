@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, CreditCard, FileText, User, Mail, Phone, Dumbbell, BarChart3, History, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AthleteHubLogo from '../AthleteHubLogo';
-import SessionHistoryView from './SessionHistoryView';
+import SessionHistoryView from '../SessionNotes/SessionHistoryView';
 import MobileBottomNav from '../Customer/MobileBottomNav';
 
 function CustomerDashboard({ user, onNavigate, onLogout }) {
