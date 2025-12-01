@@ -92,6 +92,7 @@ const ExercisePicker = ({ isOpen, onClose, onSelectExercise }) => {
         rest_seconds: selectedExercise.default_rest_seconds,
         tempo: selectedExercise.default_tempo,
         instructions: selectedExercise.instructions,
+        video_url: selectedExercise.video_url || '',
         notes: ''
       });
       setSelectedExercise(null);
