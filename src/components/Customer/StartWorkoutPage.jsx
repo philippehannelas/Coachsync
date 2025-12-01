@@ -85,8 +85,13 @@ function StartWorkoutPage() {
 
                 {/* Days List */}
                 <div className="divide-y divide-gray-100">
-                  {Array.from({ length: plan.days_per_week }, (_, i) => i + 1).map((dayNumber) => {
-                    const exerciseCount = plan.exercises?.filter(ex => ex.day_number === dayNumber).length || 0;
+                  {(() => {
+                    // Calculate unique days from exercises
+                    const uniqueDays = [...new Set(plan.exercises?.map(ex => ex.day_number) || [])];
+                    const sortedDays = uniqueDays.sort((a, b) => a - b);
+                    
+                    return sortedDays.map((dayNumber) => {
+                      const exerciseCount = plan.exercises?.filter(ex => ex.day_number === dayNumber).length || 0;
                     
                     return (
                       <button
@@ -111,7 +116,8 @@ function StartWorkoutPage() {
                         </div>
                       </button>
                     );
-                  })}
+                    });
+                  })()}
                 </div>
               </div>
             ))}
