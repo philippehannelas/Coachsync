@@ -10,6 +10,13 @@ import AcceptInvitePage from './pages/AcceptInvitePage';
 import TrainingPlansPage from './components/TrainingPlans/TrainingPlansPage';
 import CustomerTrainingPlans from './components/TrainingPlans/CustomerTrainingPlans';
 
+// NEW IMPORTS - Customer Portal Pages
+import StartWorkoutPage from './components/Customer/StartWorkoutPage';
+import WorkoutViewerPage from './components/Customer/WorkoutViewerPage';
+import ProgressDashboardPage from './components/Customer/ProgressDashboardPage';
+import WorkoutHistoryPage from './components/Customer/WorkoutHistoryPage';
+import CustomerProfilePage from './components/Customer/CustomerProfilePage';
+
 // Wrapper component for CoachDashboard with navigation
 function CoachDashboardWrapper() {
   const { user, logout } = useAuth();
@@ -47,6 +54,14 @@ function CustomerDashboardWrapper() {
       navigate('/customer/dashboard');
     } else if (page === 'training-plans') {
       navigate('/customer/training-plans');
+    } else if (page === 'start-workout') {  // NEW
+      navigate('/customer/start-workout');
+    } else if (page === 'progress') {  // NEW
+      navigate('/customer/progress');
+    } else if (page === 'workout-history') {  // NEW
+      navigate('/customer/workout-history');
+    } else if (page === 'profile') {  // NEW
+      navigate('/customer/profile');
     }
   };
 
@@ -146,6 +161,48 @@ function AppContent() {
         element={
           <ProtectedRoute allowedRole="customer">
             <CustomerTrainingPlans userProfile={user} />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* NEW CUSTOMER ROUTES - Mobile-Optimized Workout Features */}
+      <Route
+        path="/customer/start-workout"
+        element={
+          <ProtectedRoute allowedRole="customer">
+            <StartWorkoutPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/customer/workout/:planId/:dayNumber"
+        element={
+          <ProtectedRoute allowedRole="customer">
+            <WorkoutViewerPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/customer/progress"
+        element={
+          <ProtectedRoute allowedRole="customer">
+            <ProgressDashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/customer/workout-history"
+        element={
+          <ProtectedRoute allowedRole="customer">
+            <WorkoutHistoryPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/customer/profile"
+        element={
+          <ProtectedRoute allowedRole="customer">
+            <CustomerProfilePage />
           </ProtectedRoute>
         }
       />
