@@ -70,7 +70,7 @@ function CustomerDashboardWrapper() {
     navigate('/login');
   };
 
-  return <CustomerDashboard userProfile={user} onNavigate={handleNavigate} onLogout={handleLogout} />;
+  return <CustomerDashboard user={user} onNavigate={handleNavigate} onLogout={handleLogout} />;
 }
 
 // Protected Route Component
