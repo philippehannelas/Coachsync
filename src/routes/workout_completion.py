@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from src.models import db, WorkoutCompletion, ExerciseCompletion, TrainingPlan, Exercise
-from src.middleware.auth import token_required
+from src.routes.auth import token_required
 from datetime import datetime, timedelta
 from sqlalchemy import func
 
