@@ -3,7 +3,7 @@ import { Calendar, CreditCard, FileText, User, Mail, Phone, Dumbbell, BarChart3,
 import { useNavigate } from 'react-router-dom';
 import AthleteHubLogo from '../AthleteHubLogo';
 // SessionHistoryView removed - use bottom nav to access history
-import MobileBottomNav from './MobileBottomNav';
+import MobileBottomNav from '../Customer/MobileBottomNav';
 
 function CustomerDashboard({ user, onNavigate, onLogout }) {
   const navigate = useNavigate();
