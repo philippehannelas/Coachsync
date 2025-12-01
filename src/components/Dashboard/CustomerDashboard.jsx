@@ -13,55 +13,44 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchUserProfile = async () => {
-    try {
-      const token = localStorage.getItem('coachsync_token');
-      const response = await fetch('/api/customer/profile', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setUserProfile(data);
-        setCredits(data.credits || 0);
-      }
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-    }
-  };
-
-  const fetchUpcomingBookings = async () => {
-    try {
-      const token = localStorage.getItem('coachsync_token');
-      const response = await fetch('/api/customer/bookings', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setUpcomingBookings(data);
-      }
-    } catch (error) {
-      console.error('Error fetching bookings:', error);
-    }
-  };
-
   useEffect(() => {
-    if (user) {
+    const fetchData = async () => {
+      if (!user) return;
+      
       setLoading(true);
-      Promise.all([
-        fetchUserProfile(),
-        fetchUpcomingBookings()
-      ]).finally(() => {
+      const token = localStorage.getItem('coachsync_token');
+      
+      try {
+        // Fetch profile
+        const profileResponse = await fetch('/api/customer/profile', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (profileResponse.ok) {
+          const profileData = await profileResponse.json();
+          setUserProfile(profileData);
+          setCredits(profileData.credits || 0);
+        }
+
+        // Fetch bookings
+        const bookingsResponse = await fetch('/api/customer/bookings', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (bookingsResponse.ok) {
+          const bookingsData = await bookingsResponse.json();
+          setUpcomingBookings(bookingsData);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
         setLoading(false);
-      });
-    }
+      }
+    };
+
+    fetchData();
   }, [user]);
 
-  // Safety check: if user is not loaded yet, show loading
-  if (!user || loading) {
+  // Show loading spinner while data is being fetched
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
         <div className="text-center">
