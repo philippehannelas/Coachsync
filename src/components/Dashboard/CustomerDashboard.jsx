@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, CreditCard, FileText, User, Mail, Phone, Dumbbell, BarChart3, History, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AthleteHubLogo from '../AthleteHubLogo';
-import SessionHistoryView from './SessionHistoryView';
+// SessionHistoryView removed - use bottom nav to access history
 import MobileBottomNav from './MobileBottomNav';
 
 function CustomerDashboard({ user, onNavigate, onLogout }) {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('overview');
+  // Removed activeTab - using navigation instead
   const [credits, setCredits] = useState(0);
   const [upcomingBookings, setUpcomingBookings] = useState([]);
   const [userProfile, setUserProfile] = useState(null);
@@ -316,7 +316,7 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
 
           {/* View Session Notes */}
           <button
-            onClick={() => setActiveTab('sessions')}
+            onClick={() => navigate('/customer/workout-history')}
             className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 text-left group"
           >
             <div className="flex items-center space-x-4">
@@ -331,12 +331,7 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
           </button>
         </div>
 
-        {/* Session History Tab */}
-        {activeTab === 'sessions' && (
-          <div className="mt-8">
-            <SessionHistoryView userProfile={userProfile} />
-          </div>
-        )}
+
       </main>
 
       {/* Bottom Navigation - Visible on all devices */}
