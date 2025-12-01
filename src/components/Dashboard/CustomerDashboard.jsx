@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, CreditCard, FileText, User, Mail, Phone, Dumbbell, BarChart3, History, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AthleteHubLogo from '../AthleteHubLogo';
-// SessionHistoryView removed - use bottom nav to access history
-import MobileBottomNav from '../Customer/MobileBottomNav';
+import SessionHistoryView from './SessionHistoryView';
+import MobileBottomNav from './MobileBottomNav';
 
 function CustomerDashboard({ user, onNavigate, onLogout }) {
   const navigate = useNavigate();
@@ -11,6 +11,19 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
   const [credits, setCredits] = useState(0);
   const [upcomingBookings, setUpcomingBookings] = useState([]);
   const [userProfile, setUserProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Safety check: if user is not loaded yet, show loading
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   useEffect(() => {
     if (user) {
@@ -66,7 +79,7 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
               <AthleteHubLogo className="h-10 w-auto" color="white" />
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold">
-                  Welcome back, {user.first_name}!
+                  Welcome back, {user?.first_name || 'User'}!
                 </h1>
                 <p className="text-blue-100 text-sm mt-1">Ready to crush your goals today?</p>
               </div>
@@ -189,7 +202,7 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
                 <label className="text-sm font-medium text-gray-700">Full Name</label>
               </div>
               <p className="text-lg font-semibold text-gray-900 ml-8">
-                {user.first_name} {user.last_name}
+                {user?.first_name || 'N/A'} {user?.last_name || ''}
               </p>
             </div>
 
@@ -200,19 +213,19 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
                 <label className="text-sm font-medium text-gray-700">Email Address</label>
               </div>
               <p className="text-lg font-semibold text-gray-900 ml-8 break-all">
-                {user.email || 'N/A'}
+                {user?.email || 'N/A'}
               </p>
             </div>
 
             {/* Phone */}
-            {user.phone && (
+            {user?.phone && (
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="flex items-center space-x-3 mb-2">
                   <Phone className="h-5 w-5 text-gray-400" />
                   <label className="text-sm font-medium text-gray-700">Phone Number</label>
                 </div>
                 <p className="text-lg font-semibold text-gray-900 ml-8">
-                  {user.phone}
+                  {user?.phone}
                 </p>
               </div>
             )}
@@ -316,7 +329,7 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
 
           {/* View Session Notes */}
           <button
-            onClick={() => navigate('/customer/workout-history')}
+            onClick={() => setActiveTab('sessions')}
             className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 text-left group"
           >
             <div className="flex items-center space-x-4">
@@ -331,7 +344,12 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
           </button>
         </div>
 
-
+        {/* Session History Tab */}
+        {activeTab === 'sessions' && (
+          <div className="mt-8">
+            <SessionHistoryView userProfile={userProfile} />
+          </div>
+        )}
       </main>
 
       {/* Bottom Navigation - Visible on all devices */}
