@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Play, Pause, Check, X, Clock, Dumbbell, ChevronDown, ChevronUp } from 'lucide-react';
 import ExerciseVideoPlayer from '../TrainingPlans/ExerciseVideoPlayer';
+import { API_BASE_URL } from '../../config';
 
 function WorkoutViewer({ trainingPlanId, dayNumber, onComplete, onCancel }) {
   const [workout, setWorkout] = useState(null);
@@ -41,7 +42,7 @@ function WorkoutViewer({ trainingPlanId, dayNumber, onComplete, onCancel }) {
   const loadWorkout = async () => {
     try {
       const response = await fetch(
-        `/api/customer/workouts/${trainingPlanId}/day/${dayNumber}`,
+        `${API_BASE_URL}/api/customer/workouts/${trainingPlanId}/day/${dayNumber}`,
         {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('coachsync_token')}`,
@@ -140,7 +141,7 @@ function WorkoutViewer({ trainingPlanId, dayNumber, onComplete, onCancel }) {
 
     try {
       const response = await fetch(
-        '/api/customer/workouts/complete',
+        `${API_BASE_URL}/api/customer/workouts/complete`,
         {
           method: 'POST',
           headers: {

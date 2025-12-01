@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { User, Mail, Phone, CreditCard, Calendar, Star } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import MobilePageLayout from './MobilePageLayout';
+import { API_BASE_URL } from '../../config';
 
 function CustomerProfilePage() {
   const { user } = useAuth();
@@ -15,7 +16,7 @@ function CustomerProfilePage() {
   const fetchCustomerProfile = async () => {
     try {
       const token = localStorage.getItem('coachsync_token');
-      const response = await fetch('/api/customer/profile', {
+      const response = await fetch(`${API_BASE_URL}/api/customer/profile`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dumbbell, Calendar, ChevronRight, Play } from 'lucide-react';
 import MobilePageLayout from './MobilePageLayout';
+import { API_BASE_URL } from '../../config';
 
 function StartWorkoutPage() {
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ function StartWorkoutPage() {
   const fetchTrainingPlans = async () => {
     try {
       const token = localStorage.getItem('coachsync_token');
-      const response = await fetch('/api/customer/training-plans', {
+      const response = await fetch(`${API_BASE_URL}/api/customer/training-plans`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
