@@ -13,35 +13,55 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  console.log('🔍 CustomerDashboard render - user:', user, 'loading:', loading);
+
   useEffect(() => {
+    console.log('🔄 useEffect triggered - user:', user);
+    
     const fetchData = async () => {
-      if (!user) return;
+      if (!user) {
+        console.log('⚠️ No user, skipping fetch');
+        return;
+      }
       
+      console.log('🚀 Starting data fetch...');
       setLoading(true);
       const token = localStorage.getItem('coachsync_token');
+      console.log('🔑 Token:', token ? 'exists' : 'missing');
       
       try {
         // Fetch profile
+        console.log('📡 Fetching profile...');
         const profileResponse = await fetch('/api/customer/profile', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
+        console.log('📥 Profile response status:', profileResponse.status);
         if (profileResponse.ok) {
           const profileData = await profileResponse.json();
+          console.log('✅ Profile data:', profileData);
           setUserProfile(profileData);
           setCredits(profileData.credits || 0);
+        } else {
+          console.error('❌ Profile fetch failed:', profileResponse.status);
         }
 
         // Fetch bookings
+        console.log('📡 Fetching bookings...');
         const bookingsResponse = await fetch('/api/customer/bookings', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
+        console.log('📥 Bookings response status:', bookingsResponse.status);
         if (bookingsResponse.ok) {
           const bookingsData = await bookingsResponse.json();
+          console.log('✅ Bookings data:', bookingsData);
           setUpcomingBookings(bookingsData);
+        } else {
+          console.error('❌ Bookings fetch failed:', bookingsResponse.status);
         }
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('💥 Error fetching data:', error);
       } finally {
+        console.log('🏁 Setting loading to FALSE');
         setLoading(false);
       }
     };
@@ -51,15 +71,19 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
 
   // Show loading spinner while data is being fetched
   if (loading) {
+    console.log('⏳ Showing loading spinner');
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading...</p>
+          <p className="mt-2 text-xs text-gray-500">Check console (F12) for debug info</p>
         </div>
       </div>
     );
   }
+
+  console.log('✨ Rendering dashboard content');
 
   const creditsStatus = credits > 5 ? 'good' : credits > 2 ? 'medium' : 'low';
 
