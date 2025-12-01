@@ -173,7 +173,7 @@ function TrainingPlanBuilder({ plan, customers, onSave, onCancel }) {
       rest_seconds: exerciseData.rest_seconds || 60,
       tempo: exerciseData.tempo || '',
       instructions: exerciseData.instructions || '',
-      video_url: '',
+      video_url: exerciseData.video_url || '',
       notes: exerciseData.notes || '',
       order: exercises.filter(e => e.day_number === selectedDay).length,
       day_number: selectedDay
