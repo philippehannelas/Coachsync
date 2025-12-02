@@ -21,6 +21,11 @@ def token_required(f):
             current_user = User.query.get(data['user_id'])
             if not current_user:
                 return jsonify({'message': 'Invalid token'}), 401
+            
+            # Check account status on every token-required request
+            if current_user.account_status != 'active':
+                return jsonify({'message': 'Account is inactive. Please log in again.'}), 403
+            
         except jwt.ExpiredSignatureError:
             return jsonify({'message': 'Token has expired'}), 401
         except jwt.InvalidTokenError:
@@ -123,6 +128,10 @@ def login():
         
         if not user or not user.check_password(data['password']):
             return jsonify({'message': 'Invalid credentials'}), 401
+        
+        # Check account status
+        if user.account_status != 'active':
+            return jsonify({'message': f'Account is {user.account_status}. Please contact support.'}), 403
         
         # Generate JWT token
         token = jwt.encode({
@@ -233,8 +242,8 @@ def validate_invite_token(token):
             'valid': False,
             'message': f'Failed to validate invitation: {str(e)}'
         }), 500
-
-
+    
+    
 # ✅ NEW: Accept invitation and set password
 @auth_bp.route('/accept-invite', methods=['POST'])
 def accept_invitation():
@@ -297,6 +306,6 @@ def accept_invitation():
     except Exception as e:
         db.session.rollback()
         return jsonify({'message': f'Failed to accept invitation: {str(e)}'}), 500
-
-
-
+    
+    
+    
