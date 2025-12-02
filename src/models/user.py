@@ -12,7 +12,7 @@ class User(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     first_name = db.Column(db.String(50), nullable=False)
     last_name = db.Column(db.String(50), nullable=False)
-    role = db.Column(db.Enum('coach', 'customer', name='user_roles'), nullable=False)
+    role = db.Column(db.Enum('coach', 'customer', 'admin', name='user_roles'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
@@ -205,9 +205,6 @@ class Booking(db.Model):
         
         return result
 
-
-
-
 class Availability(db.Model):
     """Recurring weekly availability (e.g., Every Monday 9-5)"""
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -229,7 +226,6 @@ class Availability(db.Model):
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
 
-
 class DateSpecificAvailability(db.Model):
     """
     Date-specific availability overrides and blocks
@@ -243,87 +239,20 @@ class DateSpecificAvailability(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     coach_id = db.Column(db.String(36), db.ForeignKey('coach_profile.id'), nullable=False)
     date = db.Column(db.Date, nullable=False)  # Specific date (YYYY-MM-DD)
-    type = db.Column(db.Enum('override', 'blocked', name='date_specific_type'), nullable=False)
-    
-    # For 'override' type: custom hours for this date
-    start_time = db.Column(db.Time, nullable=True)  # Null if type='blocked'
-    end_time = db.Column(db.Time, nullable=True)    # Null if type='blocked'
-    
-    # Optional reason/note
-    reason = db.Column(db.String(200), nullable=True)  # e.g., "Christmas", "Vacation", "Short day"
-    
+    start_time = db.Column(db.Time, nullable=True)
+    end_time = db.Column(db.Time, nullable=True)
+    type = db.Column(db.Enum('override', 'blocked', name='date_availability_type'), default='override')
+    notes = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    # Unique constraint: one entry per coach per date
-    __table_args__ = (
-        db.UniqueConstraint('coach_id', 'date', name='unique_coach_date'),
-    )
 
     def to_dict(self):
         return {
             'id': self.id,
             'coach_id': self.coach_id,
             'date': self.date.isoformat() if self.date else None,
-            'type': self.type,
             'start_time': self.start_time.strftime('%H:%M') if self.start_time else None,
             'end_time': self.end_time.strftime('%H:%M') if self.end_time else None,
-            'reason': self.reason,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
-            'updated_at': self.updated_at.isoformat() if self.updated_at else None
-        }
-
-
-
-
-class WorkoutLog(db.Model):
-    """Track customer workout completions"""
-    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    customer_id = db.Column(db.String(36), db.ForeignKey('customer_profile.id'), nullable=False)
-    training_plan_id = db.Column(db.String(36), db.ForeignKey('training_plan.id'), nullable=False)
-    workout_date = db.Column(db.Date, nullable=False)
-    completed = db.Column(db.Boolean, default=False)
-    notes = db.Column(db.Text)  # Customer notes about the workout
-    duration_minutes = db.Column(db.Integer)  # How long the workout took
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    completed_at = db.Column(db.DateTime)
-
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'customer_id': self.customer_id,
-            'training_plan_id': self.training_plan_id,
-            'workout_date': self.workout_date.isoformat() if self.workout_date else None,
-            'completed': self.completed,
-            'notes': self.notes,
-            'duration_minutes': self.duration_minutes,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
-            'completed_at': self.completed_at.isoformat() if self.completed_at else None
-        }
-
-
-class ExerciseLog(db.Model):
-    """Track individual exercise performance"""
-    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    workout_log_id = db.Column(db.String(36), db.ForeignKey('workout_log.id'), nullable=False)
-    exercise_id = db.Column(db.String(36), nullable=False)  # Reference to exercise in training plan
-    exercise_name = db.Column(db.String(100), nullable=False)  # Store name for history
-    set_number = db.Column(db.Integer, nullable=False)  # Which set (1, 2, 3, etc.)
-    reps_completed = db.Column(db.Integer)  # Actual reps completed
-    weight_used = db.Column(db.Float)  # Weight in kg or lbs
-    notes = db.Column(db.Text)  # Notes about this specific set
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'workout_log_id': self.workout_log_id,
-            'exercise_id': self.exercise_id,
-            'exercise_name': self.exercise_name,
-            'set_number': self.set_number,
-            'reps_completed': self.reps_completed,
-            'weight_used': self.weight_used,
+            'type': self.type,
             'notes': self.notes,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
-
