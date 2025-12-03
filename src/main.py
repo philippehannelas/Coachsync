@@ -1,10 +1,7 @@
 import os
 import sys
-# Path fix for imports
-# The original path fix was likely incorrect for the deployment environment.
-# We will use a more robust path fix to ensure 'src' is found.
-# sys.path.insert(0, os.path.dirname(os.path.dirname(__file__))) # Original line
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'src')))
+# Path fix to ensure 'src' is found when main.py is inside 'src'
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from flask import Flask, send_from_directory
 from flask_cors import CORS
@@ -23,6 +20,7 @@ from src.routes.migrate import migrate_training_plans_bp
 from src.routes.training_plan import training_plan_bp
 from src.routes.exercise_template import exercise_template_bp
 from src.routes.workout_completion import workout_completion_bp
+from src.routes.customer_management import customer_management_bp
 
 
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
@@ -46,6 +44,7 @@ app.register_blueprint(migrate_training_plans_bp, url_prefix='/api')
 app.register_blueprint(training_plan_bp, url_prefix='/api')
 app.register_blueprint(exercise_template_bp, url_prefix='/api')
 app.register_blueprint(workout_completion_bp)
+app.register_blueprint(customer_management_bp, url_prefix='/api')
 
 # Database configuration for production
 # Use PostgreSQL if DATABASE_URL is set, otherwise fall back to SQLite
