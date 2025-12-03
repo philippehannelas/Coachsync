@@ -16,8 +16,8 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
-    coach_profile = db.relationship('CoachProfile', backref='user', uselist=False, cascade='all, delete-orphan')
-    customer_profile = db.relationship('CustomerProfile', backref='user', uselist=False, cascade='all, delete-orphan', lazy='joined')
+    coach_profile = db.relationship('CoachProfile', back_populates='user', uselist=False, cascade='all, delete-orphan')
+    customer_profile = db.relationship('CustomerProfile', back_populates='user', uselist=False, cascade='all, delete-orphan', lazy='joined')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -40,6 +40,7 @@ class User(db.Model):
         }
 
 class CoachProfile(db.Model):
+    user = db.relationship('User', back_populates='coach_profile')
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = db.Column(db.String(36), db.ForeignKey('user.id'), nullable=False)
     bio = db.Column(db.Text)
@@ -62,6 +63,7 @@ class CoachProfile(db.Model):
         }
 
 class CustomerProfile(db.Model):
+    user = db.relationship('User', back_populates='customer_profile')
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = db.Column(db.String(36), db.ForeignKey('user.id'), nullable=False)
     coach_id = db.Column(db.String(36), db.ForeignKey('coach_profile.id'), nullable=True)
