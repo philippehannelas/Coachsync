@@ -18,7 +18,13 @@ def token_required(f):
             if token.startswith('Bearer '):
                 token = token[7:]
             data = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])
-            current_user = User.query.get(data['user_id'])
+            
+            # Explicitly load coach_profile and customer_profile to prevent lazy loading errors
+            from sqlalchemy.orm import joinedload
+            current_user = User.query.options(
+                joinedload(User.coach_profile),
+                joinedload(User.customer_profile)
+            ).get(data['user_id'])
             if not current_user:
                 return jsonify({'message': 'Invalid token'}), 401
             
