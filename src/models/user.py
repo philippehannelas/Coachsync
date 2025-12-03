@@ -16,7 +16,7 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
-    coach_profile = db.relationship('CoachProfile', back_populates='user', uselist=False, cascade='all, delete-orphan')
+    coach_profile = db.relationship('CoachProfile', back_populates='user', uselist=False, cascade='all, delete-orphan', lazy='joined')
     customer_profile = db.relationship('CustomerProfile', back_populates='user', uselist=False, cascade='all, delete-orphan', lazy='joined')
 
     def set_password(self, password):
