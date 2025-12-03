@@ -53,7 +53,8 @@ const AdminDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    // Hardcoded for final test to bypass VITE_API_URL environment variable issues
+    const API_URL = 'https://coachsync-pro.onrender.com/api';
 
     const fetchUsers = async (authToken) => {
         setLoading(true);
