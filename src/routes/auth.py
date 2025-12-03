@@ -18,13 +18,7 @@ def token_required(f):
             if token.startswith('Bearer '):
                 token = token[7:]
             data = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])
-            
-            # Explicitly load coach_profile and customer_profile to prevent lazy loading errors
-            from sqlalchemy.orm import joinedload
-            current_user = User.query.options(
-                joinedload(User.coach_profile),
-                joinedload(User.customer_profile)
-            ).get(data['user_id'])
+            current_user = User.query.get(data['user_id'])
             if not current_user:
                 return jsonify({'message': 'Invalid token'}), 401
             
@@ -39,6 +33,37 @@ def token_required(f):
         
         return f(current_user, *args, **kwargs)
     return auth_decorated
+
+def admin_required(f):
+    @wraps(f)
+    def admin_decorated(*args, **kwargs):
+        token = request.headers.get('Authorization')
+        if not token:
+            return jsonify({'message': 'Token is missing'}), 401
+        
+        try:
+            if token.startswith('Bearer '):
+                token = token[7:]
+            data = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])
+            current_user = User.query.get(data['user_id'])
+            if not current_user:
+                return jsonify({'message': 'Invalid token'}), 401
+            
+            # Check account status
+            if current_user.account_status != 'active':
+                return jsonify({'message': 'Account is inactive. Please log in again.'}), 403
+            
+            # Check for admin role
+            if current_user.role != 'admin':
+                return jsonify({'message': 'Admin access required'}), 403
+            
+        except jwt.ExpiredSignatureError:
+            return jsonify({'message': 'Token has expired'}), 401
+        except jwt.InvalidTokenError:
+            return jsonify({'message': 'Invalid token'}), 401
+        
+        return f(current_user, *args, **kwargs)
+    return admin_decorated
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
