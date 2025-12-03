@@ -47,7 +47,7 @@ const UserTable = ({ users, onStatusChange }) => {
 };
 
 const AdminDashboard = () => {
-    const { user, logout } = useAuth();
+    const { user, logout, token } = useAuth();
     const navigate = useNavigate();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -55,13 +55,17 @@ const AdminDashboard = () => {
 
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-    const fetchUsers = async () => {
+    const fetchUsers = async (authToken) => {
         setLoading(true);
+        if (!authToken) {
+            setError("Authentication token not found.");
+            setLoading(false);
+            return;
+        }
         try {
-            const token = localStorage.getItem('token');
             const response = await axios.get(`${API_URL}/admin/users`, {
                 headers: {
-                    Authorization: `Bearer ${token}`,
+                    Authorization: `Bearer ${authToken}`,
                 },
             });
             // Ensure response.data is an array before setting state
@@ -84,8 +88,8 @@ const AdminDashboard = () => {
     };
 
     useEffect(() => {
-        if (user && user.role === 'admin') {
-            fetchUsers();
+        if (user && user.role === 'admin' && token) {
+            fetchUsers(token);
         } else if (user) {
             // Redirect if not admin
             navigate(user.role === 'coach' ? '/coach/dashboard' : '/customer/dashboard');
@@ -94,8 +98,11 @@ const AdminDashboard = () => {
 
     const handleStatusChange = async (userId, newStatus) => {
         if (window.confirm(`Are you sure you want to change user ${userId}'s status to ${newStatus}?`)) {
+            if (!token) {
+                alert("Authentication token not found. Please log in again.");
+                return;
+            }
             try {
-                const token = localStorage.getItem('token');
                 await axios.put(`${API_URL}/admin/users/${userId}/status`, {
                     status: newStatus,
                     reason: `Changed by Admin ${user.email}`
