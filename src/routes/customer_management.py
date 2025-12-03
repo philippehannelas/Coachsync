@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from src.models.user import User, CustomerProfile, db
+from src.models.user import User, db
 from src.routes.auth import token_required
 from datetime import datetime
 
@@ -26,18 +26,7 @@ def update_customer_status(current_user, customer_id):
         return jsonify({"message": "Customer not found"}), 404
 
     # Verify the customer belongs to the coach
-    customer_profile = CustomerProfile.query.filter_by(user_id=customer.id).first()
-    
-    # Check 1: Does the customer profile exist?
-    if not customer_profile:
-        return jsonify({"message": "Customer profile not found"}), 404
-
-    # Check 2: Does the current user have a coach profile? (Should pass if role is 'coach')
-    if not current_user.coach_profile:
-        return jsonify({"message": "Coach profile not found for current user"}), 403
-
-    # Check 3: Does the customer belong to the current coach?
-    if customer_profile.coach_id != current_user.coach_profile.id:
+    if customer.customer_profile.coach_id != current_user.coach_profile.id:
         return jsonify({"message": "Customer not assigned to this coach"}), 403
 
     # Update status
