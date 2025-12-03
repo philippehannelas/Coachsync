@@ -28,6 +28,7 @@ def get_all_users(current_user):
                 user_data['profile'] = user.customer_profile.to_dict()
             user_list.append(user_data)
             
+        print(f"✅ Successfully retrieved {len(user_list)} users.")
         return jsonify(user_list), 200
     except Exception as e:
         return jsonify({'message': f'Failed to retrieve users: {str(e)}'}), 500
