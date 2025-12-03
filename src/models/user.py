@@ -13,6 +13,12 @@ class User(db.Model):
     first_name = db.Column(db.String(50), nullable=False)
     last_name = db.Column(db.String(50), nullable=False)
     role = db.Column(db.Enum('coach', 'customer', 'admin', name='user_roles', create_type=False), nullable=False)
+    account_status = db.Column(db.String(20), nullable=False, default='active')
+    status_changed_at = db.Column(db.DateTime)
+    status_changed_by = db.Column(db.String(36), db.ForeignKey('user.id'))
+    status_reason = db.Column(db.Text)
+    last_login_at = db.Column(db.DateTime)
+    deleted_at = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
@@ -36,6 +42,7 @@ class User(db.Model):
             'first_name': self.first_name,
             'last_name': self.last_name,
             'role': self.role,
+            'account_status': self.account_status,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
 
