@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './hooks/useAuth';
 import AuthForm from './components/AuthForm';
 import CoachDashboard from './components/Dashboard/CoachDashboard';
 import CustomerDashboard from './components/Dashboard/CustomerDashboard';
+import AdminDashboard from './components/Dashboard/AdminDashboard'; // NEW: Admin Dashboard Component
 import CoachCalendarPage from './components/Calendar/CoachCalendarPage';
 import CustomerCalendarPage from './components/Calendar/CustomerCalendarPage';
 import AcceptInvitePage from './pages/AcceptInvitePage';
@@ -82,7 +83,11 @@ function ProtectedRoute({ children, allowedRole }) {
   }
   
   if (allowedRole && user.role !== allowedRole) {
-    return <Navigate to={user.role === 'coach' ? '/coach/dashboard' : '/customer/dashboard'} replace />;
+    // Handle redirection based on the actual role
+    if (user.role === 'coach') return <Navigate to="/coach/dashboard" replace />;
+    if (user.role === 'customer') return <Navigate to="/customer/dashboard" replace />;
+    if (user.role === 'admin') return <Navigate to="/admin/dashboard" replace />;
+    return <Navigate to="/login" replace />; // Fallback
   }
   
   return children;
@@ -99,7 +104,12 @@ function AppContent() {
         path="/login" 
         element={
           user ? 
-            <Navigate to={user.role === 'coach' ? '/coach/dashboard' : '/customer/dashboard'} replace /> 
+            <Navigate to={
+              user.role === 'coach' ? '/coach/dashboard' : 
+              user.role === 'customer' ? '/customer/dashboard' :
+              user.role === 'admin' ? '/admin/dashboard' :
+              '/login'
+            } replace /> 
             : <AuthForm />
         } 
       />
@@ -212,10 +222,25 @@ function AppContent() {
         path="/" 
         element={
           user ? 
-            <Navigate to={user.role === 'coach' ? '/coach/dashboard' : '/customer/dashboard'} replace /> 
+            <Navigate to={
+              user.role === 'coach' ? '/coach/dashboard' : 
+              user.role === 'customer' ? '/customer/dashboard' :
+              user.role === 'admin' ? '/admin/dashboard' :
+              '/login'
+            } replace /> 
             : <Navigate to="/login" replace />
         } 
       />
+      {/* Admin Routes */}
+      <Route
+        path="/admin/dashboard"
+        element={
+          <ProtectedRoute allowedRole="admin">
+            <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
