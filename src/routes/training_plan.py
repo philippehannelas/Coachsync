@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
-from src.models.user import db, TrainingPlan, Exercise, WorkoutLog, ExerciseLog, CustomerProfile
+from src.models.user import db, TrainingPlan, Exercise, CustomerProfile
+from src.models.workout_completion import WorkoutCompletion, ExerciseCompletion
 from src.routes.auth import token_required
 from functools import wraps
 from datetime import datetime, date
@@ -334,84 +335,83 @@ def get_customer_plan_exercises(current_user, plan_id):
         return jsonify({'message': f'Error fetching exercises: {str(e)}'}), 500
 
 
-@training_plan_bp.route('/customer/workout-logs', methods=['POST'])
+@training_plan_bp.route('/customer/workout-completions', methods=['POST'])
 @token_required
 @customer_required
-def log_workout(current_user):
+def log_workout_completion(current_user):
     """Log a workout completion"""
     try:
         data = request.json
         
-        workout_log = WorkoutLog(
+        workout_completion = WorkoutCompletion(
             customer_id=current_user.customer_profile.id,
             training_plan_id=data.get('training_plan_id'),
-            workout_date=datetime.strptime(data.get('workout_date'), '%Y-%m-%d').date(),
-            completed=data.get('completed', True),
-            notes=data.get('notes'),
+            day_number=data.get('day_number'),
             duration_minutes=data.get('duration_minutes'),
-            completed_at=datetime.utcnow() if data.get('completed') else None
+            notes=data.get('notes'),
+            rating=data.get('rating')
         )
         
-        db.session.add(workout_log)
+        db.session.add(workout_completion)
         db.session.commit()
         
-        return jsonify(workout_log.to_dict()), 201
+        return jsonify(workout_completion.to_dict()), 201
     except Exception as e:
         db.session.rollback()
         return jsonify({'message': f'Error logging workout: {str(e)}'}), 500
 
 
-@training_plan_bp.route('/customer/exercise-logs', methods=['POST'])
+@training_plan_bp.route('/customer/exercise-completions', methods=['POST'])
 @token_required
 @customer_required
-def log_exercise(current_user):
+def log_exercise_completion(current_user):
     """Log exercise performance"""
     try:
         data = request.json
         
-        exercise_log = ExerciseLog(
-            workout_log_id=data.get('workout_log_id'),
+        exercise_completion = ExerciseCompletion(
+            workout_completion_id=data.get('workout_completion_id'),
             exercise_id=data.get('exercise_id'),
-            exercise_name=data.get('exercise_name'),
-            set_number=data.get('set_number'),
+            sets_completed=data.get('sets_completed'),
             reps_completed=data.get('reps_completed'),
             weight_used=data.get('weight_used'),
-            notes=data.get('notes')
+            notes=data.get('notes'),
+            is_pr=data.get('is_pr', False)
         )
         
-        db.session.add(exercise_log)
+        db.session.add(exercise_completion)
         db.session.commit()
         
-        return jsonify(exercise_log.to_dict()), 201
+        return jsonify(exercise_completion.to_dict()), 201
     except Exception as e:
         db.session.rollback()
         return jsonify({'message': f'Error logging exercise: {str(e)}'}), 500
 
 
-@training_plan_bp.route('/customer/workout-logs', methods=['GET'])
+@training_plan_bp.route('/customer/workout-completions', methods=['GET'])
 @token_required
 @customer_required
-def get_workout_logs(current_user):
-    """Get customer's workout logs"""
+def get_workout_completions(current_user):
+    """Get customer's workout completion logs"""
     try:
-        logs = WorkoutLog.query.filter_by(customer_id=current_user.id).order_by(WorkoutLog.workout_date.desc()).all()
+        logs = WorkoutCompletion.query.filter_by(customer_id=current_user.id).order_by(WorkoutCompletion.completed_at.desc()).all()
         return jsonify([log.to_dict() for log in logs]), 200
     except Exception as e:
         return jsonify({'message': f'Error fetching workout logs: {str(e)}'}), 500
 
 
-@training_plan_bp.route('/customer/workout-logs/<log_id>/exercises', methods=['GET'])
+@training_plan_bp.route('/customer/workout-completions/<log_id>/exercises', methods=['GET'])
 @token_required
 @customer_required
-def get_exercise_logs(current_user, log_id):
-    """Get exercise logs for a specific workout"""
+def get_exercise_completions(current_user, log_id):
+    """Get exercise completion logs for a specific workout"""
     try:
         # Verify workout log belongs to customer
-        workout_log = WorkoutLog.query.filter_by(id=log_id, customer_id=current_user.id).first()
+        workout_log = WorkoutCompletion.query.filter_by(id=log_id, customer_id=current_user.id).first()
         if not workout_log:
             return jsonify({'message': 'Workout log not found'}), 404
         
-        exercise_logs = ExerciseLog.query.filter_by(workout_log_id=log_id).all()
+        exercise_logs = ExerciseCompletion.query.filter_by(workout_completion_id=log_id).all()
         return jsonify([log.to_dict() for log in exercise_logs]), 200
     except Exception as e:
         return jsonify({'message': f'Error fetching exercise logs: {str(e)}'}), 500
