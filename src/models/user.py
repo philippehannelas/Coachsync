@@ -17,7 +17,7 @@ class User(db.Model):
     
     # Relationships
     coach_profile = db.relationship('CoachProfile', backref='user', uselist=False, cascade='all, delete-orphan')
-    customer_profile = db.relationship('CustomerProfile', backref='user', uselist=False, cascade='all, delete-orphan')
+    customer_profile = db.relationship('CustomerProfile', backref='user', uselist=False, cascade='all, delete-orphan', lazy='joined')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
