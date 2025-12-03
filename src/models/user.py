@@ -12,7 +12,7 @@ class User(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     first_name = db.Column(db.String(50), nullable=False)
     last_name = db.Column(db.String(50), nullable=False)
-    role = db.Column(db.Enum('coach', 'customer', 'admin', name='user_roles'), nullable=False)
+    role = db.Column(db.Enum('coach', 'customer', 'admin', name='user_roles', create_type=False), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
