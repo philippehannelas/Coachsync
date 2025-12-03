@@ -62,6 +62,9 @@ const AdminDashboard = () => {
             setLoading(false);
             return;
         }
+        
+        const fullUrl = `${API_URL}/admin/users`;
+        console.log("Fetching users from URL:", fullUrl);
         try {
             const response = await axios.get(`${API_URL}/admin/users`, {
                 headers: {
