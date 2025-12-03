@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 
 // Utility component for a simple table
 const UserTable = ({ users, onStatusChange }) => {
+    // Safely check if users is an array before mapping
+    if (!Array.isArray(users)) return <tr><td colSpan="5" className="text-center py-4">No user data available.</td></tr>;
     return (
         <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
@@ -62,7 +64,16 @@ const AdminDashboard = () => {
                     Authorization: `Bearer ${token}`,
                 },
             });
-            setUsers(response.data);
+            // Ensure response.data is an array before setting state
+            if (Array.isArray(response.data)) {
+                setUsers(response.data);
+            } else {
+                // If it's not an array, it might be an object with a key containing the array
+                // For now, we'll assume the backend returns the array directly.
+                // If this still fails, we'll need to check the backend response structure.
+                setUsers([]); 
+                console.error("API response for users was not an array:", response.data);
+            }
             setError(null);
         } catch (err) {
             console.error("Failed to fetch users:", err);
