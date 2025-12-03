@@ -28,7 +28,16 @@ def update_customer_status(current_user, customer_id):
     # Verify the customer belongs to the coach
     customer_profile = CustomerProfile.query.filter_by(user_id=customer.id).first()
     
-    if not customer_profile or customer_profile.coach_id != current_user.coach_profile.id:
+    # Check 1: Does the customer profile exist?
+    if not customer_profile:
+        return jsonify({"message": "Customer profile not found"}), 404
+
+    # Check 2: Does the current user have a coach profile? (Should pass if role is 'coach')
+    if not current_user.coach_profile:
+        return jsonify({"message": "Coach profile not found for current user"}), 403
+
+    # Check 3: Does the customer belong to the current coach?
+    if customer_profile.coach_id != current_user.coach_profile.id:
         return jsonify({"message": "Customer not assigned to this coach"}), 403
 
     # Update status
