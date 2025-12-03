@@ -1,7 +1,10 @@
 import os
 import sys
-# DON'T CHANGE THIS !!!
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+# Path fix for imports
+# The original path fix was likely incorrect for the deployment environment.
+# We will use a more robust path fix to ensure 'src' is found.
+# sys.path.insert(0, os.path.dirname(os.path.dirname(__file__))) # Original line
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'src')))
 
 from flask import Flask, send_from_directory
 from flask_cors import CORS
@@ -89,4 +92,3 @@ def serve(path):
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
-
