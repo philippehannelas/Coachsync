@@ -20,18 +20,24 @@ def coach_required(f):
 @coach_required
 def get_coach_availability(current_user):
     try:
+        print(f"Fetching availability for user: {current_user.id}")
         coach_profile = CoachProfile.query.filter_by(user_id=current_user.id).first()
         if not coach_profile:
+            print("Coach profile not found")
             return jsonify({'message': 'Coach profile not found'}), 404
         
+        print(f"Coach profile found: {coach_profile.id}")
+
         availability_slots = Availability.query.filter_by(
-            coach_id=coach_profile.id,
-            is_active=True
+            coach_id=coach_profile.id
         ).order_by(Availability.day_of_week, Availability.start_time).all()
         
+        print(f"Found {len(availability_slots)} availability slots")
+
         return jsonify([slot.to_dict() for slot in availability_slots]), 200
         
     except Exception as e:
+        print(f"Error fetching availability: {str(e)}")
         return jsonify({'message': f'Error fetching availability: {str(e)}'}), 500
 
 @availability_bp.route('/coach/availability', methods=['POST'])
@@ -213,8 +219,7 @@ def get_coach_availability_for_customer(current_user):
             return jsonify({'message': 'No coach assigned'}), 404
         
         availability_slots = Availability.query.filter_by(
-            coach_id=customer_profile.coach_id,
-            is_active=True
+            coach_id=customer_profile.coach_id
         ).order_by(Availability.day_of_week, Availability.start_time).all()
         
         return jsonify([slot.to_dict() for slot in availability_slots]), 200

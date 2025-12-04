@@ -3,7 +3,7 @@
  * Handles all date-specific availability API calls
  */
 
-const API_URL = 'https://coachsync-pro.onrender.com/api';
+const API_URL = 'http://localhost:5000/api';
 
 // Get auth token from localStorage
 const getAuthToken = () => {
@@ -19,7 +19,7 @@ export const dateSpecificApi = {
    * @param {Object} filters - Optional filters
    * @param {string} filters.start_date - Start date (YYYY-MM-DD)
    * @param {string} filters.end_date - End date (YYYY-MM-DD)
-   * @param {string} filters.type - Type filter ('override' or 'blocked')
+   * @param {string} filters.type - Type filter ('available' or 'unavailable')
    * @returns {Promise<Array>}
    */
   getAll: async (filters = {}) => {
@@ -55,9 +55,9 @@ export const dateSpecificApi = {
    * Create a single date-specific availability entry
    * @param {Object} data
    * @param {string} data.date - Date (YYYY-MM-DD)
-   * @param {string} data.type - Type ('override' or 'blocked')
-   * @param {string} data.start_time - Start time (HH:MM) - required if type='override'
-   * @param {string} data.end_time - End time (HH:MM) - required if type='override'
+   * @param {string} data.type - Type ('available' or 'unavailable')
+   * @param {string} data.start_time - Start time (HH:MM) - required if type='available'
+   * @param {string} data.end_time - End time (HH:MM) - required if type='available'
    * @param {string} data.reason - Optional reason/note
    * @returns {Promise<Object>}
    */
@@ -89,9 +89,9 @@ export const dateSpecificApi = {
    * @param {Object} data
    * @param {string} data.start_date - Start date (YYYY-MM-DD)
    * @param {string} data.end_date - End date (YYYY-MM-DD)
-   * @param {string} data.type - Type ('override' or 'blocked')
-   * @param {string} data.start_time - Start time (HH:MM) - required if type='override'
-   * @param {string} data.end_time - End time (HH:MM) - required if type='override'
+   * @param {string} data.type - Type ('available' or 'unavailable')
+   * @param {string} data.start_time - Start time (HH:MM) - required if type='available'
+   * @param {string} data.end_time - End time (HH:MM) - required if type='available'
    * @param {string} data.reason - Optional reason/note
    * @returns {Promise<Object>}
    */

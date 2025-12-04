@@ -3,7 +3,7 @@
  * Handles all booking and availability API calls
  */
 
-const API_URL = 'https://coachsync-pro.onrender.com/api';
+const API_URL = 'http://localhost:5000/api';
 
 // Get auth token from localStorage
 const getAuthToken = () => {
