@@ -28,7 +28,7 @@ app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'sta
 app.config['SECRET_KEY'] = 'asdf#FGSgvasgf$5$WGT'
 
 # Enable CORS for all routes
-CORS(app, origins=["https://coachsync-web.onrender.com"], supports_credentials=True)
+CORS(app, origins=["https://coachsync-web.onrender.com", "http://localhost:5173"], supports_credentials=True)
 
 # Register blueprints
 app.register_blueprint(user_bp, url_prefix='/api')

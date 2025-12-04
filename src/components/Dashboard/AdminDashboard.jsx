@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import axios from 'axios';
+import { adminAPI } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
 
 // Utility component for a simple table
@@ -53,9 +53,6 @@ const AdminDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Hardcoded for final test to bypass VITE_API_URL environment variable issues
-    const API_URL = 'https://coachsync-pro.onrender.com/api';
-
     const fetchUsers = async (authToken) => {
         setLoading(true);
         if (!authToken) {
@@ -64,14 +61,8 @@ const AdminDashboard = () => {
             return;
         }
         
-        const fullUrl = `${API_URL}/admin/users`;
-        console.log("Fetching users from URL:", fullUrl);
         try {
-            const response = await axios.get(`${API_URL}/admin/users`, {
-                headers: {
-                    Authorization: `Bearer ${authToken}`,
-                },
-            });
+            const response = await adminAPI.get('/users');
             // Ensure response.data is an array before setting state
             if (Array.isArray(response.data)) {
                 setUsers(response.data);
@@ -98,7 +89,7 @@ const AdminDashboard = () => {
             // Redirect if not admin
             navigate(user.role === 'coach' ? '/coach/dashboard' : '/customer/dashboard');
         }
-    }, [user, navigate]);
+    }, [user, navigate, token]);
 
     const handleStatusChange = async (userId, newStatus) => {
         if (window.confirm(`Are you sure you want to change user ${userId}'s status to ${newStatus}?`)) {
@@ -107,16 +98,12 @@ const AdminDashboard = () => {
                 return;
             }
             try {
-                await axios.put(`${API_URL}/admin/users/${userId}/status`, {
+                await adminAPI.put(`/users/${userId}/status`, {
                     status: newStatus,
                     reason: `Changed by Admin ${user.email}`
-                }, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
                 });
                 // Refresh the user list
-                fetchUsers();
+                fetchUsers(token);
             } catch (err) {
                 console.error("Failed to update status:", err);
                 alert("Failed to update user status. Check console for details.");
