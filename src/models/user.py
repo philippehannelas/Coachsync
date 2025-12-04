@@ -278,7 +278,7 @@ class DateSpecificAvailability(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     coach_id = db.Column(db.String(36), db.ForeignKey('coach_profile.id'), nullable=False)
     date = db.Column(db.Date, nullable=False)
-    type = db.Column(db.Enum('available', 'unavailable', name='availability_type'), default='available')
+    type = db.Column(db.Enum('override', 'blocked', name='date_specific_type'), default='blocked')
     start_time = db.Column(db.Time, nullable=True)
     end_time = db.Column(db.Time, nullable=True)
     reason = db.Column(db.String(255), nullable=True)
