@@ -23,7 +23,7 @@ def get_date_specific_availability(current_user):
     Optional query params:
     - start_date: Filter from this date (YYYY-MM-DD)
     - end_date: Filter to this date (YYYY-MM-DD)
-    - type: Filter by type ('override' or 'blocked')
+    - type: Filter by type ('available' or 'unavailable')
     """
     try:
         coach_profile = CoachProfile.query.filter_by(user_id=current_user.id).first()
@@ -45,7 +45,7 @@ def get_date_specific_availability(current_user):
             end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
             query = query.filter(DateSpecificAvailability.date <= end_date)
         
-        if type_filter and type_filter in ['override', 'blocked']:
+        if type_filter and type_filter in ['available', 'unavailable']:
             query = query.filter(DateSpecificAvailability.type == type_filter)
         
         date_specific = query.order_by(DateSpecificAvailability.date).all()
@@ -65,9 +65,9 @@ def create_date_specific_availability(current_user):
     Request body:
     {
         "date": "2025-12-25",
-        "type": "blocked",  // or "override"
-        "start_time": "10:00",  // required if type='override'
-        "end_time": "14:00",    // required if type='override'
+        "type": "unavailable",  // or "available"
+        "start_time": "10:00",  // required if type='available'
+        "end_time": "14:00",    // required if type='available'
         "reason": "Christmas"   // optional
     }
     """
@@ -82,8 +82,8 @@ def create_date_specific_availability(current_user):
         if 'date' not in data or 'type' not in data:
             return jsonify({'message': 'date and type are required'}), 400
         
-        if data['type'] not in ['override', 'blocked']:
-            return jsonify({'message': 'type must be "override" or "blocked"'}), 400
+        if data['type'] not in ['available', 'unavailable']:
+            return jsonify({'message': 'type must be "available" or "unavailable"'}), 400
         
         # Parse date
         try:
@@ -99,9 +99,9 @@ def create_date_specific_availability(current_user):
         start_time = None
         end_time = None
         
-        if data['type'] == 'override':
+        if data['type'] == 'available':
             if 'start_time' not in data or 'end_time' not in data:
-                return jsonify({'message': 'start_time and end_time are required for override type'}), 400
+                return jsonify({'message': 'start_time and end_time are required for available type'}), 400
             
             try:
                 start_time = datetime.strptime(data['start_time'], '%H:%M').time()
@@ -165,12 +165,12 @@ def update_date_specific_availability(current_user, availability_id):
         
         # Update type if provided
         if 'type' in data:
-            if data['type'] not in ['override', 'blocked']:
-                return jsonify({'message': 'type must be "override" or "blocked"'}), 400
+            if data['type'] not in ['available', 'unavailable']:
+                return jsonify({'message': 'type must be "available" or "unavailable"'}), 400
             date_specific.type = data['type']
         
-        # Update times if provided (for override type)
-        if date_specific.type == 'override':
+        # Update times if provided (for available type)
+        if date_specific.type == 'available':
             if 'start_time' in data:
                 try:
                     date_specific.start_time = datetime.strptime(data['start_time'], '%H:%M').time()
@@ -187,7 +187,7 @@ def update_date_specific_availability(current_user, availability_id):
                 if date_specific.start_time >= date_specific.end_time:
                     return jsonify({'message': 'start_time must be before end_time'}), 400
         else:
-            # If type is blocked, clear times
+            # If type is unavailable, clear times
             date_specific.start_time = None
             date_specific.end_time = None
         
@@ -245,7 +245,7 @@ def create_bulk_date_specific(current_user):
     {
         "start_date": "2025-07-01",
         "end_date": "2025-07-15",
-        "type": "blocked",
+        "type": "unavailable",
         "reason": "Summer Vacation"
     }
     """
@@ -262,8 +262,8 @@ def create_bulk_date_specific(current_user):
             if field not in data:
                 return jsonify({'message': f'{field} is required'}), 400
         
-        if data['type'] not in ['override', 'blocked']:
-            return jsonify({'message': 'type must be "override" or "blocked"'}), 400
+        if data['type'] not in ['available', 'unavailable']:
+            return jsonify({'message': 'type must be "available" or "unavailable"'}), 400
         
         # Parse dates
         try:
@@ -282,9 +282,9 @@ def create_bulk_date_specific(current_user):
         start_time = None
         end_time = None
         
-        if data['type'] == 'override':
+        if data['type'] == 'available':
             if 'start_time' not in data or 'end_time' not in data:
-                return jsonify({'message': 'start_time and end_time are required for override type'}), 400
+                return jsonify({'message': 'start_time and end_time are required for available type'}), 400
             
             try:
                 start_time = datetime.strptime(data['start_time'], '%H:%M').time()
