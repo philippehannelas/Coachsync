@@ -6,7 +6,7 @@ import uuid
 db = SQLAlchemy()
 
 class User(db.Model):
-		    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     email = db.Column(db.String(120), unique=True, nullable=True)
     phone = db.Column(db.String(8), unique=True, nullable=True)
     password_hash = db.Column(db.String(255), nullable=False)
@@ -19,7 +19,7 @@ class User(db.Model):
     status_reason = db.Column(db.Text)
     last_login_at = db.Column(db.DateTime)
     deleted_at = db.Column(db.DateTime)
-		    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
     coach_profile = db.relationship('CoachProfile', uselist=False, cascade='all, delete-orphan', lazy='joined')
@@ -246,55 +246,38 @@ class Booking(db.Model):
             'action_items': self.action_items or [],
             'customer_notes': self.customer_notes,
             'notes_added_at': self.notes_added_at.isoformat() if self.notes_added_at else None,
-            'has_session_notes': self.session_summary is not None
         }
-        
-        # Only include coach_notes if explicitly requested (for coach view)
         if include_coach_notes:
             result['coach_notes'] = self.coach_notes
-        
         return result
 
 class Availability(db.Model):
-    """Recurring weekly availability (e.g., Every Monday 9-5)"""
+    __tablename__ = 'availability'
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     coach_id = db.Column(db.String(36), db.ForeignKey('coach_profile.id'), nullable=False)
     day_of_week = db.Column(db.Integer, nullable=False)  # 0=Monday, 6=Sunday
     start_time = db.Column(db.Time, nullable=False)
     end_time = db.Column(db.Time, nullable=False)
-    is_active = db.Column(db.Boolean, default=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
+    
     def to_dict(self):
         return {
             'id': self.id,
             'coach_id': self.coach_id,
             'day_of_week': self.day_of_week,
             'start_time': self.start_time.strftime('%H:%M') if self.start_time else None,
-            'end_time': self.end_time.strftime('%H:%M') if self.end_time else None,
-            'is_active': self.is_active,
-            'created_at': self.created_at.isoformat() if self.created_at else None
+            'end_time': self.end_time.strftime('%H:%M') if self.end_time else None
         }
 
 class DateSpecificAvailability(db.Model):
-    """
-    Date-specific availability overrides and blocks
-    
-    Types:
-    - 'override': Custom hours for a specific date (overrides recurring schedule)
-    - 'blocked': Date is unavailable (vacation, holiday, etc.)
-    
-    Priority: Date-specific always overrides recurring weekly schedule
-    """
+    __tablename__ = 'date_specific_availability'
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     coach_id = db.Column(db.String(36), db.ForeignKey('coach_profile.id'), nullable=False)
-    date = db.Column(db.Date, nullable=False)  # Specific date (YYYY-MM-DD)
-    start_time = db.Column(db.Time, nullable=True)
-    end_time = db.Column(db.Time, nullable=True)
-    type = db.Column(db.Enum('override', 'blocked', name='date_availability_type'), default='override')
+    date = db.Column(db.Date, nullable=False)
+    start_time = db.Column(db.Time, nullable=False)
+    end_time = db.Column(db.Time, nullable=False)
+    type = db.Column(db.Enum('available', 'unavailable', name='availability_type'), default='available')
     notes = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
+    
     def to_dict(self):
         return {
             'id': self.id,
@@ -303,7 +286,5 @@ class DateSpecificAvailability(db.Model):
             'start_time': self.start_time.strftime('%H:%M') if self.start_time else None,
             'end_time': self.end_time.strftime('%H:%M') if self.end_time else None,
             'type': self.type,
-            'notes': self.notes,
-46            'created_at': self.created_at.isoformat() if self.created_at else None
-47        }
-48
+            'notes': self.notes
+        }
