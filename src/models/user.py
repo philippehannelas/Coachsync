@@ -23,7 +23,7 @@ class User(db.Model):
     
     # Relationships
     coach_profile = db.relationship('CoachProfile', uselist=False, cascade='all, delete-orphan', lazy='joined')
-    customer_profile = db.relationship('CustomerProfile', uselist=False, cascade='all, delete-orphan', lazy='joined')
+    customer_profile = db.relationship('CustomerProfile', backref='user', uselist=False, cascade='all, delete-orphan', lazy='joined')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -123,7 +123,7 @@ class CustomerProfile(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships - Remove the training_plans relationship since TrainingPlan now belongs to coach
-    user = db.relationship('User', backref='customer_profile_ref', lazy='joined') # Added to allow customer.user access
+    # user relationship is implicitly created by the backref in User model
     bookings = db.relationship('Booking', backref='customer', lazy='dynamic')
 
     def to_dict(self):
