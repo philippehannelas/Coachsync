@@ -27,7 +27,7 @@ const AvailabilityManager = ({ onClose, onSave }) => {
   const [showAddSpecialDate, setShowAddSpecialDate] = useState(false);
   const [specialDateForm, setSpecialDateForm] = useState({
     date: '',
-    type: 'blocked',
+    type: 'unavailable',
     start_time: '09:00',
     end_time: '17:00',
     reason: ''
@@ -36,7 +36,7 @@ const AvailabilityManager = ({ onClose, onSave }) => {
   const [bulkForm, setBulkForm] = useState({
     start_date: '',
     end_date: '',
-    type: 'blocked',
+    type: 'unavailable',
     reason: ''
   });
   
@@ -172,7 +172,7 @@ const AvailabilityManager = ({ onClose, onSave }) => {
       // Reset form
       setSpecialDateForm({
         date: '',
-        type: 'blocked',
+        type: 'unavailable',
         start_time: '09:00',
         end_time: '17:00',
         reason: ''
@@ -210,7 +210,7 @@ const AvailabilityManager = ({ onClose, onSave }) => {
       setBulkForm({
         start_date: '',
         end_date: '',
-        type: 'blocked',
+        type: 'unavailable',
         reason: ''
       });
       setShowBulkForm(false);
@@ -492,11 +492,11 @@ const AvailabilityManager = ({ onClose, onSave }) => {
                       onChange={(e) => setSpecialDateForm({...specialDateForm, type: e.target.value})}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
-                      <option value="blocked">Blocked (Unavailable)</option>
-                      <option value="override">Custom Hours</option>
+                      <option value="unavailable">Blocked (Unavailable)</option>
+                      <option value="available">Custom Hours</option>
                     </select>
                   </div>
-                  {specialDateForm.type === 'override' && (
+                  {specialDateForm.type === 'available' && (
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Start Time</label>
@@ -614,7 +614,7 @@ const AvailabilityManager = ({ onClose, onSave }) => {
                   <div
                     key={item.id}
                     className={`p-4 rounded-lg border-2 ${
-                      item.type === 'blocked'
+                      item.type === 'unavailable'
                         ? 'bg-red-50 border-red-200'
                         : 'bg-green-50 border-green-200'
                     }`}
@@ -622,7 +622,7 @@ const AvailabilityManager = ({ onClose, onSave }) => {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          {item.type === 'blocked' ? (
+                          {item.type === 'unavailable' ? (
                             <Ban className="w-5 h-5 text-red-600" />
                           ) : (
                             <Clock className="w-5 h-5 text-green-600" />
@@ -631,14 +631,14 @@ const AvailabilityManager = ({ onClose, onSave }) => {
                             {formatDate(item.date)}
                           </span>
                           <span className={`px-2 py-0.5 text-xs rounded ${
-                            item.type === 'blocked'
+                            item.type === 'unavailable'
                               ? 'bg-red-200 text-red-800'
                               : 'bg-green-200 text-green-800'
                           }`}>
-                            {item.type === 'blocked' ? 'Blocked' : 'Custom Hours'}
+                            {item.type === 'unavailable' ? 'Unavailable' : 'Available'}
                           </span>
                         </div>
-                        {item.type === 'override' && (
+                        {item.type === 'available' && (
                           <p className="text-sm text-gray-700 ml-7">
                             {item.start_time} - {item.end_time}
                           </p>
