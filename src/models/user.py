@@ -123,6 +123,7 @@ class CustomerProfile(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships - Remove the training_plans relationship since TrainingPlan now belongs to coach
+    user = db.relationship('User', backref='customer_profile_ref', lazy='joined') # Added to allow customer.user access
     bookings = db.relationship('Booking', backref='customer', lazy='dynamic')
 
     def to_dict(self):
