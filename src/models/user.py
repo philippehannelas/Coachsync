@@ -123,7 +123,7 @@ class CustomerProfile(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships - Remove the training_plans relationship since TrainingPlan now belongs to coach
-    # The 'user' relationship is implicitly created by the backref in the User model
+    # user relationship is implicitly created by the backref in User model
     bookings = db.relationship('Booking', backref='customer', lazy='dynamic')
 
     def to_dict(self):
@@ -246,7 +246,7 @@ class Booking(db.Model):
             'performance_rating': self.performance_rating,
             'action_items': self.action_items or [],
             'customer_notes': self.customer_notes,
-            'notes_added_at': self.notes_added_at.isoformat() if self.notes_added_at else None
+            'notes_added_at': self.notes_added_at.isoformat() if self.notes_added_at else None,
         }
         if include_coach_notes:
             result['coach_notes'] = self.coach_notes
@@ -277,7 +277,6 @@ class DateSpecificAvailability(db.Model):
     start_time = db.Column(db.Time, nullable=False)
     end_time = db.Column(db.Time, nullable=False)
     type = db.Column(db.Enum('available', 'unavailable', name='availability_type'), default='available')
-    notes = db.Column(db.Text)
     
     def to_dict(self):
         return {
@@ -286,22 +285,5 @@ class DateSpecificAvailability(db.Model):
             'date': self.date.isoformat() if self.date else None,
             'start_time': self.start_time.strftime('%H:%M') if self.start_time else None,
             'end_time': self.end_time.strftime('%H:%M') if self.end_time else None,
-            'type': self.type,
-            'notes': self.notes
-        }
-
-class WorkoutCompletion(db.Model):
-    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    customer_id = db.Column(db.String(36), db.ForeignKey('customer_profile.id'), nullable=False)
-    training_plan_id = db.Column(db.String(36), db.ForeignKey('training_plan.id'), nullable=False)
-    date_completed = db.Column(db.Date, default=datetime.utcnow)
-    notes = db.Column(db.Text)
-    
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'customer_id': self.customer_id,
-            'training_plan_id': self.training_plan_id,
-            'date_completed': self.date_completed.isoformat() if self.date_completed else None,
-            'notes': self.notes
+            'type': self.type
         }
