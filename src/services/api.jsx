@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Backend API base URL
-const API_BASE_URL = 'https://coachsync-pro.onrender.com/api';
+const API_BASE_URL = import.meta.env.DEV ? 'http://localhost:5000/api' : 'https://coachsync-pro.onrender.com/api';
 
 // Create axios instance with default config
 const api = axios.create({
@@ -96,6 +96,12 @@ export const customerAPI = {
   createBooking: (bookingData) => api.post('/customer/bookings', bookingData),
   cancelBooking: (bookingId) => api.delete(`/customer/bookings/${bookingId}`),
   getCredits: () => api.get('/customer/credits'),
+};
+
+// Admin API endpoints
+export const adminAPI = {
+  getUsers: () => api.get('/admin/users'),
+  updateUserStatus: (userId, statusData) => api.put(`/admin/users/${userId}/status`, statusData),
 };
 
 export default api;

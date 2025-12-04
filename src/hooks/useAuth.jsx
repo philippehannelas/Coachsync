@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext } from 'react';
+import { useState, useEffect, createContext, useContext, useMemo } from 'react';
 import { authAPI, setToken, removeToken, getToken } from '../services/api.jsx';
 
 // Create Auth Context
@@ -7,34 +7,38 @@ const AuthContext = createContext();
 // Auth Provider Component
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [token, setAuthState] = useState(getToken());
   const [loading, setLoading] = useState(true);
 
   // Check if user is authenticated on app start
   useEffect(() => {
     const initAuth = async () => {
-      const token = getToken();
       if (token) {
         try {
+          // Set token for API calls
+          setToken(token);
           const response = await authAPI.getCurrentUser();
           setUser(response.data);
         } catch (error) {
           console.error('Auth check failed:', error);
           removeToken();
+          setAuthState(null);
         }
       }
       setLoading(false);
     };
 
     initAuth();
-  }, []);
+  }, [token]);
 
   // Login function
   const login = async (credentials) => {
     try {
       const response = await authAPI.login(credentials);
-      const { token, user: userData } = response.data;
+      const { token: newToken, user: userData } = response.data;
       
-      setToken(token);
+      setToken(newToken);
+      setAuthState(newToken);
       setUser(userData);
       
       return { success: true, user: userData };
@@ -82,8 +86,9 @@ export const AuthProvider = ({ children }) => {
   const isCoach = user?.role === 'coach';
   const isCustomer = user?.role === 'customer';
 
-  const value = {
+  const value = useMemo(() => ({
     user,
+    token,
     loading,
     login,
     register,
@@ -91,7 +96,7 @@ export const AuthProvider = ({ children }) => {
     isCoach,
     isCustomer,
     isAuthenticated: !!user,
-  };
+  }), [user, token, loading, isCoach, isCustomer, logout]);
 
   return (
     <AuthContext.Provider value={value}>
