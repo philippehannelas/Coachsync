@@ -101,6 +101,7 @@ export const customerAPI = {
 // Admin API endpoints
 export const adminAPI = {
   getUsers: () => api.get('/admin/users'),
+  updateUserStatus: (userId, statusData) => api.put(`/admin/users/${userId}/status`, statusData),
 };
 
 export default api;

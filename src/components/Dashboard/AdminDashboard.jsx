@@ -62,7 +62,7 @@ const AdminDashboard = () => {
         }
         
         try {
-            const response = await adminAPI.get('/users');
+            const response = await adminAPI.getUsers();
             // Ensure response.data is an array before setting state
             if (Array.isArray(response.data)) {
                 setUsers(response.data);
@@ -98,7 +98,7 @@ const AdminDashboard = () => {
                 return;
             }
             try {
-                await adminAPI.put(`/users/${userId}/status`, {
+                await adminAPI.updateUserStatus(userId, {
                     status: newStatus,
                     reason: `Changed by Admin ${user.email}`
                 });
