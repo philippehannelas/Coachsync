@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from src.models.user import User, db
+from src.models.user import User, AuditLog, db
 from src.routes.auth import admin_required
 from datetime import datetime
 from sqlalchemy import or_
@@ -10,14 +10,35 @@ admin_bp = Blueprint('admin', __name__)
 @admin_required
 def get_all_users(current_user):
     """
-    Admin endpoint to get a list of all users with their profiles.
+    Admin endpoint to get a list of all users with their profiles, supporting search and filter.
     """
     try:
-        # Get all users and eager load their profiles
-        users = User.query.options(
+        search_term = request.args.get('search', '').strip()
+        role_filter = request.args.get('role', '').strip()
+        status_filter = request.args.get('status', '').strip()
+
+        query = User.query.options(
             db.joinedload(User.coach_profile),
             db.joinedload(User.customer_profile)
-        ).all()
+        )
+
+        # Apply filters
+        if role_filter:
+            query = query.filter(User.role == role_filter)
+
+        if status_filter:
+            query = query.filter(User.account_status == status_filter)
+
+        # Apply search (case-insensitive on email, first_name, last_name)
+        if search_term:
+            search_pattern = f'%{search_term}%'
+            query = query.filter(or_(
+                User.email.ilike(search_pattern),
+                User.first_name.ilike(search_pattern),
+                User.last_name.ilike(search_pattern)
+            ))
+
+        users = query.all()
         
         user_list = []
         for user in users:
@@ -104,3 +125,20 @@ def admin_reset_password(current_user, user_id):
         }), 200
     except Exception as e:
         return jsonify({'message': f'Failed to initiate password reset: {str(e)}'}), 500
+
+@admin_bp.route('/audit-log', methods=['GET'])
+@admin_required
+def get_audit_log(current_user):
+    """
+    Admin endpoint to get a list of all audit log entries.
+    """
+    try:
+        # Fetch all audit logs, ordered by timestamp descending
+        logs = AuditLog.query.order_by(AuditLog.timestamp.desc()).all()
+        
+        log_list = [log.to_dict() for log in logs]
+        
+        print(f"✅ Successfully retrieved {len(log_list)} audit log entries.")
+        return jsonify(log_list), 200
+    except Exception as e:
+        return jsonify({'message': f'Failed to retrieve audit log: {str(e)}'}), 500

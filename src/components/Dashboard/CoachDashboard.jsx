@@ -9,7 +9,7 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false); // Used for the invite modal
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCreditsModal, setShowCreditsModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -66,45 +66,28 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
     }
   };
 
-  const handleAddCustomer = async (e) => {
+  const handleInviteCustomer = async (e) => {
     e.preventDefault();
     try {
-      const response = await coachAPI.createCustomer(formData);
+      // The backend handles user creation, profile linking, and token generation
+      const response = await coachAPI.inviteCustomer(formData);
       
-      // ✅ NEW: Generate invitation link after creating customer
-      if (response.data && response.data.customer) {
-        try {
-          const inviteResponse = await fetch(
-            `https://coachsync-pro.onrender.com/api/coach/customers/${response.data.customer.id}/generate-invite`,
-            {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${localStorage.getItem('coachsync_token')}`,
-                'Content-Type': 'application/json'
-              }
-            }
-          );
+      // Construct the full invite link for the user to copy
+      const frontendBaseUrl = import.meta.env.DEV ? 'http://localhost:5173' : 'https://coachsync-web.onrender.com';
+      const inviteUrl = `${frontendBaseUrl}/accept-invite?token=${response.data.setup_token}`;
 
-          if (inviteResponse.ok) {
-            const inviteData = await inviteResponse.json();
-            setInviteLink(inviteData.invite_link);
-            setInviteCustomerName(`${formData.first_name} ${formData.last_name}`);
-            setShowInviteModal(true);
-          }
-        } catch (inviteErr) {
-          console.error('Failed to generate invitation:', inviteErr);
-          // Still show success for customer creation
-          setSuccess('Customer added successfully!');
-          setTimeout(() => setSuccess(''), 3000);
-        }
-      }
+      setInviteLink(inviteUrl);
+      setInviteCustomerName(`${formData.first_name} ${formData.last_name}`);
+      setShowInviteModal(true); // Show the modal with the link
 
-      setShowAddModal(false);
+      setShowAddModal(false); // Close the invite form modal
       setFormData({ first_name: '', last_name: '', email: '', phone: '', initial_credits: 0 });
-      fetchCustomers();
+      fetchCustomers(); // Refresh customer list to show the new inactive user
+      setSuccess('Customer invited successfully! Share the link to complete onboarding.');
+      setTimeout(() => setSuccess(''), 5000);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to add customer');
-      setTimeout(() => setError(''), 3000);
+      setError(err.response?.data?.message || 'Failed to invite customer');
+      setTimeout(() => setError(''), 5000);
     }
   };
 
@@ -497,13 +480,13 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
                     {searchTerm ? 'Try adjusting your search' : 'Get started by adding your first customer'}
                   </p>
                   {!searchTerm && (
-                    <button
-                      onClick={() => setShowAddModal(true)}
-                      className="inline-flex items-center space-x-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
-                    >
-                      <Plus className="h-5 w-auto" />
-                      <span>Add Your First Customer</span>
-                    </button>
+	              <button
+	                  onClick={() => setShowAddModal(true)}
+	                  className="inline-flex items-center space-x-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+	                >
+	                  <Plus className="h-5 w-auto" />
+	                  <span>Invite Your First Customer</span>
+	                </button>
                   )}
                 </div>
               ) : (
@@ -579,12 +562,12 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
         </div>
       </main>
 
-      {/* Add Customer Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 animate-fade-in">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 transform animate-slide-up">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Add New Customer</h2>
-            <form onSubmit={handleAddCustomer} className="space-y-4">
+	      {/* Invite Customer Modal */}
+	      {showAddModal && (
+	        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 animate-fade-in">
+	          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 transform animate-slide-up">
+	            <h2 className="text-2xl font-bold text-gray-900 mb-6">Invite New Customer</h2>
+	            <form onSubmit={handleInviteCustomer} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
@@ -645,12 +628,12 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
                 >
                   Cancel
                 </button>
-                <button
-                  type="submit"
-                  className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
-                >
-                  Add Customer
-                </button>
+	                <button
+	                  type="submit"
+	                  className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+	                >
+	                  Generate Invite Link
+	                </button>
               </div>
             </form>
           </div>

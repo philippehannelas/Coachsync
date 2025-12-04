@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { CheckCircle, AlertCircle, Lock, Eye, EyeOff } from 'lucide-react';
 
 /**
@@ -8,13 +8,15 @@ import { CheckCircle, AlertCircle, Lock, Eye, EyeOff } from 'lucide-react';
  * Sets password and gets auto-logged in
  */
 const AcceptInvitePage = () => {
-  const { token } = useParams();
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get('token');
   const navigate = useNavigate();
   
   const [loading, setLoading] = useState(true);
   const [validating, setValidating] = useState(true);
   const [inviteData, setInviteData] = useState(null);
-  const [error, setError] = useState('');
+	  const [error, setError] = useState('');
+	  const API_BASE_URL = import.meta.env.DEV ? 'http://localhost:5000/api' : 'https://coachsync-pro.onrender.com/api';
   
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -25,9 +27,15 @@ const AcceptInvitePage = () => {
     validateInvitation();
   }, [token]);
 
-  const validateInvitation = async () => {
-    try {
-      const response = await fetch(`https://coachsync-pro.onrender.com/api/auth/validate-invite/${token}`);
+	  const validateInvitation = async () => {
+	    if (!token) {
+	      setError('Invitation token is missing from the URL.');
+	      setValidating(false);
+	      setLoading(false);
+	      return;
+	    }
+	    try {
+	      const response = await fetch(`${API_BASE_URL}/auth/validate-invite/${token}`);
       const data = await response.json();
       
       if (data.valid) {
@@ -59,10 +67,10 @@ const AcceptInvitePage = () => {
       return;
     }
 
-    setSubmitting(true);
-
-    try {
-      const response = await fetch('https://coachsync-pro.onrender.com/api/auth/accept-invite', {
+	    setSubmitting(true);
+	
+	    try {
+	      const response = await fetch(`${API_BASE_URL}/auth/accept-invite`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

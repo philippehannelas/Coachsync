@@ -75,6 +75,7 @@ export const coachAPI = {
   updateCustomer: (customerId, customerData) => api.put(`/coach/customers/${customerId}`, customerData),
   deleteCustomer: (customerId) => api.delete(`/coach/customers/${customerId}`),
   addCredits: (customerId, credits) => api.post(`/coach/customers/${customerId}/credits`, { credits }),
+  inviteCustomer: (customerData) => api.post('/coach/customers/invite', customerData),
   
   getTrainingPlans: () => api.get('/coach/training-plans'),
   createTrainingPlan: (planData) => api.post('/coach/training-plans', planData),
@@ -100,8 +101,10 @@ export const customerAPI = {
 
 // Admin API endpoints
 export const adminAPI = {
-  getUsers: () => api.get('/admin/users'),
+  getUsers: (params = {}) => api.get('/admin/users', { params }),
   updateUserStatus: (userId, statusData) => api.put(`/admin/users/${userId}/status`, statusData),
+  adminResetPassword: (userId) => api.post(`/admin/users/${userId}/reset-password`),
+  getAuditLog: () => api.get('/admin/audit-log'),
 };
 
 export default api;

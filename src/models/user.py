@@ -44,9 +44,52 @@ class User(db.Model):
             'role': self.role,
             'account_status': self.account_status,
             'created_at': self.created_at.isoformat() if self.created_at else None
-        }
-
-class CoachProfile(db.Model):
+	        }
+	
+		class PasswordResetToken(db.Model):
+		    __tablename__ = 'password_reset_token'
+		    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+		    user_id = db.Column(db.String(36), db.ForeignKey('user.id'), nullable=False)
+		    token = db.Column(db.String(255), unique=True, nullable=False)
+		    expires_at = db.Column(db.DateTime, nullable=False)
+		    token_type = db.Column(db.String(50), nullable=False, default='password_reset') # 'password_reset' or 'password_setup'
+		    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+		
+		    user = db.relationship('User', backref='reset_tokens')
+		
+		    def to_dict(self):
+		        return {
+		            'id': self.id,
+		            'user_id': self.user_id,
+		            'token': self.token,
+		            'expires_at': self.expires_at.isoformat() if self.expires_at else None,
+		            'token_type': self.token_type,
+		            'created_at': self.created_at.isoformat() if self.created_at else None
+		        }
+		
+		class AuditLog(db.Model):
+	    __tablename__ = 'audit_log'
+	    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+	    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+	    actor_id = db.Column(db.String(36), db.ForeignKey('user.id'), nullable=False)
+	    action = db.Column(db.String(100), nullable=False)
+	    target_id = db.Column(db.String(36), nullable=True) # ID of the entity affected (e.g., user.id)
+	    details = db.Column(db.JSON, nullable=True) # JSON for extra details
+	
+	    actor = db.relationship('User', foreign_keys=[actor_id], backref='actions_performed', lazy='joined')
+	
+	    def to_dict(self):
+	        return {
+	            'id': self.id,
+	            'timestamp': self.timestamp.isoformat() if self.timestamp else None,
+	            'actor_id': self.actor_id,
+	            'actor_email': self.actor.email if self.actor else None,
+	            'action': self.action,
+	            'target_id': self.target_id,
+	            'details': self.details
+	        }
+	
+	class CoachProfile(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = db.Column(db.String(36), db.ForeignKey('user.id'), nullable=False)
     bio = db.Column(db.Text)
