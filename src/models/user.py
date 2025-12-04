@@ -259,6 +259,8 @@ class Availability(db.Model):
     day_of_week = db.Column(db.Integer, nullable=False)  # 0=Monday, 6=Sunday
     start_time = db.Column(db.Time, nullable=False)
     end_time = db.Column(db.Time, nullable=False)
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     def to_dict(self):
         return {
@@ -266,7 +268,9 @@ class Availability(db.Model):
             'coach_id': self.coach_id,
             'day_of_week': self.day_of_week,
             'start_time': self.start_time.strftime('%H:%M') if self.start_time else None,
-            'end_time': self.end_time.strftime('%H:%M') if self.end_time else None
+            'end_time': self.end_time.strftime('%H:%M') if self.end_time else None,
+            'is_active': self.is_active,
+            'created_at': self.created_at.isoformat() if self.created_at else None
         }
 
 class DateSpecificAvailability(db.Model):
@@ -274,16 +278,22 @@ class DateSpecificAvailability(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     coach_id = db.Column(db.String(36), db.ForeignKey('coach_profile.id'), nullable=False)
     date = db.Column(db.Date, nullable=False)
-    start_time = db.Column(db.Time, nullable=False)
-    end_time = db.Column(db.Time, nullable=False)
     type = db.Column(db.Enum('available', 'unavailable', name='availability_type'), default='available')
+    start_time = db.Column(db.Time, nullable=True)
+    end_time = db.Column(db.Time, nullable=True)
+    reason = db.Column(db.String(255), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     def to_dict(self):
         return {
             'id': self.id,
             'coach_id': self.coach_id,
             'date': self.date.isoformat() if self.date else None,
+            'type': self.type,
             'start_time': self.start_time.strftime('%H:%M') if self.start_time else None,
             'end_time': self.end_time.strftime('%H:%M') if self.end_time else None,
-            'type': self.type
+            'reason': self.reason,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
