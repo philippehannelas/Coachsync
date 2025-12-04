@@ -52,7 +52,7 @@ class PasswordResetToken(db.Model):
     user_id = db.Column(db.String(36), db.ForeignKey('user.id'), nullable=False)
     token = db.Column(db.String(255), unique=True, nullable=False)
     expires_at = db.Column(db.DateTime, nullable=False)
-    token_type = db.Column(db.String(50), nullable=False, default='password_reset') # 'password_reset' or 'password_setup'
+    used_at = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     user = db.relationship('User', backref='reset_tokens')
@@ -63,7 +63,7 @@ class PasswordResetToken(db.Model):
             'user_id': self.user_id,
             'token': self.token,
             'expires_at': self.expires_at.isoformat() if self.expires_at else None,
-            'token_type': self.token_type,
+            'used_at': self.used_at.isoformat() if self.used_at else None,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
 

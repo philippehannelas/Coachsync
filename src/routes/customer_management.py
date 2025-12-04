@@ -99,8 +99,7 @@ def invite_customer(current_user):
         token_record = PasswordResetToken(
             user_id=new_user.id,
             token=reset_token,
-            expires_at=datetime.utcnow() + timedelta(days=7),
-            token_type='password_setup'
+            expires_at=datetime.utcnow() + timedelta(days=7)
         )
         db.session.add(token_record)
 
