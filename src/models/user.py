@@ -21,9 +21,7 @@ class User(db.Model):
     deleted_at = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # Relationships
-    coach_profile = db.relationship('CoachProfile', uselist=False, cascade='all, delete-orphan', lazy='joined')
-    customer_profile = db.relationship('CustomerProfile', backref='user', uselist=False, cascade='all, delete-orphan', lazy='joined')
+    # Relationsh    customer_profile = db.relationship('CustomerProfile', backref='user', uselist=False, cascade='all, delete-orphan', lazy='joined')   customer_profile = db.relationship('CustomerProfile', backref='user', uselist=False, cascade='all, delete-orphan', lazy='joined')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
