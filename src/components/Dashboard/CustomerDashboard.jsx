@@ -32,7 +32,7 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
       try {
         // Fetch profile
         console.log('📡 Fetching profile...');
-        const profileResponse = await fetch('/api/customer/profile', {
+        const profileResponse = await fetch('https://coachsync-pro.onrender.com/api/customer/profile', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         console.log('📥 Profile response status:', profileResponse.status);
@@ -64,7 +64,7 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
 
         // Fetch bookings
         console.log('📡 Fetching bookings...');
-        const bookingsResponse = await fetch('/api/customer/bookings', {
+        const bookingsResponse = await fetch('https://coachsync-pro.onrender.com/api/customer/bookings', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         console.log('📥 Bookings response status:', bookingsResponse.status);
