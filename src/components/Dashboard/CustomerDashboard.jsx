@@ -7,10 +7,10 @@ import MobileBottomNav from '../Customer/MobileBottomNav';
 
 function CustomerDashboard({ user, onNavigate, onLogout }) {
   const navigate = useNavigate();
-  // Removed activeTab - using navigation instead
   const [credits, setCredits] = useState(0);
   const [upcomingBookings, setUpcomingBookings] = useState([]);
   const [userProfile, setUserProfile] = useState(null);
+  const [coachBranding, setCoachBranding] = useState(null);
   const [loading, setLoading] = useState(true);
 
   console.log('🔍 CustomerDashboard render - user:', user, 'loading:', loading);
@@ -41,6 +41,23 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
           console.log('✅ Profile data:', profileData);
           setUserProfile(profileData);
           setCredits(profileData.credits || 0);
+          
+          // Fetch coach branding if coach_id exists
+          if (profileData.coach_id) {
+            console.log('📡 Fetching coach branding...');
+            try {
+              const brandingResponse = await fetch(`/api/customer/coach-branding?coach_id=${profileData.coach_id}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+              });
+              if (brandingResponse.ok) {
+                const brandingData = await brandingResponse.json();
+                console.log('✅ Coach branding data:', brandingData);
+                setCoachBranding(brandingData);
+              }
+            } catch (error) {
+              console.log('⚠️ Coach branding not available:', error);
+            }
+          }
         } else {
           console.error('❌ Profile fetch failed:', profileResponse.status);
         }
@@ -77,7 +94,6 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading...</p>
-          <p className="mt-2 text-xs text-gray-500">Check console (F12) for debug info</p>
         </div>
       </div>
     );
@@ -86,290 +102,204 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
   console.log('✨ Rendering dashboard content');
 
   const creditsStatus = credits > 5 ? 'good' : credits > 2 ? 'medium' : 'low';
+  const brandColor = coachBranding?.brand_color_primary || '#8B5CF6';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 pb-20">
-      {/* Header */}
-      <header className="bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg">
+      {/* Header with Coach Branding */}
+      <header className="bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg" style={{
+        background: coachBranding?.brand_color_primary 
+          ? `linear-gradient(to right, ${coachBranding.brand_color_primary}, ${coachBranding.brand_color_primary}dd)` 
+          : undefined
+      }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <AthleteHubLogo className="h-10 w-auto" color="white" />
+              {coachBranding?.logo_url ? (
+                <img src={coachBranding.logo_url} alt="Coach Logo" className="h-10 w-auto object-contain" />
+              ) : (
+                <AthleteHubLogo className="h-10 w-auto" color="white" />
+              )}
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold">
                   Welcome back, {user?.first_name || 'User'}!
                 </h1>
-                <p className="text-blue-100 text-sm mt-1">Ready to crush your goals today?</p>
+                {coachBranding?.motto && (
+                  <p className="text-sm text-white/90 italic mt-1">{coachBranding.motto}</p>
+                )}
               </div>
             </div>
             <button
               onClick={onLogout}
-              className="flex items-center space-x-2 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all"
             >
-              <LogOut className="h-5 w-5" />
+              <LogOut className="w-4 h-4" />
               <span className="hidden sm:inline">Logout</span>
             </button>
           </div>
         </div>
       </header>
 
+      {/* Coach Info Card (if branding exists) */}
+      {coachBranding && (coachBranding.profile_photo_url || coachBranding.business_name || coachBranding.description) && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+          <div className="bg-white rounded-xl shadow-md p-6">
+            <div className="flex items-start gap-4">
+              {coachBranding.profile_photo_url && (
+                <img 
+                  src={coachBranding.profile_photo_url} 
+                  alt="Your Coach" 
+                  className="w-20 h-20 rounded-full object-cover border-4 border-purple-100"
+                />
+              )}
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-gray-800" style={{ color: brandColor }}>
+                  {coachBranding.business_name || 'Your Coach'}
+                </h3>
+                {coachBranding.description && (
+                  <p className="text-sm text-gray-600 mt-2">{coachBranding.description}</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          {/* Session Credits Card */}
-          <div className={`bg-white rounded-xl shadow-md p-6 border-l-4 transform hover:-translate-y-1 transition-all duration-300 ${
-            creditsStatus === 'good' ? 'border-green-500' :
-            creditsStatus === 'medium' ? 'border-yellow-500' :
-            'border-red-500'
-          }`}>
-            <div className="flex items-center justify-between mb-4">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {/* Credits Card */}
+          <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-600 text-sm font-medium">Session Credits</p>
-                <p className={`text-4xl font-bold mt-1 ${
-                  creditsStatus === 'good' ? 'text-green-600' :
-                  creditsStatus === 'medium' ? 'text-yellow-600' :
-                  'text-red-600'
-                }`}>
-                  {credits}
-                </p>
+                <p className="text-sm text-gray-600">Session Credits</p>
+                <p className="text-3xl font-bold mt-1" style={{ color: brandColor }}>{credits}</p>
               </div>
-              <div className={`p-3 rounded-lg ${
+              <div className={`p-4 rounded-full ${
                 creditsStatus === 'good' ? 'bg-green-100' :
-                creditsStatus === 'medium' ? 'bg-yellow-100' :
-                'bg-red-100'
+                creditsStatus === 'medium' ? 'bg-yellow-100' : 'bg-red-100'
               }`}>
-                <CreditCard className={`h-8 w-8 ${
+                <CreditCard className={`w-8 h-8 ${
                   creditsStatus === 'good' ? 'text-green-600' :
-                  creditsStatus === 'medium' ? 'text-yellow-600' :
-                  'text-red-600'
+                  creditsStatus === 'medium' ? 'text-yellow-600' : 'text-red-600'
                 }`} />
               </div>
             </div>
-            {credits <= 2 && (
-              <div className="mt-3 p-2 bg-red-50 rounded-lg">
-                <p className="text-red-700 text-xs font-medium">
-                  ⚠️ Low credits! Contact your coach to add more.
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Upcoming Sessions Card */}
-          <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500 transform hover:-translate-y-1 transition-all duration-300">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Upcoming Sessions</p>
-                <p className="text-4xl font-bold text-gray-900 mt-1">{upcomingBookings.length}</p>
-              </div>
-              <div className="bg-blue-100 p-3 rounded-lg">
-                <Calendar className="h-8 w-8 text-blue-600" />
-              </div>
-            </div>
-            <p className="text-xs text-gray-500 mt-3">
-              {upcomingBookings.length === 0 ? 'No sessions booked' : '2 sessions booked'}
+            <p className="text-xs text-gray-500 mt-2">
+              {creditsStatus === 'good' ? 'You\'re all set!' :
+               creditsStatus === 'medium' ? 'Consider topping up soon' :
+               'Time to renew your credits'}
             </p>
           </div>
 
-          {/* Sessions Completed Card */}
-          <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-purple-500 transform hover:-translate-y-1 transition-all duration-300">
+          {/* Upcoming Sessions Card */}
+          <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-600 text-sm font-medium">Sessions completed</p>
-                <p className="text-4xl font-bold text-gray-900 mt-1">0</p>
+                <p className="text-sm text-gray-600">Upcoming Sessions</p>
+                <p className="text-3xl font-bold mt-1" style={{ color: brandColor }}>{upcomingBookings.length}</p>
               </div>
-              <div className="bg-purple-100 p-3 rounded-lg">
-                <FileText className="h-8 w-8 text-purple-600" />
+              <div className="p-4 rounded-full bg-blue-100">
+                <Calendar className="w-8 h-8 text-blue-600" />
               </div>
             </div>
-            <p className="text-xs text-gray-500 mt-3">Keep up the great work!</p>
+            <button
+              onClick={() => onNavigate('bookings')}
+              className="text-sm mt-2 hover:underline"
+              style={{ color: brandColor }}
+            >
+              View all bookings →
+            </button>
           </div>
 
-          {/* Tasks Card */}
-          <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-orange-500 transform hover:-translate-y-1 transition-all duration-300">
+          {/* Training Plan Card */}
+          <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-600 text-sm font-medium">Action Items</p>
-                <p className="text-4xl font-bold text-gray-900 mt-1">0</p>
+                <p className="text-sm text-gray-600">Training Plan</p>
+                <p className="text-lg font-semibold mt-1 text-gray-800">Active</p>
               </div>
-              <div className="bg-orange-100 p-3 rounded-lg">
-                <FileText className="h-8 w-8 text-orange-600" />
+              <div className="p-4 rounded-full bg-purple-100">
+                <Dumbbell className="w-8 h-8 text-purple-600" />
               </div>
             </div>
-            <p className="text-xs text-gray-500 mt-3">All tasks complete</p>
+            <button
+              onClick={() => onNavigate('training')}
+              className="text-sm mt-2 hover:underline"
+              style={{ color: brandColor }}
+            >
+              View training plan →
+            </button>
           </div>
         </div>
 
-        {/* Profile Section */}
-        <div className="bg-white rounded-xl shadow-lg p-6 md:p-8 mb-8">
-          <div className="flex items-center space-x-4 mb-6">
-            <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-4 rounded-full">
-              <User className="h-8 w-8 text-white" />
-            </div>
-            <div>
-              <h3 className="text-2xl font-bold text-gray-900">Your Profile</h3>
-              <p className="text-gray-600">Manage your personal information</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Name */}
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="flex items-center space-x-3 mb-2">
-                <User className="h-5 w-5 text-gray-400" />
-                <label className="text-sm font-medium text-gray-700">Full Name</label>
-              </div>
-              <p className="text-lg font-semibold text-gray-900 ml-8">
-                {user?.first_name || 'N/A'} {user?.last_name || ''}
-              </p>
-            </div>
-
-            {/* Email */}
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="flex items-center space-x-3 mb-2">
-                <Mail className="h-5 w-5 text-gray-400" />
-                <label className="text-sm font-medium text-gray-700">Email Address</label>
-              </div>
-              <p className="text-lg font-semibold text-gray-900 ml-8 break-all">
-                {user?.email || 'N/A'}
-              </p>
-            </div>
-
-            {/* Phone */}
-            {user?.phone && (
-              <div className="bg-gray-50 rounded-lg p-4">
-                <div className="flex items-center space-x-3 mb-2">
-                  <Phone className="h-5 w-5 text-gray-400" />
-                  <label className="text-sm font-medium text-gray-700">Phone Number</label>
-                </div>
-                <p className="text-lg font-semibold text-gray-900 ml-8">
-                  {user?.phone}
-                </p>
-              </div>
-            )}
-
-            {/* Role */}
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="flex items-center space-x-3 mb-2">
-                <User className="h-5 w-5 text-gray-400" />
-                <label className="text-sm font-medium text-gray-700">Account Type</label>
-              </div>
-              <div className="ml-8">
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                  Customer
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Quick Actions - NEW WORKOUT FEATURES */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Book a Session */}
           <button
-            onClick={() => onNavigate('calendar')}
-            className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 text-left group"
+            onClick={() => onNavigate('bookings')}
+            className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all text-left group"
           >
-            <div className="flex items-center space-x-4">
-              <div className="bg-blue-100 p-4 rounded-lg group-hover:bg-blue-200 transition-colors">
-                <Calendar className="h-8 w-8 text-blue-600" />
-              </div>
+            <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-1">Book a Session</h3>
-                <p className="text-gray-600">Schedule your next training session</p>
+                <h3 className="text-lg font-semibold text-gray-800 group-hover:text-purple-600 transition-colors">
+                  Book a Session
+                </h3>
+                <p className="text-sm text-gray-600 mt-1">Schedule your next training session</p>
               </div>
+              <Calendar className="w-8 h-8" style={{ color: brandColor }} />
             </div>
           </button>
 
-          {/* Start Workout - NEW */}
+          {/* View History */}
           <button
-            onClick={() => navigate('/customer/start-workout')}
-            className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-md p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 text-left group"
+            onClick={() => onNavigate('history')}
+            className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all text-left group"
           >
-            <div className="flex items-center space-x-4">
-              <div className="bg-white/20 p-4 rounded-lg group-hover:bg-white/30 transition-colors">
-                <Dumbbell className="h-8 w-8 text-white" />
-              </div>
+            <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-xl font-bold text-white mb-1">Start Workout</h3>
-                <p className="text-purple-100">Begin your training session</p>
+                <h3 className="text-lg font-semibold text-gray-800 group-hover:text-purple-600 transition-colors">
+                  Session History
+                </h3>
+                <p className="text-sm text-gray-600 mt-1">Review your past sessions and notes</p>
               </div>
-            </div>
-          </button>
-
-          {/* My Progress - NEW */}
-          <button
-            onClick={() => navigate('/customer/progress')}
-            className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 text-left group"
-          >
-            <div className="flex items-center space-x-4">
-              <div className="bg-green-100 p-4 rounded-lg group-hover:bg-green-200 transition-colors">
-                <BarChart3 className="h-8 w-8 text-green-600" />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-1">My Progress</h3>
-                <p className="text-gray-600">View stats and achievements</p>
-              </div>
-            </div>
-          </button>
-
-          {/* Workout History - NEW */}
-          <button
-            onClick={() => navigate('/customer/workout-history')}
-            className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 text-left group"
-          >
-            <div className="flex items-center space-x-4">
-              <div className="bg-indigo-100 p-4 rounded-lg group-hover:bg-indigo-200 transition-colors">
-                <History className="h-8 w-8 text-indigo-600" />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-1">Workout History</h3>
-                <p className="text-gray-600">Review past workouts</p>
-              </div>
-            </div>
-          </button>
-
-          {/* My Workouts */}
-          <button
-            onClick={() => onNavigate('training-plans')}
-            className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 text-left group"
-          >
-            <div className="flex items-center space-x-4">
-              <div className="bg-purple-100 p-4 rounded-lg group-hover:bg-purple-200 transition-colors">
-                <AthleteHubLogo className="h-8 w-8" color="#0066FF" />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-1">My Training Plans</h3>
-                <p className="text-gray-600">View assigned training plans</p>
-              </div>
-            </div>
-          </button>
-
-          {/* View Session Notes */}
-          <button
-            onClick={() => setActiveTab('sessions')}
-            className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 text-left group"
-          >
-            <div className="flex items-center space-x-4">
-              <div className="bg-orange-100 p-4 rounded-lg group-hover:bg-orange-200 transition-colors">
-                <FileText className="h-8 w-8 text-orange-600" />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-1">View Session Notes</h3>
-                <p className="text-gray-600">Review your progress and action items</p>
-              </div>
+              <History className="w-8 h-8" style={{ color: brandColor }} />
             </div>
           </button>
         </div>
 
-        {/* Session History - Always visible */}
-        <div className="mt-8">
-          <SessionHistoryView userProfile={userProfile} />
-        </div>
+        {/* Upcoming Bookings */}
+        {upcomingBookings.length > 0 && (
+          <div className="mt-8 bg-white rounded-xl shadow-md p-6">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">Next Sessions</h2>
+            <div className="space-y-3">
+              {upcomingBookings.slice(0, 3).map((booking, index) => (
+                <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg" style={{ backgroundColor: `${brandColor}20` }}>
+                      <Calendar className="w-5 h-5" style={{ color: brandColor }} />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-800">{booking.date}</p>
+                      <p className="text-sm text-gray-600">{booking.time}</p>
+                    </div>
+                  </div>
+                  <span className="text-xs px-3 py-1 rounded-full" style={{
+                    backgroundColor: `${brandColor}20`,
+                    color: brandColor
+                  }}>
+                    Confirmed
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </main>
 
-      {/* Bottom Navigation - Visible on all devices */}
-      <MobileBottomNav />
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav onNavigate={onNavigate} />
     </div>
   );
 }

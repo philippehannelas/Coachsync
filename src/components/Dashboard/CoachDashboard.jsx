@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Search, Plus, Edit, Trash2, CreditCard, LogOut, Mail, Phone, User, Calendar, Clock, ChevronRight } from 'lucide-react';
+import { Users, Search, Plus, Edit, Trash2, CreditCard, LogOut, Mail, Phone, User, Calendar, Clock, ChevronRight, Palette } from 'lucide-react';
 import AthleteHubLogo from '../AthleteHubLogo';
 import { coachAPI } from '../../services/api.jsx';
 import InvitationLinkModal from '../Modals/InvitationLinkModal';
@@ -406,6 +406,13 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
           >
             <AthleteHubLogo className="h-5 w-auto" color="currentColor" />
             <span>View Calendar</span>
+          </button>
+          <button
+            onClick={() => onNavigate && onNavigate('branding')}
+            className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105"
+          >
+            <Palette className="h-5 w-auto" />
+            <span>Branding</span>
           </button>
         </div>
 

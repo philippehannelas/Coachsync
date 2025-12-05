@@ -10,6 +10,7 @@ import CustomerCalendarPage from './components/Calendar/CustomerCalendarPage';
 import AcceptInvitePage from './pages/AcceptInvitePage';
 import TrainingPlansPage from './components/TrainingPlans/TrainingPlansPage';
 import CustomerTrainingPlans from './components/TrainingPlans/CustomerTrainingPlans';
+import BrandingSettings from './components/Dashboard/BrandingSettings';
 
 // NEW IMPORTS - Customer Portal Pages
 import StartWorkoutPage from './components/Customer/StartWorkoutPage';
@@ -24,14 +25,16 @@ function CoachDashboardWrapper() {
   const navigate = useNavigate();
 
   const handleNavigate = (page) => {
-    if (page === 'calendar') {
-      navigate('/coach/calendar');
-    } else if (page === 'dashboard') {
-      navigate('/coach/dashboard');
-    } else if (page === 'customers') {
-      navigate('/coach/customers');
-    } else if (page === 'training-plans') {
-      navigate('/coach/training-plans');
+  if (page === 'calendar') {
+    navigate('/coach/calendar');
+  } else if (page === 'dashboard') {
+    navigate('/coach/dashboard');
+  } else if (page === 'customers') {
+    navigate('/coach/customers');
+  } else if (page === 'training-plans') {
+    navigate('/coach/training-plans');
+  } else if (page === 'branding') {  // ADD THIS
+    navigate('/coach/branding');
     }
   };
 
@@ -148,7 +151,14 @@ function AppContent() {
           </ProtectedRoute>
         }
       />
-
+      <Route
+  path="/coach/branding"
+  element={
+    <ProtectedRoute allowedRole="coach">
+      <BrandingSettings />
+    </ProtectedRoute>
+        }
+      />
       {/* Customer Routes */}
       <Route
         path="/customer/dashboard"
