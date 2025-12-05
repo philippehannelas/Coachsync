@@ -34,13 +34,20 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
         const profileResponse = await customerAPI.getProfile();
         console.log('✅ Profile data:', profileResponse.data);
         setUserProfile(profileResponse.data);
-        setCredits(profileResponse.data.credits || 0);
+        setCredits(profileResponse.data.session_credits || 0);
 
         // Fetch bookings using customerAPI
         console.log('📡 Fetching bookings...');
         const bookingsResponse = await customerAPI.getBookings();
         console.log('✅ Bookings data:', bookingsResponse.data);
-        setUpcomingBookings(bookingsResponse.data);
+        
+        // Filter for upcoming bookings only (confirmed/pending, future dates)
+        const now = new Date();
+        const upcoming = bookingsResponse.data.filter(booking => {
+          const bookingDate = new Date(booking.start_time);
+          return (booking.status === 'confirmed' || booking.status === 'pending') && bookingDate > now;
+        });
+        setUpcomingBookings(upcoming);
 
         // Fetch coach branding using customerAPI
         console.log('📡 Fetching coach branding...');
@@ -260,7 +267,7 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
 
           {/* View Training Plans */}
           <button
-            onClick={() => navigate('/customer/plans')}
+            onClick={() => navigate('/customer/training-plans')}
             className="bg-white rounded-xl shadow-md p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 text-left group border-l-4 border-green-500"
           >
             <div className="flex items-center justify-between">
@@ -331,9 +338,9 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
                       <Calendar className="h-6 w-6" style={{ color: brandColor }} />
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900">{booking.service_type}</p>
+                      <p className="font-semibold text-gray-900">Training Session</p>
                       <p className="text-sm text-gray-600">
-                        {new Date(booking.booking_date).toLocaleDateString()} at {booking.booking_time}
+                        {new Date(booking.start_time).toLocaleDateString()} at {new Date(booking.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
                   </div>
