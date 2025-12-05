@@ -98,6 +98,7 @@ export const customerAPI = {
   createBooking: (bookingData) => api.post('/customer/bookings', bookingData),
   cancelBooking: (bookingId) => api.delete(`/customer/bookings/${bookingId}`),
   getCredits: () => api.get('/customer/credits'),
+  getCoachBranding: () => api.get('/customer/coach-branding'),
 };
 
 // Admin API endpoints

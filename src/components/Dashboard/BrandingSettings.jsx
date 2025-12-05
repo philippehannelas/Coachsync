@@ -1,23 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, X, Check, Image, User, Palette, Trash2 } from 'lucide-react';
-import axios from 'axios';
+import { ArrowLeft, Upload, Palette, Save, Image as ImageIcon, User } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import api from '../../services/api';
 
-const API_URL = 'https://coachsync-pro.onrender.com/api';
-
-const BrandingSettings = () => {
+function BrandingSettings() {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState({ type: '', text: '' });
+  
   const [branding, setBranding] = useState({
     logo_url: '',
     profile_photo_url: '',
     business_name: '',
     motto: '',
     description: '',
-    brand_color_primary: '#8B5CF6'
+    brand_color_primary: '#625ff7'
   });
 
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState({ type: '', text: '' });
-  const [logoPreview, setLogoPreview] = useState(null);
-  const [photoPreview, setPhotoPreview] = useState(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   useEffect(() => {
     fetchBranding();
@@ -25,42 +27,21 @@ const BrandingSettings = () => {
 
   const fetchBranding = async () => {
     try {
-      const token = localStorage.getItem('coachsync_token');
-      const response = await axios.get(`${API_URL}/coach/branding`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setBranding(response.data);
+      setLoading(true);
+      const response = await api.get('/branding');
+      if (response.data) {
+        setBranding({
+          logo_url: response.data.logo_url || '',
+          profile_photo_url: response.data.profile_photo_url || '',
+          business_name: response.data.business_name || '',
+          motto: response.data.motto || '',
+          description: response.data.description || '',
+          brand_color_primary: response.data.brand_color_primary || '#625ff7'
+        });
+      }
     } catch (error) {
       console.error('Error fetching branding:', error);
-    }
-  };
-
-  const handleTextChange = (field, value) => {
-    setBranding(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleSaveText = async () => {
-    setLoading(true);
-    setMessage({ type: '', text: '' });
-    
-    try {
-      const token = localStorage.getItem('coachsync_token');
-      const response = await axios.put(
-        `${API_URL}/coach/branding`,
-        {
-          business_name: branding.business_name,
-          motto: branding.motto,
-          description: branding.description,
-          brand_color_primary: branding.brand_color_primary
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      
-      setBranding(response.data.branding);
-      setMessage({ type: 'success', text: 'Branding updated successfully!' });
-      setTimeout(() => setMessage({ type: '', text: '' }), 3000);
-    } catch (error) {
-      setMessage({ type: 'error', text: error.response?.data?.message || 'Failed to update branding' });
+      setMessage({ type: 'error', text: 'Failed to load branding settings' });
     } finally {
       setLoading(false);
     }
@@ -70,39 +51,37 @@ const BrandingSettings = () => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Preview
-    const reader = new FileReader();
-    reader.onloadend = () => setLogoPreview(reader.result);
-    reader.readAsDataURL(file);
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      setMessage({ type: 'error', text: 'Logo file size must be less than 2MB' });
+      return;
+    }
 
-    // Upload
-    setLoading(true);
-    setMessage({ type: '', text: '' });
-    
+    // Validate file type
+    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'];
+    if (!validTypes.includes(file.type)) {
+      setMessage({ type: 'error', text: 'Logo must be PNG, JPG, or SVG' });
+      return;
+    }
+
     try {
-      const token = localStorage.getItem('coachsync_token');
-      const formData = new FormData();
-      formData.append('file', file);
+      setUploadingLogo(true);
+      setMessage({ type: '', text: '' });
 
-      const response = await axios.post(
-        `${API_URL}/coach/branding/upload-logo`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
-          }
-        }
-      );
+      const formData = new FormData();
+      formData.append('logo', file);
+
+      const response = await api.post('/branding/upload-logo', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
 
       setBranding(prev => ({ ...prev, logo_url: response.data.logo_url }));
       setMessage({ type: 'success', text: 'Logo uploaded successfully!' });
-      setTimeout(() => setMessage({ type: '', text: '' }), 3000);
     } catch (error) {
-      setMessage({ type: 'error', text: error.response?.data?.message || 'Failed to upload logo' });
-      setLogoPreview(null);
+      console.error('Error uploading logo:', error);
+      setMessage({ type: 'error', text: error.response?.data?.error || 'Failed to upload logo' });
     } finally {
-      setLoading(false);
+      setUploadingLogo(false);
     }
   };
 
@@ -110,286 +89,327 @@ const BrandingSettings = () => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Preview
-    const reader = new FileReader();
-    reader.onloadend = () => setPhotoPreview(reader.result);
-    reader.readAsDataURL(file);
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      setMessage({ type: 'error', text: 'Photo file size must be less than 2MB' });
+      return;
+    }
 
-    // Upload
-    setLoading(true);
-    setMessage({ type: '', text: '' });
-    
+    // Validate file type
+    const validTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+    if (!validTypes.includes(file.type)) {
+      setMessage({ type: 'error', text: 'Photo must be PNG or JPG' });
+      return;
+    }
+
     try {
-      const token = localStorage.getItem('coachsync_token');
-      const formData = new FormData();
-      formData.append('file', file);
+      setUploadingPhoto(true);
+      setMessage({ type: '', text: '' });
 
-      const response = await axios.post(
-        `${API_URL}/coach/branding/upload-photo`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
-          }
-        }
-      );
+      const formData = new FormData();
+      formData.append('photo', file);
+
+      const response = await api.post('/branding/upload-photo', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
 
       setBranding(prev => ({ ...prev, profile_photo_url: response.data.profile_photo_url }));
       setMessage({ type: 'success', text: 'Profile photo uploaded successfully!' });
-      setTimeout(() => setMessage({ type: '', text: '' }), 3000);
     } catch (error) {
-      setMessage({ type: 'error', text: error.response?.data?.message || 'Failed to upload photo' });
-      setPhotoPreview(null);
+      console.error('Error uploading photo:', error);
+      setMessage({ type: 'error', text: error.response?.data?.error || 'Failed to upload photo' });
     } finally {
-      setLoading(false);
+      setUploadingPhoto(false);
     }
   };
 
-  const handleDeleteLogo = async () => {
-    if (!confirm('Are you sure you want to delete your logo?')) return;
-
-    setLoading(true);
+  const handleSave = async () => {
     try {
-      const token = localStorage.getItem('coachsync_token');
-      await axios.delete(`${API_URL}/coach/branding/delete-logo`, {
-        headers: { Authorization: `Bearer ${token}` }
+      setSaving(true);
+      setMessage({ type: '', text: '' });
+
+      await api.put('/branding', {
+        business_name: branding.business_name,
+        motto: branding.motto,
+        description: branding.description,
+        brand_color_primary: branding.brand_color_primary
       });
 
-      setBranding(prev => ({ ...prev, logo_url: '' }));
-      setLogoPreview(null);
-      setMessage({ type: 'success', text: 'Logo deleted successfully!' });
-      setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+      setMessage({ type: 'success', text: 'Branding settings saved successfully!' });
     } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to delete logo' });
+      console.error('Error saving branding:', error);
+      setMessage({ type: 'error', text: error.response?.data?.error || 'Failed to save branding settings' });
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
-  const handleDeletePhoto = async () => {
-    if (!confirm('Are you sure you want to delete your profile photo?')) return;
-
-    setLoading(true);
-    try {
-      const token = localStorage.getItem('coachsync_token');
-      await axios.delete(`${API_URL}/coach/branding/delete-photo`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      setBranding(prev => ({ ...prev, profile_photo_url: '' }));
-      setPhotoPreview(null);
-      setMessage({ type: 'success', text: 'Profile photo deleted successfully!' });
-      setTimeout(() => setMessage({ type: '', text: '' }), 3000);
-    } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to delete photo' });
-    } finally {
-      setLoading(false);
-    }
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading branding settings...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-800">Branding Settings</h1>
-        <p className="text-gray-600 mt-1">Customize how your brand appears to your customers</p>
-      </div>
-
-      {/* Message */}
-      {message.text && (
-        <div className={`p-4 rounded-lg ${message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
-          {message.text}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header with Back Button */}
+        <div className="mb-8">
+          <button
+            onClick={() => navigate('/coach/dashboard')}
+            className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 mb-4 transition-colors"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            <span className="font-medium">Back to Dashboard</span>
+          </button>
+          <h1 className="text-3xl font-bold text-gray-900">Branding Settings</h1>
+          <p className="text-gray-600 mt-2">Customize your brand appearance for your customers</p>
         </div>
-      )}
 
-      {/* Logo Upload */}
-      <div className="bg-white rounded-xl shadow-md p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <Image className="w-6 h-6 text-purple-600" />
-          <h2 className="text-xl font-semibold text-gray-800">Logo</h2>
-        </div>
-        
-        <div className="flex items-center gap-6">
-          <div className="w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden border-2 border-gray-200">
-            {logoPreview || branding.logo_url ? (
-              <img src={logoPreview || branding.logo_url} alt="Logo" className="w-full h-full object-contain" />
-            ) : (
-              <Image className="w-12 h-12 text-gray-400" />
-            )}
+        {/* Message Display */}
+        {message.text && (
+          <div className={`mb-6 p-4 rounded-lg ${
+            message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' :
+            'bg-red-50 text-red-800 border border-red-200'
+          }`}>
+            {message.text}
           </div>
-          
-          <div className="flex-1 space-y-3">
-            <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors">
-              <Upload className="w-4 h-4" />
-              <span>Upload Logo</span>
-              <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
-            </label>
-            
-            {branding.logo_url && (
-              <button
-                onClick={handleDeleteLogo}
-                className="ml-3 inline-flex items-center gap-2 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-colors"
-              >
-                <Trash2 className="w-4 h-4" />
-                <span>Delete</span>
-              </button>
-            )}
-            
-            <p className="text-sm text-gray-500">Recommended: 500x500px, PNG or JPG, max 2MB</p>
-          </div>
-        </div>
-      </div>
+        )}
 
-      {/* Profile Photo Upload */}
-      <div className="bg-white rounded-xl shadow-md p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <User className="w-6 h-6 text-purple-600" />
-          <h2 className="text-xl font-semibold text-gray-800">Profile Photo</h2>
-        </div>
-        
-        <div className="flex items-center gap-6">
-          <div className="w-32 h-32 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden border-2 border-gray-200">
-            {photoPreview || branding.profile_photo_url ? (
-              <img src={photoPreview || branding.profile_photo_url} alt="Profile" className="w-full h-full object-cover" />
-            ) : (
-              <User className="w-12 h-12 text-gray-400" />
-            )}
-          </div>
-          
-          <div className="flex-1 space-y-3">
-            <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors">
-              <Upload className="w-4 h-4" />
-              <span>Upload Photo</span>
-              <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
-            </label>
-            
-            {branding.profile_photo_url && (
-              <button
-                onClick={handleDeletePhoto}
-                className="ml-3 inline-flex items-center gap-2 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-colors"
-              >
-                <Trash2 className="w-4 h-4" />
-                <span>Delete</span>
-              </button>
-            )}
-            
-            <p className="text-sm text-gray-500">Recommended: 400x400px, PNG or JPG, max 2MB</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Text Fields */}
-      <div className="bg-white rounded-xl shadow-md p-6 space-y-4">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Brand Information</h2>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Business Name</label>
-          <input
-            type="text"
-            value={branding.business_name || ''}
-            onChange={(e) => handleTextChange('business_name', e.target.value)}
-            placeholder="e.g., Elite Performance Training"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Motto / Tagline</label>
-          <input
-            type="text"
-            value={branding.motto || ''}
-            onChange={(e) => handleTextChange('motto', e.target.value)}
-            placeholder="e.g., Transform Your Performance"
-            maxLength={255}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-          <textarea
-            value={branding.description || ''}
-            onChange={(e) => handleTextChange('description', e.target.value)}
-            placeholder="Tell your customers about your coaching philosophy and approach..."
-            rows={4}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Brand Color</label>
-          <div className="flex items-center gap-3">
-            <input
-              type="color"
-              value={branding.brand_color_primary || '#8B5CF6'}
-              onChange={(e) => handleTextChange('brand_color_primary', e.target.value)}
-              className="w-16 h-10 border border-gray-300 rounded cursor-pointer"
-            />
-            <input
-              type="text"
-              value={branding.brand_color_primary || '#8B5CF6'}
-              onChange={(e) => handleTextChange('brand_color_primary', e.target.value)}
-              placeholder="#8B5CF6"
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-            />
-          </div>
-          <p className="text-sm text-gray-500 mt-1">This color will be used for buttons and accents</p>
-        </div>
-
-        <button
-          onClick={handleSaveText}
-          disabled={loading}
-          className="w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {loading ? 'Saving...' : 'Save Branding'}
-        </button>
-      </div>
-
-      {/* Preview */}
-      <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl shadow-md p-6">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Customer View Preview</h2>
-        
-        <div className="bg-white rounded-lg p-6 space-y-4">
-          {/* Header Preview */}
-          <div className="flex items-center gap-4 pb-4 border-b">
-            {branding.logo_url && (
-              <img src={branding.logo_url} alt="Logo" className="h-12 object-contain" />
-            )}
-            <div className="flex-1">
-              <h3 className="text-lg font-bold" style={{ color: branding.brand_color_primary }}>
-                {branding.business_name || 'Your Business Name'}
-              </h3>
-              {branding.motto && (
-                <p className="text-sm text-gray-600 italic">{branding.motto}</p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Settings Form */}
+          <div className="space-y-6">
+            {/* Logo Upload */}
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                <ImageIcon className="h-5 w-5 mr-2 text-blue-600" />
+                Logo
+              </h2>
+              <p className="text-sm text-gray-600 mb-4">
+                Upload your business logo (PNG, JPG, or SVG, max 2MB)
+              </p>
+              {branding.logo_url && (
+                <div className="mb-4">
+                  <img 
+                    src={branding.logo_url} 
+                    alt="Current Logo" 
+                    className="h-20 object-contain border border-gray-200 rounded-lg p-2"
+                  />
+                </div>
               )}
+              <label className="flex items-center justify-center space-x-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg cursor-pointer transition-colors">
+                <Upload className="h-5 w-5" />
+                <span>{uploadingLogo ? 'Uploading...' : 'Upload Logo'}</span>
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/jpg,image/svg+xml"
+                  onChange={handleLogoUpload}
+                  disabled={uploadingLogo}
+                  className="hidden"
+                />
+              </label>
             </div>
-          </div>
 
-          {/* Coach Info Preview */}
-          {branding.profile_photo_url && (
-            <div className="flex items-center gap-4">
-              <img src={branding.profile_photo_url} alt="Coach" className="w-16 h-16 rounded-full object-cover" />
-              <div>
-                <p className="font-semibold text-gray-800">Your Coach</p>
-                {branding.description && (
-                  <p className="text-sm text-gray-600 mt-1">{branding.description.substring(0, 100)}{branding.description.length > 100 ? '...' : ''}</p>
-                )}
+            {/* Profile Photo Upload */}
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                <User className="h-5 w-5 mr-2 text-purple-600" />
+                Profile Photo
+              </h2>
+              <p className="text-sm text-gray-600 mb-4">
+                Upload your profile photo (PNG or JPG, max 2MB)
+              </p>
+              {branding.profile_photo_url && (
+                <div className="mb-4">
+                  <img 
+                    src={branding.profile_photo_url} 
+                    alt="Current Profile" 
+                    className="h-24 w-24 rounded-full object-cover border-4 border-gray-200"
+                  />
+                </div>
+              )}
+              <label className="flex items-center justify-center space-x-2 px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg cursor-pointer transition-colors">
+                <Upload className="h-5 w-5" />
+                <span>{uploadingPhoto ? 'Uploading...' : 'Upload Photo'}</span>
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/jpg"
+                  onChange={handlePhotoUpload}
+                  disabled={uploadingPhoto}
+                  className="hidden"
+                />
+              </label>
+            </div>
+
+            {/* Business Information */}
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Business Information</h2>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Business Name
+                  </label>
+                  <input
+                    type="text"
+                    value={branding.business_name}
+                    onChange={(e) => setBranding(prev => ({ ...prev, business_name: e.target.value }))}
+                    placeholder="e.g., Elite Performance Coaching"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Motto / Tagline
+                  </label>
+                  <input
+                    type="text"
+                    value={branding.motto}
+                    onChange={(e) => setBranding(prev => ({ ...prev, motto: e.target.value }))}
+                    placeholder="e.g., Unlock Your Potential"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    value={branding.description}
+                    onChange={(e) => setBranding(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="Tell your customers about your coaching philosophy and approach..."
+                    rows={4}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
               </div>
             </div>
-          )}
 
-          {/* Button Preview */}
-          <button
-            className="px-6 py-2 text-white font-semibold rounded-lg shadow-md"
-            style={{ backgroundColor: branding.brand_color_primary }}
-          >
-            Sample Button
-          </button>
+            {/* Brand Color */}
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                <Palette className="h-5 w-5 mr-2 text-orange-600" />
+                Brand Color
+              </h2>
+              <p className="text-sm text-gray-600 mb-4">
+                Choose a primary color for your brand
+              </p>
+              <div className="flex items-center space-x-4">
+                <input
+                  type="color"
+                  value={branding.brand_color_primary}
+                  onChange={(e) => setBranding(prev => ({ ...prev, brand_color_primary: e.target.value }))}
+                  className="h-12 w-20 rounded-lg cursor-pointer border-2 border-gray-300"
+                />
+                <input
+                  type="text"
+                  value={branding.brand_color_primary}
+                  onChange={(e) => setBranding(prev => ({ ...prev, brand_color_primary: e.target.value }))}
+                  placeholder="#625ff7"
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            {/* Save Button */}
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="w-full flex items-center justify-center space-x-2 px-6 py-4 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Save className="h-5 w-5" />
+              <span>{saving ? 'Saving...' : 'Save Branding Settings'}</span>
+            </button>
+          </div>
+
+          {/* Live Preview */}
+          <div className="lg:sticky lg:top-8 h-fit">
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Live Preview</h2>
+              <p className="text-sm text-gray-600 mb-6">
+                This is how your branding will appear to your customers
+              </p>
+
+              {/* Preview Header */}
+              <div 
+                className="rounded-lg p-6 mb-6 text-white"
+                style={{ background: `linear-gradient(to right, ${branding.brand_color_primary}, ${branding.brand_color_primary}dd)` }}
+              >
+                <div className="flex items-center space-x-4">
+                  {branding.logo_url ? (
+                    <img 
+                      src={branding.logo_url} 
+                      alt="Logo Preview" 
+                      className="h-12 object-contain bg-white/20 rounded-lg p-2"
+                    />
+                  ) : (
+                    <div className="h-12 w-12 bg-white/20 rounded-lg flex items-center justify-center">
+                      <ImageIcon className="h-6 w-6" />
+                    </div>
+                  )}
+                  <div>
+                    <h3 className="text-xl font-bold">
+                      {branding.business_name || 'Your Business Name'}
+                    </h3>
+                    <p className="text-white/90 text-sm">
+                      {branding.motto || 'Your motto will appear here'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Preview Profile Card */}
+              <div className="border-2 border-gray-200 rounded-lg p-6">
+                <div className="flex items-start space-x-4">
+                  {branding.profile_photo_url ? (
+                    <img 
+                      src={branding.profile_photo_url} 
+                      alt="Profile Preview" 
+                      className="w-20 h-20 rounded-full object-cover border-4 shadow-lg"
+                      style={{ borderColor: branding.brand_color_primary }}
+                    />
+                  ) : (
+                    <div 
+                      className="w-20 h-20 rounded-full flex items-center justify-center border-4 shadow-lg"
+                      style={{ borderColor: branding.brand_color_primary, backgroundColor: `${branding.brand_color_primary}15` }}
+                    >
+                      <User className="h-10 w-10" style={{ color: branding.brand_color_primary }} />
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <h4 className="text-lg font-bold text-gray-900">
+                      {branding.business_name || 'Your Business Name'}
+                    </h4>
+                    <p className="text-sm font-medium mt-1" style={{ color: branding.brand_color_primary }}>
+                      {branding.motto || 'Your motto will appear here'}
+                    </p>
+                    <p className="text-sm text-gray-600 mt-2">
+                      {branding.description || 'Your description will appear here. Tell your customers about your coaching philosophy and approach.'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Preview Button */}
+              <button
+                className="w-full mt-6 px-6 py-3 text-white font-semibold rounded-lg shadow-md transition-all duration-200"
+                style={{ backgroundColor: branding.brand_color_primary }}
+              >
+                Sample Button with Brand Color
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
-};
+}
 
 export default BrandingSettings;

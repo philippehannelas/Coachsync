@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, CreditCard, FileText, User, Mail, Phone, Dumbbell, BarChart3, History, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { customerAPI } from '../../services/api';
 import AthleteHubLogo from '../AthleteHubLogo';
 import SessionHistoryView from '../SessionNotes/SessionHistoryView';
 import MobileBottomNav from '../Customer/MobileBottomNav';
@@ -26,57 +27,29 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
       
       console.log('🚀 Starting data fetch...');
       setLoading(true);
-      const token = localStorage.getItem('coachsync_token');
-      console.log('🔑 Token:', token ? 'exists' : 'missing');
       
       try {
-        // Fetch profile
+        // Fetch profile using customerAPI
         console.log('📡 Fetching profile...');
-        const profileResponse = await fetch('/api/customer/profile', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        console.log('📥 Profile response status:', profileResponse.status);
-        if (profileResponse.ok) {
-          const profileData = await profileResponse.json();
-          console.log('✅ Profile data:', profileData);
-          setUserProfile(profileData);
-          setCredits(profileData.credits || 0);
-          
-          // Fetch coach branding if coach_id exists
-          if (profileData.coach_id) {
-            console.log('📡 Fetching coach branding...');
-            try {
-              const brandingResponse = await fetch(`/api/customer/coach-branding`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-              });
-              if (brandingResponse.ok) {
-                const brandingData = await brandingResponse.json();
-                console.log('✅ Coach branding data:', brandingData);
-                setCoachBranding(brandingData);
-              }
-            } catch (error) {
-              console.log('⚠️ Coach branding not available:', error);
-            }
-          }
-        } else {
-          console.error('❌ Profile fetch failed:', profileResponse.status);
-        }
+        const profileResponse = await customerAPI.getProfile();
+        console.log('✅ Profile data:', profileResponse.data);
+        setUserProfile(profileResponse.data);
+        setCredits(profileResponse.data.credits || 0);
 
-        // Fetch bookings
+        // Fetch bookings using customerAPI
         console.log('📡 Fetching bookings...');
-        const bookingsResponse = await fetch('/api/customer/bookings', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        console.log('📥 Bookings response status:', bookingsResponse.status);
-        if (bookingsResponse.ok) {
-          const bookingsData = await bookingsResponse.json();
-          console.log('✅ Bookings data:', bookingsData);
-          setUpcomingBookings(bookingsData);
-        } else {
-          console.error('❌ Bookings fetch failed:', bookingsResponse.status);
-        }
+        const bookingsResponse = await customerAPI.getBookings();
+        console.log('✅ Bookings data:', bookingsResponse.data);
+        setUpcomingBookings(bookingsResponse.data);
+
+        // Fetch coach branding using customerAPI
+        console.log('📡 Fetching coach branding...');
+        const brandingResponse = await customerAPI.getCoachBranding();
+        console.log('✅ Coach branding data:', brandingResponse.data);
+        setCoachBranding(brandingResponse.data);
       } catch (error) {
         console.error('💥 Error fetching data:', error);
+        console.error('Error details:', error.response?.data || error.message);
       } finally {
         console.log('🏁 Setting loading to FALSE');
         setLoading(false);
@@ -94,6 +67,7 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading...</p>
+          <p className="mt-2 text-xs text-gray-500">Check console (F12) for debug info</p>
         </div>
       </div>
     );
@@ -102,21 +76,24 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
   console.log('✨ Rendering dashboard content');
 
   const creditsStatus = credits > 5 ? 'good' : credits > 2 ? 'medium' : 'low';
-  const brandColor = coachBranding?.brand_color_primary || '#8B5CF6';
+
+  // Use coach branding colors or default colors
+  const brandColor = coachBranding?.brand_color_primary || '#625ff7';
+  const headerGradient = `linear-gradient(to right, ${brandColor}, ${brandColor}dd)`;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 pb-20">
       {/* Header with Coach Branding */}
-      <header className="bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg" style={{
-        background: coachBranding?.brand_color_primary 
-          ? `linear-gradient(to right, ${coachBranding.brand_color_primary}, ${coachBranding.brand_color_primary}dd)` 
-          : undefined
-      }}>
+      <header className="text-white shadow-lg" style={{ background: headerGradient }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               {coachBranding?.logo_url ? (
-                <img src={coachBranding.logo_url} alt="Coach Logo" className="h-10 w-auto object-contain" />
+                <img 
+                  src={coachBranding.logo_url} 
+                  alt="Coach Logo" 
+                  className="h-10 w-auto"
+                />
               ) : (
                 <AthleteHubLogo className="h-10 w-auto" color="white" />
               )}
@@ -125,171 +102,243 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
                   Welcome back, {user?.first_name || 'User'}!
                 </h1>
                 {coachBranding?.motto && (
-                  <p className="text-sm text-white/90 italic mt-1">{coachBranding.motto}</p>
+                  <p className="text-white/90 text-sm mt-1">{coachBranding.motto}</p>
                 )}
               </div>
             </div>
             <button
               onClick={onLogout}
-              className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all"
+              className="flex items-center space-x-2 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors"
             >
-              <LogOut className="w-4 h-4" />
+              <LogOut className="h-5 w-5" />
               <span className="hidden sm:inline">Logout</span>
             </button>
           </div>
         </div>
       </header>
 
-      {/* Coach Info Card (if branding exists) */}
-      {coachBranding && (coachBranding.profile_photo_url || coachBranding.business_name || coachBranding.description) && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-          <div className="bg-white rounded-xl shadow-md p-6">
-            <div className="flex items-start gap-4">
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          {/* Session Credits Card */}
+          <div className={`bg-white rounded-xl shadow-md p-6 border-l-4 transform hover:-translate-y-1 transition-all duration-300 ${
+            creditsStatus === 'good' ? 'border-green-500' :
+            creditsStatus === 'medium' ? 'border-yellow-500' :
+            'border-red-500'
+          }`}>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-gray-600 text-sm font-medium">Session Credits</p>
+                <p className={`text-4xl font-bold mt-1 ${
+                  creditsStatus === 'good' ? 'text-green-600' :
+                  creditsStatus === 'medium' ? 'text-yellow-600' :
+                  'text-red-600'
+                }`}>
+                  {credits}
+                </p>
+              </div>
+              <div className={`p-3 rounded-lg ${
+                creditsStatus === 'good' ? 'bg-green-100' :
+                creditsStatus === 'medium' ? 'bg-yellow-100' :
+                'bg-red-100'
+              }`}>
+                <CreditCard className={`h-8 w-8 ${
+                  creditsStatus === 'good' ? 'text-green-600' :
+                  creditsStatus === 'medium' ? 'text-yellow-600' :
+                  'text-red-600'
+                }`} />
+              </div>
+            </div>
+            {credits <= 2 && (
+              <div className="mt-3 p-2 bg-red-50 rounded-lg">
+                <p className="text-red-700 text-xs font-medium">
+                  ⚠️ Low credits! Contact your coach to add more.
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Upcoming Sessions Card */}
+          <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500 transform hover:-translate-y-1 transition-all duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-600 text-sm font-medium">Upcoming Sessions</p>
+                <p className="text-4xl font-bold text-gray-900 mt-1">{upcomingBookings.length}</p>
+              </div>
+              <div className="bg-blue-100 p-3 rounded-lg">
+                <Calendar className="h-8 w-8 text-blue-600" />
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 mt-3">
+              {upcomingBookings.length === 0 ? 'No sessions booked' : `${upcomingBookings.length} sessions booked`}
+            </p>
+          </div>
+
+          {/* Sessions Completed Card */}
+          <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-purple-500 transform hover:-translate-y-1 transition-all duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-600 text-sm font-medium">Sessions completed</p>
+                <p className="text-4xl font-bold text-gray-900 mt-1">0</p>
+              </div>
+              <div className="bg-purple-100 p-3 rounded-lg">
+                <FileText className="h-8 w-8 text-purple-600" />
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 mt-3">Keep up the great work!</p>
+          </div>
+
+          {/* Tasks Card */}
+          <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-orange-500 transform hover:-translate-y-1 transition-all duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-600 text-sm font-medium">Action Items</p>
+                <p className="text-4xl font-bold text-gray-900 mt-1">0</p>
+              </div>
+              <div className="bg-orange-100 p-3 rounded-lg">
+                <FileText className="h-8 w-8 text-orange-600" />
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 mt-3">All tasks complete</p>
+          </div>
+        </div>
+
+        {/* Coach Profile Card with Branding */}
+        {coachBranding && (
+          <div className="bg-white rounded-xl shadow-md p-6 mb-8">
+            <div className="flex items-start space-x-6">
               {coachBranding.profile_photo_url && (
                 <img 
                   src={coachBranding.profile_photo_url} 
-                  alt="Your Coach" 
-                  className="w-20 h-20 rounded-full object-cover border-4 border-purple-100"
+                  alt="Coach Profile" 
+                  className="w-24 h-24 rounded-full object-cover border-4 shadow-lg"
+                  style={{ borderColor: brandColor }}
                 />
               )}
               <div className="flex-1">
-                <h3 className="text-lg font-bold text-gray-800" style={{ color: brandColor }}>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">
                   {coachBranding.business_name || 'Your Coach'}
-                </h3>
+                </h2>
+                {coachBranding.motto && (
+                  <p className="text-lg font-medium mb-3" style={{ color: brandColor }}>
+                    {coachBranding.motto}
+                  </p>
+                )}
                 {coachBranding.description && (
-                  <p className="text-sm text-gray-600 mt-2">{coachBranding.description}</p>
+                  <p className="text-gray-600 leading-relaxed">
+                    {coachBranding.description}
+                  </p>
                 )}
               </div>
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {/* Credits Card */}
-          <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Session Credits</p>
-                <p className="text-3xl font-bold mt-1" style={{ color: brandColor }}>{credits}</p>
-              </div>
-              <div className={`p-4 rounded-full ${
-                creditsStatus === 'good' ? 'bg-green-100' :
-                creditsStatus === 'medium' ? 'bg-yellow-100' : 'bg-red-100'
-              }`}>
-                <CreditCard className={`w-8 h-8 ${
-                  creditsStatus === 'good' ? 'text-green-600' :
-                  creditsStatus === 'medium' ? 'text-yellow-600' : 'text-red-600'
-                }`} />
-              </div>
-            </div>
-            <p className="text-xs text-gray-500 mt-2">
-              {creditsStatus === 'good' ? 'You\'re all set!' :
-               creditsStatus === 'medium' ? 'Consider topping up soon' :
-               'Time to renew your credits'}
-            </p>
-          </div>
-
-          {/* Upcoming Sessions Card */}
-          <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Upcoming Sessions</p>
-                <p className="text-3xl font-bold mt-1" style={{ color: brandColor }}>{upcomingBookings.length}</p>
-              </div>
-              <div className="p-4 rounded-full bg-blue-100">
-                <Calendar className="w-8 h-8 text-blue-600" />
-              </div>
-            </div>
-            <button
-              onClick={() => onNavigate('bookings')}
-              className="text-sm mt-2 hover:underline"
-              style={{ color: brandColor }}
-            >
-              View all bookings →
-            </button>
-          </div>
-
-          {/* Training Plan Card */}
-          <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Training Plan</p>
-                <p className="text-lg font-semibold mt-1 text-gray-800">Active</p>
-              </div>
-              <div className="p-4 rounded-full bg-purple-100">
-                <Dumbbell className="w-8 h-8 text-purple-600" />
-              </div>
-            </div>
-            <button
-              onClick={() => onNavigate('training')}
-              className="text-sm mt-2 hover:underline"
-              style={{ color: brandColor }}
-            >
-              View training plan →
-            </button>
-          </div>
-        </div>
+        )}
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {/* Book a Session */}
           <button
-            onClick={() => onNavigate('bookings')}
-            className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all text-left group"
+            onClick={() => navigate('/customer/book')}
+            className="bg-white rounded-xl shadow-md p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 text-left group"
+            style={{ 
+              borderLeft: `4px solid ${brandColor}`,
+            }}
           >
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-semibold text-gray-800 group-hover:text-purple-600 transition-colors">
+                <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:scale-105 transition-transform">
                   Book a Session
                 </h3>
-                <p className="text-sm text-gray-600 mt-1">Schedule your next training session</p>
+                <p className="text-gray-600">Schedule your next training session</p>
               </div>
-              <Calendar className="w-8 h-8" style={{ color: brandColor }} />
+              <div className="p-3 rounded-lg" style={{ backgroundColor: `${brandColor}15` }}>
+                <Calendar className="h-8 w-8" style={{ color: brandColor }} />
+              </div>
             </div>
           </button>
 
-          {/* View History */}
+          {/* View Training Plans */}
           <button
-            onClick={() => onNavigate('history')}
-            className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all text-left group"
+            onClick={() => navigate('/customer/plans')}
+            className="bg-white rounded-xl shadow-md p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 text-left group border-l-4 border-green-500"
           >
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-semibold text-gray-800 group-hover:text-purple-600 transition-colors">
+                <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:scale-105 transition-transform">
+                  Training Plans
+                </h3>
+                <p className="text-gray-600">View your personalized workout plans</p>
+              </div>
+              <div className="bg-green-100 p-3 rounded-lg">
+                <Dumbbell className="h-8 w-8 text-green-600" />
+              </div>
+            </div>
+          </button>
+
+          {/* Session History */}
+          <button
+            onClick={() => navigate('/customer/history')}
+            className="bg-white rounded-xl shadow-md p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 text-left group border-l-4 border-purple-500"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:scale-105 transition-transform">
                   Session History
                 </h3>
-                <p className="text-sm text-gray-600 mt-1">Review your past sessions and notes</p>
+                <p className="text-gray-600">Review past sessions and progress</p>
               </div>
-              <History className="w-8 h-8" style={{ color: brandColor }} />
+              <div className="bg-purple-100 p-3 rounded-lg">
+                <History className="h-8 w-8 text-purple-600" />
+              </div>
+            </div>
+          </button>
+
+          {/* Profile Settings */}
+          <button
+            onClick={() => navigate('/customer/profile')}
+            className="bg-white rounded-xl shadow-md p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 text-left group border-l-4 border-blue-500"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:scale-105 transition-transform">
+                  Profile Settings
+                </h3>
+                <p className="text-gray-600">Update your personal information</p>
+              </div>
+              <div className="bg-blue-100 p-3 rounded-lg">
+                <User className="h-8 w-8 text-blue-600" />
+              </div>
             </div>
           </button>
         </div>
 
         {/* Upcoming Bookings */}
         {upcomingBookings.length > 0 && (
-          <div className="mt-8 bg-white rounded-xl shadow-md p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Next Sessions</h2>
-            <div className="space-y-3">
-              {upcomingBookings.slice(0, 3).map((booking, index) => (
-                <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg" style={{ backgroundColor: `${brandColor}20` }}>
-                      <Calendar className="w-5 h-5" style={{ color: brandColor }} />
+          <div className="bg-white rounded-xl shadow-md p-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center">
+              <Calendar className="h-6 w-6 mr-2" style={{ color: brandColor }} />
+              Upcoming Sessions
+            </h2>
+            <div className="space-y-4">
+              {upcomingBookings.map((booking) => (
+                <div
+                  key={booking.id}
+                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className="p-3 rounded-lg" style={{ backgroundColor: `${brandColor}15` }}>
+                      <Calendar className="h-6 w-6" style={{ color: brandColor }} />
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-800">{booking.date}</p>
-                      <p className="text-sm text-gray-600">{booking.time}</p>
+                      <p className="font-semibold text-gray-900">{booking.service_type}</p>
+                      <p className="text-sm text-gray-600">
+                        {new Date(booking.booking_date).toLocaleDateString()} at {booking.booking_time}
+                      </p>
                     </div>
                   </div>
-                  <span className="text-xs px-3 py-1 rounded-full" style={{
-                    backgroundColor: `${brandColor}20`,
-                    color: brandColor
-                  }}>
-                    Confirmed
+                  <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                    {booking.status}
                   </span>
                 </div>
               ))}
@@ -299,7 +348,7 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <MobileBottomNav onNavigate={onNavigate} />
+      <MobileBottomNav />
     </div>
   );
 }

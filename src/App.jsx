@@ -10,7 +10,6 @@ import CustomerCalendarPage from './components/Calendar/CustomerCalendarPage';
 import AcceptInvitePage from './pages/AcceptInvitePage';
 import TrainingPlansPage from './components/TrainingPlans/TrainingPlansPage';
 import CustomerTrainingPlans from './components/TrainingPlans/CustomerTrainingPlans';
-import BrandingSettings from './components/Dashboard/BrandingSettings';
 
 // NEW IMPORTS - Customer Portal Pages
 import StartWorkoutPage from './components/Customer/StartWorkoutPage';
@@ -18,6 +17,7 @@ import WorkoutViewerPage from './components/Customer/WorkoutViewerPage';
 import ProgressDashboardPage from './components/Customer/ProgressDashboardPage';
 import WorkoutHistoryPage from './components/Customer/WorkoutHistoryPage';
 import CustomerProfilePage from './components/Customer/CustomerProfilePage';
+import BrandingSettings from './components/Dashboard/BrandingSettings';
 
 // Wrapper component for CoachDashboard with navigation
 function CoachDashboardWrapper() {
@@ -25,16 +25,16 @@ function CoachDashboardWrapper() {
   const navigate = useNavigate();
 
   const handleNavigate = (page) => {
-  if (page === 'calendar') {
-    navigate('/coach/calendar');
-  } else if (page === 'dashboard') {
-    navigate('/coach/dashboard');
-  } else if (page === 'customers') {
-    navigate('/coach/customers');
-  } else if (page === 'training-plans') {
-    navigate('/coach/training-plans');
-  } else if (page === 'branding') {  // ADD THIS
-    navigate('/coach/branding');
+    if (page === 'calendar') {
+      navigate('/coach/calendar');
+    } else if (page === 'dashboard') {
+      navigate('/coach/dashboard');
+    } else if (page === 'customers') {
+      navigate('/coach/customers');
+    } else if (page === 'training-plans') {
+      navigate('/coach/training-plans');
+    } else if (page === 'branding') {
+      navigate('/coach/branding');
     }
   };
 
@@ -152,13 +152,14 @@ function AppContent() {
         }
       />
       <Route
-  path="/coach/branding"
-  element={
-    <ProtectedRoute allowedRole="coach">
-      <BrandingSettings />
-    </ProtectedRoute>
+        path="/coach/branding"
+        element={
+          <ProtectedRoute allowedRole="coach">
+            <BrandingSettings />
+          </ProtectedRoute>
         }
       />
+
       {/* Customer Routes */}
       <Route
         path="/customer/dashboard"
