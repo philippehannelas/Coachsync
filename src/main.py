@@ -89,7 +89,7 @@ def serve(path):
         if os.path.exists(index_path):
             return send_from_directory(static_folder_path, 'index.html')
         else:
-            return "Welcome to CoachSync API", 200
+            return "Welcome to AthleteHub API", 200
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

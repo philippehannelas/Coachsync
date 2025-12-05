@@ -18,13 +18,13 @@ const InvitationLinkModal = ({ isOpen, onClose, inviteLink, customerName }) => {
   };
 
   const handleWhatsApp = () => {
-    const message = `Hi ${customerName}! I've invited you to CoachSync. Click this link to set your password and access your account: ${inviteLink}`;
+    const message = `Hi ${customerName}! I've invited you to AthleteHub. Click this link to set your password and access your account: ${inviteLink}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
   };
 
   const handleEmail = () => {
-    const subject = 'Your CoachSync Invitation';
-    const body = `Hi ${customerName},\n\nI've invited you to CoachSync!\n\nClick this link to set your password and access your account:\n${inviteLink}\n\nThis link is valid for 7 days.\n\nSee you soon!`;
+    const subject = 'Your AthleteHub Invitation';
+    const body = `Hi ${customerName},\n\nI've invited you to AthleteHub!\n\nClick this link to set your password and access your account:\n${inviteLink}\n\nThis link is valid for 7 days.\n\nSee you soon!`;
     window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
   };
 

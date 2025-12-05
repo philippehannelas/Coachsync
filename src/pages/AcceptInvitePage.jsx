@@ -136,7 +136,7 @@ const AcceptInvitePage = () => {
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-8 text-center">
           <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4 animate-bounce" />
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">Welcome to CoachSync!</h1>
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">Welcome to AthleteHub!</h1>
           <p className="text-gray-600">Redirecting to your dashboard...</p>
         </div>
       </div>
@@ -148,9 +148,9 @@ const AcceptInvitePage = () => {
       <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Welcome to CoachSync!</h1>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">Welcome to AthleteHub!</h1>
           <p className="text-gray-600">
-            Hi <strong>{inviteData?.customer?.first_name}</strong>, {inviteData?.coach?.name} has invited you to join CoachSync.
+            Hi <strong>{inviteData?.customer?.first_name}</strong>, {inviteData?.coach?.name} has invited you to join AthleteHub.
           </p>
         </div>
 
