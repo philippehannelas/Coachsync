@@ -46,7 +46,7 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
           if (profileData.coach_id) {
             console.log('📡 Fetching coach branding...');
             try {
-              const brandingResponse = await fetch(`/api/customer/coach-branding?coach_id=${profileData.coach_id}`, {
+              const brandingResponse = await fetch(`https://coachsync-pro.onrender.com/api/customer/coach-branding`, {
                 headers: { 'Authorization': `Bearer ${token}` }
               });
               if (brandingResponse.ok) {
