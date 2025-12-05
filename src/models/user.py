@@ -96,6 +96,14 @@ class CoachProfile(db.Model):
     qualifications = db.Column(db.JSON)  # Store as JSON array
     cycle_weeks = db.Column(db.Integer, default=6)  # Customizable cycle length
     
+    # Branding fields
+    logo_url = db.Column(db.String(500), nullable=True)
+    profile_photo_url = db.Column(db.String(500), nullable=True)
+    business_name = db.Column(db.String(255), nullable=True)
+    motto = db.Column(db.String(255), nullable=True)
+    description = db.Column(db.Text, nullable=True)
+    brand_color_primary = db.Column(db.String(7), nullable=True)  # Hex color code
+    
     # Relationships
     customers = db.relationship('CustomerProfile', backref='coach', lazy='dynamic')
     bookings = db.relationship('Booking', backref='coach', lazy='dynamic')
@@ -108,7 +116,13 @@ class CoachProfile(db.Model):
             'user_id': self.user_id,
             'bio': self.bio,
             'qualifications': self.qualifications or [],
-            'cycle_weeks': self.cycle_weeks
+            'cycle_weeks': self.cycle_weeks,
+            'logo_url': self.logo_url,
+            'profile_photo_url': self.profile_photo_url,
+            'business_name': self.business_name,
+            'motto': self.motto,
+            'description': self.description,
+            'brand_color_primary': self.brand_color_primary
         }
 
 class CustomerProfile(db.Model):

@@ -22,6 +22,7 @@ from src.routes.exercise_template import exercise_template_bp
 from src.routes.workout_completion import workout_completion_bp
 from src.routes.admin import admin_bp
 from src.routes.customer_management import customer_management_bp
+from src.routes.branding import branding_bp
 
 
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
@@ -47,6 +48,7 @@ app.register_blueprint(exercise_template_bp, url_prefix='/api')
 app.register_blueprint(workout_completion_bp)
 app.register_blueprint(admin_bp, url_prefix='/api/admin')
 app.register_blueprint(customer_management_bp, url_prefix='/api')
+app.register_blueprint(branding_bp, url_prefix="/api/coach")
 
 # Database configuration for production
 # Use PostgreSQL if DATABASE_URL is set, otherwise fall back to SQLite

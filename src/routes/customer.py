@@ -365,4 +365,33 @@ def update_action_items(current_user, booking_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'message': f'Failed to update action items: {str(e)}'}), 500
+# Add this to src/routes/customer.py
+
+@customer_bp.route('/coach-branding', methods=['GET'])
+@token_required
+@customer_required
+def get_coach_branding(current_user):
+    """Get the coach's branding settings for display on customer dashboard"""
+    try:
+        if not current_user.customer_profile:
+            return jsonify({'message': 'Customer profile not found'}), 404
+        
+        coach_profile = current_user.customer_profile.coach
+        if not coach_profile:
+            return jsonify({'message': 'No coach assigned'}), 404
+        
+        branding = {
+            'logo_url': coach_profile.logo_url,
+            'profile_photo_url': coach_profile.profile_photo_url,
+            'business_name': coach_profile.business_name,
+            'motto': coach_profile.motto,
+            'description': coach_profile.description,
+            'brand_color_primary': coach_profile.brand_color_primary or '#8B5CF6'
+        }
+        
+        return jsonify(branding), 200
+        
+    except Exception as e:
+        return jsonify({'message': f'Failed to get coach branding: {str(e)}'}), 500
+
 
