@@ -88,8 +88,18 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
     }
     
     try {
-      // The backend handles user creation and profile linking
+      // The backend handles user creation, profile linking, and token generation
       const response = await coachAPI.inviteCustomer(formData);
+      
+      // If setup_token is returned, show the invitation link
+      if (response.data.setup_token) {
+        const frontendBaseUrl = import.meta.env.DEV ? 'http://localhost:5173' : 'https://coachsync-web.onrender.com';
+        const inviteUrl = `${frontendBaseUrl}/accept-invite?token=${response.data.setup_token}`;
+        
+        setInviteLink(inviteUrl);
+        setInviteCustomerName(`${formData.first_name} ${formData.last_name}`);
+        setShowInviteModal(true);
+      }
       
       setShowAddModal(false); // Close the invite form modal
       setFormData({ first_name: '', last_name: '', email: '', phone: '', initial_credits: 0 });

@@ -133,15 +133,24 @@ def create_customer(current_user):
         )
         
         db.session.add(customer_profile)
+        
+        # Generate invitation token for password setup
+        setup_token = jwt.encode({
+            'user_id': user.id,
+            'type': 'customer_setup',
+            'exp': datetime.utcnow() + timedelta(days=7)
+        }, current_app.config['SECRET_KEY'], algorithm='HS256')
+        
         db.session.commit()
         
-        # Return customer data with user info
+        # Return customer data with user info and setup token
         customer_data = customer_profile.to_dict()
         customer_data['user'] = user.to_dict()
         
         return jsonify({
             'message': 'Customer created successfully',
-            'customer': customer_data
+            'customer': customer_data,
+            'setup_token': setup_token
         }), 201
         
     except Exception as e:
