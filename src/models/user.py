@@ -300,11 +300,15 @@ class DateSpecificAvailability(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     def to_dict(self):
+        # Translate database enum to API values
+        # Database: 'override'/'blocked' → API: 'available'/'unavailable'
+        api_type = 'available' if self.type == 'override' else 'unavailable'
+        
         return {
             'id': self.id,
             'coach_id': self.coach_id,
             'date': self.date.isoformat() if self.date else None,
-            'type': self.type,
+            'type': api_type,
             'start_time': self.start_time.strftime('%H:%M') if self.start_time else None,
             'end_time': self.end_time.strftime('%H:%M') if self.end_time else None,
             'reason': self.reason,

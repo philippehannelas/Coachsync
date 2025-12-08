@@ -121,11 +121,16 @@ def create_date_specific_availability(current_user):
         if existing:
             return jsonify({'message': f'Date-specific availability already exists for {specific_date}. Use PUT to update.'}), 400
         
+        # Translate API type to database enum
+        # API uses: 'available'/'unavailable'
+        # Database uses: 'override'/'blocked'
+        db_type = 'override' if data['type'] == 'available' else 'blocked'
+        
         # Create new entry
         date_specific = DateSpecificAvailability(
             coach_id=coach_profile.id,
             date=specific_date,
-            type=data['type'],
+            type=db_type,
             start_time=start_time,
             end_time=end_time,
             reason=data.get('reason')
@@ -167,10 +172,12 @@ def update_date_specific_availability(current_user, availability_id):
         if 'type' in data:
             if data['type'] not in ['available', 'unavailable']:
                 return jsonify({'message': 'type must be "available" or "unavailable"'}), 400
-            date_specific.type = data['type']
+            # Translate API type to database enum
+            db_type = 'override' if data['type'] == 'available' else 'blocked'
+            date_specific.type = db_type
         
-        # Update times if provided (for available type)
-        if date_specific.type == 'available':
+        # Update times if provided (for override type)
+        if date_specific.type == 'override':
             if 'start_time' in data:
                 try:
                     date_specific.start_time = datetime.strptime(data['start_time'], '%H:%M').time()
@@ -187,7 +194,7 @@ def update_date_specific_availability(current_user, availability_id):
                 if date_specific.start_time >= date_specific.end_time:
                     return jsonify({'message': 'start_time must be before end_time'}), 400
         else:
-            # If type is unavailable, clear times
+            # If type is blocked, clear times
             date_specific.start_time = None
             date_specific.end_time = None
         
@@ -292,6 +299,9 @@ def create_bulk_date_specific(current_user):
             except ValueError:
                 return jsonify({'message': 'Invalid time format. Use HH:MM'}), 400
         
+        # Translate API type to database enum
+        db_type = 'override' if data['type'] == 'available' else 'blocked'
+        
         # Create entries for each date in range
         created_entries = []
         current_date = start_date
@@ -307,7 +317,7 @@ def create_bulk_date_specific(current_user):
                 date_specific = DateSpecificAvailability(
                     coach_id=coach_profile.id,
                     date=current_date,
-                    type=data['type'],
+                    type=db_type,
                     start_time=start_time,
                     end_time=end_time,
                     reason=data.get('reason')
