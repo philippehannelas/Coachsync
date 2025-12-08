@@ -48,7 +48,7 @@ app.register_blueprint(exercise_template_bp, url_prefix='/api')
 app.register_blueprint(workout_completion_bp)
 app.register_blueprint(admin_bp, url_prefix='/api/admin')
 app.register_blueprint(customer_management_bp, url_prefix='/api')
-app.register_blueprint(branding_bp, url_prefix="/api/coach")
+app.register_blueprint(branding_bp, url_prefix='/api')
 
 # Database configuration for production
 # Use PostgreSQL if DATABASE_URL is set, otherwise fall back to SQLite
