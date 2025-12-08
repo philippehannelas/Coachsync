@@ -27,7 +27,7 @@ const AvailabilityManager = ({ onClose, onSave }) => {
   const [showAddSpecialDate, setShowAddSpecialDate] = useState(false);
   const [specialDateForm, setSpecialDateForm] = useState({
     date: '',
-    type: 'unavailable',
+    type: 'blocked',
     start_time: '09:00',
     end_time: '17:00',
     reason: ''
@@ -36,7 +36,7 @@ const AvailabilityManager = ({ onClose, onSave }) => {
   const [bulkForm, setBulkForm] = useState({
     start_date: '',
     end_date: '',
-    type: 'unavailable',
+    type: 'blocked',
     reason: ''
   });
   
@@ -172,7 +172,7 @@ const AvailabilityManager = ({ onClose, onSave }) => {
       // Reset form
       setSpecialDateForm({
         date: '',
-        type: 'unavailable',
+        type: 'blocked',
         start_time: '09:00',
         end_time: '17:00',
         reason: ''
@@ -210,7 +210,7 @@ const AvailabilityManager = ({ onClose, onSave }) => {
       setBulkForm({
         start_date: '',
         end_date: '',
-        type: 'unavailable',
+        type: 'blocked',
         reason: ''
       });
       setShowBulkForm(false);
@@ -492,11 +492,11 @@ const AvailabilityManager = ({ onClose, onSave }) => {
                       onChange={(e) => setSpecialDateForm({...specialDateForm, type: e.target.value})}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
-                      <option value="unavailable">Blocked (Unavailable)</option>
-                      <option value="available">Custom Hours</option>
+                      <option value="blocked">Blocked (Unavailable)</option>
+                      <option value="override">Custom Hours (Override)</option>
                     </select>
                   </div>
-                  {specialDateForm.type === 'available' && (
+                  {specialDateForm.type === 'override' && (
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Start Time</label>
