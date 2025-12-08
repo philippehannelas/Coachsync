@@ -246,7 +246,7 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {/* Book a Session */}
           <button
-            onClick={() => navigate('/customer/book')}
+            onClick={() => navigate('/customer/calendar')}
             className="bg-white rounded-xl shadow-md p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 text-left group"
             style={{ 
               borderLeft: `4px solid ${brandColor}`,
