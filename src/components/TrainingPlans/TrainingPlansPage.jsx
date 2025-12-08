@@ -10,6 +10,7 @@ function TrainingPlansPage({ userProfile }) {
   const [showBuilder, setShowBuilder] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
 
   useEffect(() => {
     loadData();
@@ -88,10 +89,12 @@ function TrainingPlansPage({ userProfile }) {
     loadData();
   };
 
-  const filteredPlans = trainingPlans.filter(plan =>
-    plan.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    plan.description?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredPlans = trainingPlans.filter(plan => {
+    const matchesSearch = plan.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      plan.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || plan.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   if (showBuilder) {
     return (
@@ -147,6 +150,33 @@ function TrainingPlansPage({ userProfile }) {
           </div>
         </div>
 
+        {/* Status Filter Tabs */}
+        <div className="mb-6 flex gap-2 overflow-x-auto pb-2">
+          {['all', 'active', 'upcoming', 'expired', 'draft'].map((status) => (
+            <button
+              key={status}
+              onClick={() => setStatusFilter(status)}
+              className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
+                statusFilter === status
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+              }`}
+            >
+              {status.charAt(0).toUpperCase() + status.slice(1)}
+              {status !== 'all' && (
+                <span className="ml-2 text-xs opacity-75">
+                  ({trainingPlans.filter(p => p.status === status).length})
+                </span>
+              )}
+              {status === 'all' && (
+                <span className="ml-2 text-xs opacity-75">
+                  ({trainingPlans.length})
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-purple-500">
@@ -166,7 +196,7 @@ function TrainingPlansPage({ userProfile }) {
               <div>
                 <p className="text-gray-600 text-sm font-medium">Active Plans</p>
                 <p className="text-3xl font-bold text-gray-900 mt-1">
-                  {trainingPlans.filter(p => p.is_active).length}
+                  {trainingPlans.filter(p => p.status === 'active').length}
                 </p>
               </div>
               <div className="bg-green-100 p-3 rounded-lg">
@@ -224,7 +254,17 @@ function TrainingPlansPage({ userProfile }) {
                 <div className="p-6 border-b border-gray-100">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
-                      <h3 className="text-lg font-bold text-gray-900 mb-1">{plan.name}</h3>
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3 className="text-lg font-bold text-gray-900">{plan.name}</h3>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          plan.status === 'active' ? 'bg-green-100 text-green-800' :
+                          plan.status === 'upcoming' ? 'bg-blue-100 text-blue-800' :
+                          plan.status === 'expired' ? 'bg-red-100 text-red-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {plan.status}
+                        </span>
+                      </div>
                       <p className="text-sm text-gray-600 line-clamp-2">{plan.description}</p>
                     </div>
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -239,7 +279,7 @@ function TrainingPlansPage({ userProfile }) {
 
                 {/* Plan Stats */}
                 <div className="px-6 py-4 bg-gray-50">
-                  <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="grid grid-cols-2 gap-4 text-sm mb-3">
                     <div>
                       <p className="text-gray-600">Duration</p>
                       <p className="font-semibold text-gray-900">{plan.duration_weeks} weeks</p>
@@ -251,6 +291,16 @@ function TrainingPlansPage({ userProfile }) {
                       </p>
                     </div>
                   </div>
+                  {(plan.start_date || plan.end_date) && (
+                    <div className="pt-3 border-t border-gray-200">
+                      <p className="text-xs text-gray-600 mb-1">Validity Period</p>
+                      <p className="text-sm font-medium text-gray-900">
+                        {plan.start_date ? new Date(plan.start_date).toLocaleDateString() : 'Not set'}
+                        {' → '}
+                        {plan.end_date ? new Date(plan.end_date).toLocaleDateString() : 'Not set'}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Actions */}

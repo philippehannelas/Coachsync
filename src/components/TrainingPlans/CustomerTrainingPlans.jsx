@@ -158,6 +158,21 @@ function CustomerTrainingPlans({ userProfile }) {
                 <h2 className="text-xl font-bold text-gray-900 mb-2">{selectedPlan.name}</h2>
                 <p className="text-gray-600 text-sm mb-4">{selectedPlan.description}</p>
                 
+                {/* Expiry Warning */}
+                {selectedPlan.end_date && (() => {
+                  const daysUntilExpiry = Math.ceil((new Date(selectedPlan.end_date) - new Date()) / (1000 * 60 * 60 * 24));
+                  if (daysUntilExpiry <= 7 && daysUntilExpiry > 0) {
+                    return (
+                      <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <p className="text-sm font-medium text-yellow-800">
+                          ⚠️ Plan expires in {daysUntilExpiry} day{daysUntilExpiry !== 1 ? 's' : ''}
+                        </p>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+                
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-600">Difficulty</span>
@@ -174,6 +189,17 @@ function CustomerTrainingPlans({ userProfile }) {
                     <span className="text-gray-600">Duration</span>
                     <span className="font-semibold text-gray-900">{selectedPlan.duration_weeks} weeks</span>
                   </div>
+                  
+                  {(selectedPlan.start_date || selectedPlan.end_date) && (
+                    <div className="pt-3 border-t border-gray-200">
+                      <p className="text-xs text-gray-600 mb-1">Validity Period</p>
+                      <p className="text-sm font-medium text-gray-900">
+                        {selectedPlan.start_date ? new Date(selectedPlan.start_date).toLocaleDateString() : 'Not set'}
+                        {' → '}
+                        {selectedPlan.end_date ? new Date(selectedPlan.end_date).toLocaleDateString() : 'Not set'}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 

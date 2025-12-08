@@ -8,6 +8,8 @@ function TrainingPlanBuilder({ plan, customers, onSave, onCancel }) {
     description: '',
     difficulty: 'beginner',
     duration_weeks: 4,
+    start_date: '',
+    end_date: '',
     is_active: true
   });
   
@@ -24,6 +26,8 @@ function TrainingPlanBuilder({ plan, customers, onSave, onCancel }) {
         description: plan.description || '',
         difficulty: plan.difficulty,
         duration_weeks: plan.duration_weeks,
+        start_date: plan.start_date || '',
+        end_date: plan.end_date || '',
         is_active: plan.is_active
       });
       setAssignedCustomers(plan.assigned_customer_ids || []);
@@ -308,6 +312,31 @@ function TrainingPlanBuilder({ plan, customers, onSave, onCancel }) {
                     max="52"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Start Date
+                    </label>
+                    <input
+                      type="date"
+                      value={planData.start_date}
+                      onChange={(e) => setPlanData({ ...planData, start_date: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      End Date
+                    </label>
+                    <input
+                      type="date"
+                      value={planData.end_date}
+                      onChange={(e) => setPlanData({ ...planData, end_date: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
                 </div>
 
                 <div className="flex items-center">
