@@ -492,8 +492,8 @@ const AvailabilityManager = ({ onClose, onSave }) => {
                       onChange={(e) => setSpecialDateForm({...specialDateForm, type: e.target.value})}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
-                      <option value="unavailable">Blocked (Unavailable)</option>
-                      <option value="available">Custom Hours</option>
+                      <option value="unavailable">Block Full Day</option>
+                      <option value="available">Block Specific Hours</option>
                     </select>
                   </div>
                   {specialDateForm.type === 'available' && (

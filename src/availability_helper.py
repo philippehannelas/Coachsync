@@ -56,21 +56,25 @@ def check_coach_availability(coach_id, check_date, check_time):
             }
         
         elif date_specific.type == 'override':
-            # Check if time falls within override hours
-            is_available = (
+            # Check if time falls within BLOCKED hours
+            is_blocked = (
                 check_time >= date_specific.start_time and 
                 check_time < date_specific.end_time
             )
-            return {
-                'available': is_available,
-                'source': 'date_specific',
-                'details': {
-                    'type': 'override',
-                    'start_time': date_specific.start_time.strftime('%H:%M'),
-                    'end_time': date_specific.end_time.strftime('%H:%M'),
-                    'reason': date_specific.reason
+            if is_blocked:
+                # Time is blocked - not available
+                return {
+                    'available': False,
+                    'source': 'date_specific',
+                    'details': {
+                        'type': 'override',
+                        'start_time': date_specific.start_time.strftime('%H:%M'),
+                        'end_time': date_specific.end_time.strftime('%H:%M'),
+                        'reason': date_specific.reason
+                    }
                 }
-            }
+            # Time is outside blocked hours - check recurring availability
+            # Fall through to Step 2
     
     # Step 2: Check recurring weekly availability (fallback)
     # Convert date to day_of_week (0=Monday, 6=Sunday)
@@ -144,12 +148,35 @@ def get_available_slots_for_date(coach_id, check_date, slot_duration=60):
             return []
         
         elif date_specific.type == 'override':
-            # Generate slots from override times
-            return _generate_time_slots(
-                date_specific.start_time,
-                date_specific.end_time,
-                slot_duration
-            )
+            # Override blocks specific hours - get recurring slots and exclude blocked hours
+            day_of_week = check_date.weekday()
+            recurring = Availability.query.filter_by(
+                coach_id=coach_id,
+                day_of_week=day_of_week,
+                is_active=True
+            ).all()
+            
+            if not recurring:
+                return []
+            
+            # Generate all recurring slots
+            all_slots = []
+            for slot in recurring:
+                slots = _generate_time_slots(slot.start_time, slot.end_time, slot_duration)
+                all_slots.extend(slots)
+            
+            # Remove slots that fall within blocked hours
+            blocked_start = date_specific.start_time
+            blocked_end = date_specific.end_time
+            
+            available_slots = []
+            for slot_str in all_slots:
+                slot_time = datetime.strptime(slot_str, '%H:%M').time()
+                # Exclude if slot falls within blocked hours
+                if not (slot_time >= blocked_start and slot_time < blocked_end):
+                    available_slots.append(slot_str)
+            
+            return sorted(list(set(available_slots)))
     
     # Step 2: Use recurring weekly availability
     day_of_week = check_date.weekday()
