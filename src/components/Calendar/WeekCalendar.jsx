@@ -63,7 +63,7 @@ const WeekCalendar = ({
     if (dateSpecific && dateSpecific.length > 0 && week) {
       week.forEach(date => {
         const dateString = date.toISOString().split('T')[0];
-        const specific = dateSpecific.find(item => item.date === dateString && item.type === 'override');
+        const specific = dateSpecific.find(item => item.date === dateString && item.type === 'available');
         if (specific) {
           const [startHour] = specific.start_time.split(':').map(Number);
           const [endHour] = specific.end_time.split(':').map(Number);
@@ -87,7 +87,7 @@ const WeekCalendar = ({
 
   /**
    * Check if a specific date has date-specific availability
-   * Returns: { type: 'blocked' | 'override' | null, data: {...} }
+   * Returns: { type: 'unavailable' | 'available' | null, data: {...} }
    */
   function getDateSpecificAvailability(date) {
     const dateString = date.toISOString().split('T')[0];
@@ -111,12 +111,12 @@ const WeekCalendar = ({
     // Step 1: Check date-specific availability (highest priority)
     const dateSpecificInfo = getDateSpecificAvailability(date);
     
-    if (dateSpecificInfo.type === 'blocked') {
+    if (dateSpecificInfo.type === 'unavailable') {
       // Date is completely blocked
       return false;
     }
     
-    if (dateSpecificInfo.type === 'override') {
+    if (dateSpecificInfo.type === 'available') {
       // Check if time falls within BLOCKED hours
       const { start_time, end_time } = dateSpecificInfo.data;
       const isBlocked = time >= start_time && time < end_time;
@@ -254,21 +254,21 @@ const WeekCalendar = ({
                   className={`text-center py-3 rounded-lg relative ${
                     isToday
                       ? 'bg-purple-100 text-purple-700 font-bold'
-                      : dateSpecificInfo.type === 'blocked'
-                      ? 'bg-red-50 text-red-700'
-                      : dateSpecificInfo.type === 'override'
+                                     : dateSpecificInfo.type === 'unavailable'
+                      ? 'Blocked'
+                      : dateSpecificInfo.type === 'available'
                       ? 'bg-yellow-50 text-yellow-700'
                       : 'bg-gray-50 text-gray-700'
                   }`}
                 >
                   <div className="text-xs sm:text-sm font-medium">{weekDays[index]}</div>
                   <div className="text-sm sm:text-lg">{date.getDate()}</div>
-                  {dateSpecificInfo.type === 'blocked' && (
+                  {dateSpecificInfo.type === 'unavailable' && (
                     <div className="absolute top-1 right-1">
                       <Ban className="w-4 h-4 text-red-600" />
                     </div>
                   )}
-                  {dateSpecificInfo.type === 'override' && (
+                  {dateSpecificInfo.type === 'available' && (
                     <div className="absolute top-1 right-1">
                       <Clock className="w-4 h-4 text-yellow-600" />
                     </div>
@@ -307,20 +307,20 @@ const WeekCalendar = ({
                         handleSlotClick(date, time);
                       }
                     }}
-                    disabled={!booking && (isPast || dateSpecificInfo.type === 'blocked')}
+                    disabled={!booking && (isPast || dateSpecificInfo.type === 'unavailable')}
                     style={booking && isPast ? { cursor: 'pointer', opacity: 0.7 } : {}}
                     className={`
                       min-h-[50px] sm:min-h-[60px] rounded text-xs sm:text-sm border-2 transition-all duration-200
                       ${booking ? 'cursor-pointer' : ''}
                       ${isPast && !booking ? 'bg-gray-50 border-gray-200 cursor-not-allowed opacity-50' : ''}
-                      ${dateSpecificInfo.type === 'blocked' && !booking ? 'bg-red-50 border-red-200 cursor-not-allowed' : ''}
+                      ${dateSpecificInfo.type === 'unavailable' && !booking ? 'bg-red-50 border-red-200 cursor-not-allowed' : ''}
                       ${booking && booking.event_type === 'customer_session' ? 'bg-blue-100 border-blue-400 hover:bg-blue-200' : ''}
                       ${booking && booking.event_type === 'personal_event' ? 'bg-purple-100 border-purple-400 hover:bg-purple-200' : ''}
-                      ${available && !booking && !isPast && dateSpecificInfo.type !== 'blocked' ? 'bg-green-50 border-green-300 hover:bg-green-100 cursor-pointer' : ''}
-                      ${!available && !booking && !isPast && dateSpecificInfo.type !== 'blocked' ? 'bg-gray-100 border-gray-300 cursor-not-allowed' : ''}
+                      ${available && !booking && !isPast && dateSpecificInfo.type !== 'unavailable' ? 'bg-green-50 border-green-300 hover:bg-green-100 cursor-pointer' : ''}
+                      ${!available && !booking && !isPast && dateSpecificInfo.type !== 'unavailable' ? 'bg-gray-100 border-gray-300 cursor-not-allowed' : ''}
                     `}
                   >
-                    {dateSpecificInfo.type === 'blocked' && (
+                    {dateSpecificInfo.type === 'unavailable' && (
                       <div className="text-red-400">
                         <Ban className="w-4 h-4 mx-auto" />
                       </div>
@@ -335,7 +335,7 @@ const WeekCalendar = ({
                         {booking.event_title || 'Personal'}
                       </div>
                     )}
-                    {available && !booking && !isPast && dateSpecificInfo.type !== 'blocked' && (
+                    {available && !booking && !isPast && dateSpecificInfo.type !== 'unavailable' && (
                       <div className="text-green-600">
                         <Plus className="w-4 h-4 mx-auto" />
                       </div>
