@@ -240,7 +240,9 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
       console.error('Error fetching customer plans:', err);
       setCustomerPlans([]);
     }
-  };teredCustomers = customers.filter(customer => {
+  };
+
+  const filteredCustomers = customers.filter(customer => {
     const firstName = customer.user?.first_name || customer.first_name || '';
     const lastName = customer.user?.last_name || customer.last_name || '';
     const email = customer.user?.email || customer.email || '';
@@ -915,5 +917,4 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
 }
 
 export default CoachDashboard;
-
 
