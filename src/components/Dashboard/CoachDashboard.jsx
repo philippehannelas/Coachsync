@@ -88,21 +88,13 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
     }
     
     try {
-      // The backend handles user creation, profile linking, and token generation
+      // The backend handles user creation and profile linking
       const response = await coachAPI.inviteCustomer(formData);
       
-      // Construct the full invite link for the user to copy
-      const frontendBaseUrl = import.meta.env.DEV ? 'http://localhost:5173' : 'https://coachsync-web.onrender.com';
-      const inviteUrl = `${frontendBaseUrl}/accept-invite?token=${response.data.setup_token}`;
-
-      setInviteLink(inviteUrl);
-      setInviteCustomerName(`${formData.first_name} ${formData.last_name}`);
-      setShowInviteModal(true); // Show the modal with the link
-
       setShowAddModal(false); // Close the invite form modal
       setFormData({ first_name: '', last_name: '', email: '', phone: '', initial_credits: 0 });
-      fetchCustomers(); // Refresh customer list to show the new inactive user
-      setSuccess('Customer invited successfully! Share the link to complete onboarding.');
+      fetchCustomers(); // Refresh customer list to show the new customer
+      setSuccess(`Customer ${formData.first_name} ${formData.last_name} created successfully!`);
       setTimeout(() => setSuccess(''), 5000);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to invite customer');
