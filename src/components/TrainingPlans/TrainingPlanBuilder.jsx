@@ -35,6 +35,23 @@ function TrainingPlanBuilder({ plan, customers, onSave, onCancel }) {
     }
   }, [plan]);
 
+  // Auto-calculate end_date when start_date or duration_weeks changes
+  useEffect(() => {
+    if (planData.start_date && planData.duration_weeks) {
+      const startDate = new Date(planData.start_date);
+      const endDate = new Date(startDate);
+      endDate.setDate(endDate.getDate() + (planData.duration_weeks * 7));
+      
+      // Format as YYYY-MM-DD
+      const formattedEndDate = endDate.toISOString().split('T')[0];
+      
+      // Only update if end_date is empty or different
+      if (!planData.end_date || planData.end_date !== formattedEndDate) {
+        setPlanData(prev => ({ ...prev, end_date: formattedEndDate }));
+      }
+    }
+  }, [planData.start_date, planData.duration_weeks]);
+
   const loadExercises = async (planId) => {
     try {
       const response = await fetch(`https://coachsync-pro.onrender.com/api/coach/training-plans/${planId}/exercises`, {
@@ -336,6 +353,9 @@ function TrainingPlanBuilder({ plan, customers, onSave, onCancel }) {
                       onChange={(e) => setPlanData({ ...planData, end_date: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Auto-calculated from start date + duration (editable)
+                    </p>
                   </div>
                 </div>
 
