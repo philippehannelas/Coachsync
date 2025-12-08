@@ -4,8 +4,9 @@ Handles logo upload, profile photo upload, and branding settings management
 """
 
 from flask import Blueprint, request, jsonify, current_app
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from src.routes.auth import token_required
 from src.models.user import db, User, CoachProfile
+from functools import wraps
 import cloudinary
 import cloudinary.uploader
 import os
@@ -19,18 +20,22 @@ cloudinary.config(
     api_secret=os.getenv('CLOUDINARY_API_SECRET', '3va0N8kmYAtAKCAhLo7OMWwA-Yw')
 )
 
+# Coach-only decorator
+def coach_required(f):
+    @wraps(f)
+    def coach_decorated(current_user, *args, **kwargs):
+        if current_user.role != 'coach':
+            return jsonify({'message': 'Coach access required'}), 403
+        return f(current_user, *args, **kwargs)
+    return coach_decorated
+
 @branding_bp.route('/branding', methods=['GET'])
-@jwt_required()
-def get_branding():
+@token_required
+@coach_required
+def get_branding(current_user):
     """Get current coach's branding settings"""
     try:
-        current_user_id = get_jwt_identity()
-        user = User.query.get(current_user_id)
-        
-        if not user or user.role != 'coach':
-            return jsonify({"message": "Unauthorized"}), 403
-        
-        coach_profile = CoachProfile.query.filter_by(user_id=current_user_id).first()
+        coach_profile = CoachProfile.query.filter_by(user_id=current_user.id).first()
         if not coach_profile:
             return jsonify({"message": "Coach profile not found"}), 404
         
@@ -40,7 +45,7 @@ def get_branding():
             'business_name': coach_profile.business_name,
             'motto': coach_profile.motto,
             'description': coach_profile.description,
-            'brand_color_primary': coach_profile.brand_color_primary or '#8B5CF6'  # Default purple
+            'brand_color_primary': coach_profile.brand_color_primary or '#8B5CF6'
         }
         
         return jsonify(branding), 200
@@ -50,23 +55,17 @@ def get_branding():
 
 
 @branding_bp.route('/branding', methods=['PUT'])
-@jwt_required()
-def update_branding():
+@token_required
+@coach_required
+def update_branding(current_user):
     """Update coach's branding settings (text fields only)"""
     try:
-        current_user_id = get_jwt_identity()
-        user = User.query.get(current_user_id)
-        
-        if not user or user.role != 'coach':
-            return jsonify({"message": "Unauthorized"}), 403
-        
-        coach_profile = CoachProfile.query.filter_by(user_id=current_user_id).first()
+        coach_profile = CoachProfile.query.filter_by(user_id=current_user.id).first()
         if not coach_profile:
             return jsonify({"message": "Coach profile not found"}), 404
         
         data = request.get_json()
         
-        # Update text fields
         if 'business_name' in data:
             coach_profile.business_name = data['business_name']
         if 'motto' in data:
@@ -74,7 +73,6 @@ def update_branding():
         if 'description' in data:
             coach_profile.description = data['description']
         if 'brand_color_primary' in data:
-            # Validate hex color
             color = data['brand_color_primary']
             if color and (not color.startswith('#') or len(color) != 7):
                 return jsonify({"message": "Invalid color format. Use hex code like #8B5CF6"}), 400
@@ -100,17 +98,12 @@ def update_branding():
 
 
 @branding_bp.route('/branding/upload-logo', methods=['POST'])
-@jwt_required()
-def upload_logo():
+@token_required
+@coach_required
+def upload_logo(current_user):
     """Upload coach's logo to Cloudinary"""
     try:
-        current_user_id = get_jwt_identity()
-        user = User.query.get(current_user_id)
-        
-        if not user or user.role != 'coach':
-            return jsonify({"message": "Unauthorized"}), 403
-        
-        coach_profile = CoachProfile.query.filter_by(user_id=current_user_id).first()
+        coach_profile = CoachProfile.query.filter_by(user_id=current_user.id).first()
         if not coach_profile:
             return jsonify({"message": "Coach profile not found"}), 404
         
@@ -122,18 +115,16 @@ def upload_logo():
         if file.filename == '':
             return jsonify({"message": "No file selected"}), 400
         
-        # Validate file type
         allowed_extensions = {'png', 'jpg', 'jpeg', 'svg', 'webp'}
         file_ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else ''
         
         if file_ext not in allowed_extensions:
             return jsonify({"message": f"Invalid file type. Allowed: {', '.join(allowed_extensions)}"}), 400
         
-        # Upload to Cloudinary
         upload_result = cloudinary.uploader.upload(
             file,
-            folder=f"athletehub/coach-branding/{current_user_id}",
-            public_id=f"logo_{current_user_id}",
+            folder=f"athletehub/coach-branding/{current_user.id}",
+            public_id=f"logo_{current_user.id}",
             overwrite=True,
             resource_type="image",
             transformation=[
@@ -142,7 +133,6 @@ def upload_logo():
             ]
         )
         
-        # Update coach profile
         coach_profile.logo_url = upload_result['secure_url']
         db.session.commit()
         
@@ -157,17 +147,12 @@ def upload_logo():
 
 
 @branding_bp.route('/branding/upload-photo', methods=['POST'])
-@jwt_required()
-def upload_photo():
+@token_required
+@coach_required
+def upload_photo(current_user):
     """Upload coach's profile photo to Cloudinary"""
     try:
-        current_user_id = get_jwt_identity()
-        user = User.query.get(current_user_id)
-        
-        if not user or user.role != 'coach':
-            return jsonify({"message": "Unauthorized"}), 403
-        
-        coach_profile = CoachProfile.query.filter_by(user_id=current_user_id).first()
+        coach_profile = CoachProfile.query.filter_by(user_id=current_user.id).first()
         if not coach_profile:
             return jsonify({"message": "Coach profile not found"}), 404
         
@@ -179,28 +164,25 @@ def upload_photo():
         if file.filename == '':
             return jsonify({"message": "No file selected"}), 400
         
-        # Validate file type
         allowed_extensions = {'png', 'jpg', 'jpeg', 'webp'}
         file_ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else ''
         
         if file_ext not in allowed_extensions:
             return jsonify({"message": f"Invalid file type. Allowed: {', '.join(allowed_extensions)}"}), 400
         
-        # Upload to Cloudinary
         upload_result = cloudinary.uploader.upload(
             file,
-            folder=f"athletehub/coach-branding/{current_user_id}",
-            public_id=f"photo_{current_user_id}",
+            folder=f"athletehub/coach-branding/{current_user.id}",
+            public_id=f"photo_{current_user.id}",
             overwrite=True,
             resource_type="image",
             transformation=[
                 {'width': 400, 'height': 400, 'crop': 'fill', 'gravity': 'face'},
                 {'quality': 'auto:good'},
-                {'radius': 'max'}  # Make it circular
+                {'radius': 'max'}
             ]
         )
         
-        # Update coach profile
         coach_profile.profile_photo_url = upload_result['secure_url']
         db.session.commit()
         
@@ -215,17 +197,12 @@ def upload_photo():
 
 
 @branding_bp.route('/branding/delete-logo', methods=['DELETE'])
-@jwt_required()
-def delete_logo():
+@token_required
+@coach_required
+def delete_logo(current_user):
     """Delete coach's logo"""
     try:
-        current_user_id = get_jwt_identity()
-        user = User.query.get(current_user_id)
-        
-        if not user or user.role != 'coach':
-            return jsonify({"message": "Unauthorized"}), 403
-        
-        coach_profile = CoachProfile.query.filter_by(user_id=current_user_id).first()
+        coach_profile = CoachProfile.query.filter_by(user_id=current_user.id).first()
         if not coach_profile:
             return jsonify({"message": "Coach profile not found"}), 404
         
@@ -240,17 +217,12 @@ def delete_logo():
 
 
 @branding_bp.route('/branding/delete-photo', methods=['DELETE'])
-@jwt_required()
-def delete_photo():
+@token_required
+@coach_required
+def delete_photo(current_user):
     """Delete coach's profile photo"""
     try:
-        current_user_id = get_jwt_identity()
-        user = User.query.get(current_user_id)
-        
-        if not user or user.role != 'coach':
-            return jsonify({"message": "Unauthorized"}), 403
-        
-        coach_profile = CoachProfile.query.filter_by(user_id=current_user_id).first()
+        coach_profile = CoachProfile.query.filter_by(user_id=current_user.id).first()
         if not coach_profile:
             return jsonify({"message": "Coach profile not found"}), 404
         
