@@ -31,12 +31,19 @@ training_plan_bp = Blueprint('training_plan', __name__)
 @token_required
 @coach_required
 def get_coach_training_plans(current_user):
-    """Get all training plans created by the coach"""
+    """Get all training plans created by the coach with optional status filtering"""
     try:
         if not current_user.coach_profile:
             return jsonify({'message': 'Coach profile not found'}), 404
         
+        # Get all plans for the coach
         plans = TrainingPlan.query.filter_by(coach_id=current_user.coach_profile.id).all()
+        
+        # Apply status filter if provided
+        status_filter = request.args.get('status')
+        if status_filter:
+            plans = [plan for plan in plans if plan.status == status_filter]
+        
         return jsonify([plan.to_dict() for plan in plans]), 200
     except Exception as e:
         return jsonify({'message': f'Error fetching training plans: {str(e)}'}), 500
@@ -54,12 +61,22 @@ def create_training_plan(current_user):
         if not current_user.coach_profile:
             return jsonify({'message': 'Coach profile not found'}), 404
         
+        # Parse dates if provided
+        start_date = None
+        end_date = None
+        if data.get('start_date'):
+            start_date = datetime.strptime(data['start_date'], '%Y-%m-%d').date()
+        if data.get('end_date'):
+            end_date = datetime.strptime(data['end_date'], '%Y-%m-%d').date()
+        
         new_plan = TrainingPlan(
             coach_id=current_user.coach_profile.id,
             name=data.get('name'),
             description=data.get('description'),
             difficulty=data.get('difficulty', 'beginner'),
             duration_weeks=data.get('duration_weeks', 4),
+            start_date=start_date,
+            end_date=end_date,
             is_active=True,
             assigned_customer_ids=[]
         )
@@ -89,6 +106,13 @@ def update_training_plan(current_user, plan_id):
         plan.difficulty = data.get('difficulty', plan.difficulty)
         plan.duration_weeks = data.get('duration_weeks', plan.duration_weeks)
         plan.is_active = data.get('is_active', plan.is_active)
+        
+        # Update dates if provided
+        if 'start_date' in data:
+            plan.start_date = datetime.strptime(data['start_date'], '%Y-%m-%d').date() if data['start_date'] else None
+        if 'end_date' in data:
+            plan.end_date = datetime.strptime(data['end_date'], '%Y-%m-%d').date() if data['end_date'] else None
+        
         plan.updated_at = datetime.utcnow()
         
         db.session.commit()
@@ -250,6 +274,16 @@ def assign_plan_to_customer(current_user, plan_id):
         if customer_id not in assigned_ids:
             assigned_ids.append(customer_id)
             plan.assigned_customer_ids = assigned_ids
+            
+            # Set start_date to today if not already set
+            if not plan.start_date:
+                plan.start_date = date.today()
+            
+            # Calculate end_date if not set and duration_weeks is available
+            if not plan.end_date and plan.duration_weeks:
+                from datetime import timedelta
+                plan.end_date = plan.start_date + timedelta(weeks=plan.duration_weeks)
+            
             plan.updated_at = datetime.utcnow()
             db.session.commit()
         
@@ -300,6 +334,9 @@ def get_customer_training_plans(current_user):
         # Find plans where customer is in assigned_customer_ids
         all_plans = TrainingPlan.query.filter_by(coach_id=current_user.customer_profile.coach_id).all()
         assigned_plans = [plan for plan in all_plans if current_user.customer_profile.id in (plan.assigned_customer_ids or [])]
+        
+        # Filter to show only active plans for customers
+        assigned_plans = [plan for plan in assigned_plans if plan.status == 'active']
         
         # Include exercises for each plan
         plans_with_exercises = []

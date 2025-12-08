@@ -160,11 +160,29 @@ class TrainingPlan(db.Model):
     description = db.Column(db.Text)
     difficulty = db.Column(db.String(20), default='beginner')  # beginner, intermediate, advanced
     duration_weeks = db.Column(db.Integer, default=4)
+    start_date = db.Column(db.Date, nullable=True)  # When plan becomes active
+    end_date = db.Column(db.Date, nullable=True)  # When plan expires
     is_active = db.Column(db.Boolean, default=True)
     exercises = db.Column(db.JSON)  # Store exercises as JSON array
     assigned_customer_ids = db.Column(db.JSON)  # Store customer IDs as JSON array
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    @property
+    def status(self):
+        """Calculate status based on dates"""
+        if not self.start_date:
+            return 'draft'  # No start date set
+        
+        from datetime import date
+        today = date.today()
+        
+        if self.start_date > today:
+            return 'upcoming'
+        elif self.end_date and self.end_date < today:
+            return 'expired'
+        else:
+            return 'active'
 
     def to_dict(self):
         return {
@@ -174,6 +192,9 @@ class TrainingPlan(db.Model):
             'description': self.description,
             'difficulty': self.difficulty,
             'duration_weeks': self.duration_weeks,
+            'start_date': self.start_date.isoformat() if self.start_date else None,
+            'end_date': self.end_date.isoformat() if self.end_date else None,
+            'status': self.status,
             'is_active': self.is_active,
             'exercises': self.exercises or [],
             'assigned_customer_ids': self.assigned_customer_ids or [],
