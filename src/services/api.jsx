@@ -87,6 +87,8 @@ export const coachAPI = {
   createBooking: (bookingData) => api.post('/coach/bookings', bookingData),
   updateBooking: (bookingId, bookingData) => api.put(`/coach/bookings/${bookingId}`, bookingData),
   cancelBooking: (bookingId) => api.delete(`/coach/bookings/${bookingId}`),
+  
+  getBranding: () => api.get('/branding'),
 };
 
 // Customer API endpoints

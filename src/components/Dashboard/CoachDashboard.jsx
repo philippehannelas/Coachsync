@@ -21,6 +21,7 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
   const [inviteLink, setInviteLink] = useState('');
   const [inviteCustomerName, setInviteCustomerName] = useState('');
   const [showCustomerList, setShowCustomerList] = useState(false);
+  const [branding, setBranding] = useState(null);
 
   // Form states
   const [formData, setFormData] = useState({
@@ -35,7 +36,17 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
 
   useEffect(() => {
     fetchCustomers();
+    fetchBranding();
   }, []);
+
+  const fetchBranding = async () => {
+    try {
+      const response = await coachAPI.getBranding();
+      setBranding(response.data);
+    } catch (error) {
+      console.log('No branding set yet:', error);
+    }
+  };
 
   const fetchCustomers = async () => {
     try {
@@ -68,6 +79,14 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
 
   const handleInviteCustomer = async (e) => {
     e.preventDefault();
+    
+    // Validate at least one contact method
+    if (!formData.email?.trim() && !formData.phone?.trim()) {
+      setError('Please provide at least one contact method (email or phone)');
+      setTimeout(() => setError(''), 5000);
+      return;
+    }
+    
     try {
       // The backend handles user creation, profile linking, and token generation
       const response = await coachAPI.inviteCustomer(formData);
@@ -93,6 +112,14 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
 
   const handleEditCustomer = async (e) => {
     e.preventDefault();
+    
+    // Validate at least one contact method
+    if (!formData.email?.trim() && !formData.phone?.trim()) {
+      setError('Please provide at least one contact method (email or phone)');
+      setTimeout(() => setError(''), 5000);
+      return;
+    }
+    
     try {
       await coachAPI.updateCustomer(selectedCustomer.id, formData);
       setSuccess('Customer updated successfully!');
@@ -167,16 +194,24 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Header */}
-      <header className="bg-white shadow-md border-b border-gray-200">
+      <header className="bg-white shadow-md border-b border-gray-200" style={branding?.brand_color_primary ? { background: `linear-gradient(to right, ${branding.brand_color_primary}, ${branding.brand_color_primary}dd)` } : {}}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-3">
-              <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-2 rounded-lg">
-                <AthleteHubLogo className="h-6 w-auto" color="white" />
-              </div>
+              {branding?.logo_url ? (
+                <img src={branding.logo_url} alt="Logo" className="h-8 w-auto" />
+              ) : (
+                <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-2 rounded-lg">
+                  <AthleteHubLogo className="h-6 w-auto" color="white" />
+                </div>
+              )}
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">AthleteHub</h1>
-                <p className="text-sm text-gray-600">Welcome back, {user.first_name}!</p>
+                <h1 className="text-2xl font-bold" style={branding?.brand_color_primary ? { color: 'white' } : { color: '#111827' }}>
+                  {branding?.business_name || 'AthleteHub'}
+                </h1>
+                <p className="text-sm" style={branding?.brand_color_primary ? { color: 'rgba(255,255,255,0.9)' } : { color: '#4B5563' }}>
+                  {branding?.motto || `Welcome back, ${user.first_name}!`}
+                </p>
               </div>
             </div>
             <button
@@ -598,17 +633,20 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email <span className="text-gray-500 font-normal">(optional)</span>
+                </label>
                 <input
                   type="email"
-                  required
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone (8 digits)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone (8 digits) <span className="text-gray-500 font-normal">(optional)</span>
+                </label>
                 <input
                   type="tel"
                   pattern="[0-9]{8}"
@@ -616,6 +654,7 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                 />
+                <p className="text-xs text-gray-500 mt-1">* At least one contact method (email or phone) is required</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Initial Credits</label>
@@ -676,17 +715,20 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email <span className="text-gray-500 font-normal">(optional)</span>
+                </label>
                 <input
                   type="email"
-                  required
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone (8 digits)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone (8 digits) <span className="text-gray-500 font-normal">(optional)</span>
+                </label>
                 <input
                   type="tel"
                   pattern="[0-9]{8}"
@@ -694,6 +736,7 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                 />
+                <p className="text-xs text-gray-500 mt-1">* At least one contact method (email or phone) is required</p>
               </div>
               <div className="flex gap-3 pt-4">
                 <button
