@@ -613,36 +613,20 @@ const AvailabilityManager = ({ onClose, onSave }) => {
                 dateSpecific.map(item => (
                   <div
                     key={item.id}
-                    className={`p-4 rounded-lg border-2 ${
-                      item.type === 'unavailable'
-                        ? 'bg-red-50 border-red-200'
-                        : 'bg-green-50 border-green-200'
-                    }`}
+                    className="p-4 rounded-lg border-l-4 bg-red-50 border-red-500"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          {item.type === 'unavailable' ? (
-                            <Ban className="w-5 h-5 text-red-600" />
-                          ) : (
-                            <Clock className="w-5 h-5 text-green-600" />
-                          )}
+                          <Ban className="w-5 h-5 text-red-600" />
                           <span className="font-semibold text-gray-800">
                             {formatDate(item.date)}
                           </span>
-                          <span className={`px-2 py-0.5 text-xs rounded ${
-                            item.type === 'unavailable'
-                              ? 'bg-red-200 text-red-800'
-                              : 'bg-green-200 text-green-800'
-                          }`}>
-                            {item.type === 'unavailable' ? 'Unavailable' : 'Available'}
+                          <span className="px-2 py-0.5 text-xs rounded bg-red-200 text-red-800">
+                            {item.type === 'unavailable' ? 'Blocked (Full Day)' : `Blocked (${item.start_time} - ${item.end_time})`}
                           </span>
                         </div>
-                        {item.type === 'available' && (
-                          <p className="text-sm text-gray-700 ml-7">
-                            {item.start_time} - {item.end_time}
-                          </p>
-                        )}
+
                         {item.reason && (
                           <p className="text-sm text-gray-600 ml-7 italic">
                             {item.reason}
