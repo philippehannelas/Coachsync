@@ -1,29 +1,55 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Users, FileText, Calendar, MoreHorizontal } from 'lucide-react';
+import { Home, Users, FileText, Calendar, MoreHorizontal, Settings, LogOut, Palette, User } from 'lucide-react';
 
 const BottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
+
   const navItems = [
     { path: '/coach/dashboard', icon: Home, label: 'Home' },
-    { path: '/coach/dashboard', icon: Users, label: 'Clients', section: 'customers' },
+    { path: '/coach/dashboard', icon: Users, label: 'Clients', scrollTo: 'customer-section' },
     { path: '/coach/training-plans', icon: FileText, label: 'Plans' },
     { path: '/coach/calendar', icon: Calendar, label: 'Calendar' },
-    { path: '/coach/settings', icon: MoreHorizontal, label: 'More' },
+    { action: 'more', icon: MoreHorizontal, label: 'More' },
   ];
 
   const handleNavClick = (item) => {
-    navigate(item.path);
-    // If there's a specific section to scroll to, handle it
-    if (item.section) {
+    // Handle More menu
+    if (item.action === 'more') {
+      setShowMoreMenu(!showMoreMenu);
+      return;
+    }
+
+    // Navigate to path
+    if (item.path) {
+      navigate(item.path);
+    }
+
+    // Scroll to section if specified
+    if (item.scrollTo) {
       setTimeout(() => {
-        const element = document.getElementById(item.section);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
+        // Try to find the section by ID or class
+        let element = document.getElementById(item.scrollTo);
+        
+        // If not found by ID, try to find customer list section
+        if (!element && item.scrollTo === 'customer-section') {
+          // Look for the customer list heading or container
+          const headings = document.querySelectorAll('h2, h3');
+          for (const heading of headings) {
+            if (heading.textContent.includes('Customer') || heading.textContent.includes('Client')) {
+              element = heading.parentElement;
+              break;
+            }
+          }
         }
-      }, 100);
+        
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 200);
     }
   };
 
@@ -35,24 +61,90 @@ const BottomNav = () => {
   };
 
   return (
-    <nav className="bottom-nav">
-      {navItems.map((item, index) => {
-        const Icon = item.icon;
-        const active = isActive(item);
-        
-        return (
-          <button
-            key={index}
-            onClick={() => handleNavClick(item)}
-            className={`bottom-nav-item ${active ? 'active' : ''}`}
-            aria-label={item.label}
+    <>
+      {/* More Menu Overlay */}
+      {showMoreMenu && (
+        <div 
+          className="mobile-more-menu-overlay"
+          onClick={() => setShowMoreMenu(false)}
+        >
+          <div 
+            className="mobile-more-menu"
+            onClick={(e) => e.stopPropagation()}
           >
-            <Icon className="bottom-nav-icon" size={24} />
-            <span className="bottom-nav-label">{item.label}</span>
-          </button>
-        );
-      })}
-    </nav>
+            <div className="mobile-more-menu-header">
+              <h3>More Options</h3>
+              <button onClick={() => setShowMoreMenu(false)}>✕</button>
+            </div>
+            <div className="mobile-more-menu-items">
+              <button 
+                className="mobile-more-menu-item"
+                onClick={() => {
+                  navigate('/coach/branding');
+                  setShowMoreMenu(false);
+                }}
+              >
+                <Palette size={20} />
+                <span>Branding</span>
+              </button>
+              <button 
+                className="mobile-more-menu-item"
+                onClick={() => {
+                  navigate('/coach/profile');
+                  setShowMoreMenu(false);
+                }}
+              >
+                <User size={20} />
+                <span>Profile</span>
+              </button>
+              <button 
+                className="mobile-more-menu-item"
+                onClick={() => {
+                  navigate('/coach/settings');
+                  setShowMoreMenu(false);
+                }}
+              >
+                <Settings size={20} />
+                <span>Settings</span>
+              </button>
+              <button 
+                className="mobile-more-menu-item mobile-more-menu-item-danger"
+                onClick={() => {
+                  if (window.confirm('Are you sure you want to logout?')) {
+                    localStorage.removeItem('coachsync_token');
+                    navigate('/login');
+                  }
+                  setShowMoreMenu(false);
+                }}
+              >
+                <LogOut size={20} />
+                <span>Logout</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bottom Navigation */}
+      <nav className="bottom-nav">
+        {navItems.map((item, index) => {
+          const Icon = item.icon;
+          const active = item.path ? isActive(item) : showMoreMenu;
+          
+          return (
+            <button
+              key={index}
+              onClick={() => handleNavClick(item)}
+              className={`bottom-nav-item ${active ? 'active' : ''}`}
+              aria-label={item.label}
+            >
+              <Icon className="bottom-nav-icon" size={24} />
+              <span className="bottom-nav-label">{item.label}</span>
+            </button>
+          );
+        })}
+      </nav>
+    </>
   );
 };
 

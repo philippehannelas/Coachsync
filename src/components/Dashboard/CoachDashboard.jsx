@@ -488,7 +488,7 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
         </div>
 
         {/* Customers Section - Collapsible */}
-        <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+        <div id="customer-section" className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
           {/* Header */}
           <div 
             className="p-6 cursor-pointer hover:bg-gray-50 transition-colors border-b border-gray-200"
@@ -620,6 +620,13 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
                       Email
                     </button>
                   )}
+                  <button 
+                    className="customer-action-btn customer-action-credits"
+                    onClick={() => openCreditsModal(customer)}
+                  >
+                    <CreditCard size={18} />
+                    Credits
+                  </button>
                   <button 
                     className="customer-action-btn"
                     onClick={() => openEditModal(customer)}

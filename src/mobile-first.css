@@ -333,8 +333,14 @@
   color: #10B981;
 }
 
+.customer-action-credits {
+  background: #FEF3C7;
+  color: #D97706;
+}
+
 .customer-action-call:active,
-.customer-action-message:active {
+.customer-action-message:active,
+.customer-action-credits:active {
   opacity: 0.8;
 }
 
@@ -857,4 +863,219 @@ html {
 
 .safe-right {
   padding-right: var(--safe-area-right);
+}
+
+/* ============================================
+   MOBILE MORE MENU
+   ============================================ */
+
+.mobile-more-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  display: flex;
+  align-items: flex-end;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.mobile-more-menu {
+  background: white;
+  width: 100%;
+  max-height: 70vh;
+  border-radius: 24px 24px 0 0;
+  padding-bottom: calc(var(--safe-area-bottom) + 16px);
+  animation: slideUp 0.3s ease-out;
+  overflow-y: auto;
+}
+
+.mobile-more-menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.mobile-more-menu-header h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.mobile-more-menu-header button {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: #F3F4F6;
+  color: #6B7280;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mobile-more-menu-header button:active {
+  background: #E5E7EB;
+  transform: scale(0.95);
+}
+
+.mobile-more-menu-items {
+  padding: 8px 16px;
+}
+
+.mobile-more-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 16px;
+  border: none;
+  background: white;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 8px;
+  font-size: 16px;
+  color: #374151;
+  font-weight: 500;
+}
+
+.mobile-more-menu-item:active {
+  background: #F3F4F6;
+  transform: scale(0.98);
+}
+
+.mobile-more-menu-item svg {
+  color: #6B7280;
+}
+
+.mobile-more-menu-item-danger {
+  color: #EF4444;
+}
+
+.mobile-more-menu-item-danger svg {
+  color: #EF4444;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* Hide More menu on desktop */
+@media (min-width: 1024px) {
+  .mobile-more-menu-overlay {
+    display: none;
+  }
+}
+
+/* ============================================
+   SWIPEABLE CUSTOMER CARDS
+   ============================================ */
+
+.swipeable-card-container {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.swipeable-card {
+  position: relative;
+  z-index: 2;
+  background: white;
+  touch-action: pan-y; /* Allow vertical scrolling while swiping horizontally */
+}
+
+.swipe-actions-right {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 16px;
+  z-index: 1;
+}
+
+.swipe-action {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: white;
+}
+
+.swipe-action:active {
+  transform: scale(0.95);
+}
+
+.swipe-action-credits {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+}
+
+.swipe-action-delete {
+  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+}
+
+.swipe-hint {
+  position: absolute;
+  bottom: 8px;
+  right: 16px;
+  font-size: 11px;
+  color: #9CA3AF;
+  font-weight: 500;
+  animation: pulseHint 2s infinite;
+  pointer-events: none;
+}
+
+@keyframes pulseHint {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Hide swipe hint after first interaction */
+.swipeable-card-container:active .swipe-hint {
+  display: none;
+}
+
+/* Desktop: Disable swipe */
+@media (min-width: 1024px) {
+  .swipeable-card {
+    touch-action: auto;
+  }
+  
+  .swipe-hint {
+    display: none;
+  }
 }
