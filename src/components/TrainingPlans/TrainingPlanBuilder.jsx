@@ -321,7 +321,7 @@ function TrainingPlanBuilder({ plan, customers, onSave, onCancel }) {
                     </label>
                     <input
                       type="date"
-                      value={planData.start_date}
+                      value={planData.start_date || ''}
                       onChange={(e) => setPlanData({ ...planData, start_date: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
@@ -332,7 +332,7 @@ function TrainingPlanBuilder({ plan, customers, onSave, onCancel }) {
                     </label>
                     <input
                       type="date"
-                      value={planData.end_date}
+                      value={planData.end_date || ''}
                       onChange={(e) => setPlanData({ ...planData, end_date: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
