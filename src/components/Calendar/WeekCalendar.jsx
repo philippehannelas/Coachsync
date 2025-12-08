@@ -117,27 +117,15 @@ const WeekCalendar = ({
     }
     
     if (dateSpecificInfo.type === 'override') {
-      // Check if time falls within override hours
+      // Check if time falls within BLOCKED hours
       const { start_time, end_time } = dateSpecificInfo.data;
-      const hasAvailability = time >= start_time && time < end_time;
+      const isBlocked = time >= start_time && time < end_time;
       
-      if (!hasAvailability) return false;
-      
-      // Check if booked - consider booking duration
-      const isBooked = bookings.some(booking => {
-        if (booking.status === 'cancelled') return false;
-        const bookingDate = booking.start_time.split('T')[0];
-        if (bookingDate !== dateString) return false;
-        
-        // Get booking start and end times
-        const bookingStartTime = booking.start_time.split('T')[1].substring(0, 5);
-        const bookingEndTime = booking.end_time.split('T')[1].substring(0, 5);
-        
-        // Check if current time slot falls within booking duration
-        return time >= bookingStartTime && time < bookingEndTime;
-      });
-      
-      return !isBooked;
+      if (isBlocked) {
+        // Time is blocked - not available
+        return false;
+      }
+      // Time is outside blocked hours - fall through to check recurring availability
     }
     
     // Step 2: Use recurring weekly availability (fallback)
