@@ -135,6 +135,40 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
     }
   };
 
+  const handleGenerateInviteLink = async (customer) => {
+    try {
+      // Call backend to generate a new invite token for existing customer
+      const response = await fetch(`https://coachsync-pro.onrender.com/api/coach/customers/${customer.id}/generate-invite`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('coachsync_token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate invite link');
+      }
+
+      const data = await response.json();
+      
+      if (data.token) {
+        const frontendBaseUrl = import.meta.env.DEV ? 'http://localhost:5173' : 'https://coachsync-web.onrender.com';
+        const inviteUrl = `${frontendBaseUrl}/accept-invite/${data.token}`;
+        
+        setInviteLink(inviteUrl);
+        setInviteCustomerName(`${customer.first_name} ${customer.last_name}`);
+        setShowInviteModal(true);
+        setShowEditModal(false); // Close edit modal
+        setSuccess('Invitation link generated successfully!');
+        setTimeout(() => setSuccess(''), 3000);
+      }
+    } catch (err) {
+      setError('Failed to generate invite link');
+      setTimeout(() => setError(''), 3000);
+    }
+  };
+
   const handleDeleteCustomer = async (customerId) => {
     if (window.confirm('Are you sure you want to delete this customer?')) {
       try {
@@ -754,6 +788,21 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
                 >
                   Save Changes
                 </button>
+              </div>
+              
+              {/* Generate Invite Link Button */}
+              <div className="pt-4 border-t border-gray-200 mt-4">
+                <button
+                  type="button"
+                  onClick={() => handleGenerateInviteLink(selectedCustomer)}
+                  className="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2"
+                >
+                  <Mail size={18} />
+                  Generate Invite Link
+                </button>
+                <p className="text-xs text-gray-500 mt-2 text-center">
+                  Create a new invitation link for this customer
+                </p>
               </div>
             </form>
           </div>
