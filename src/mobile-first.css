@@ -1,0 +1,860 @@
+/* ============================================
+   COACHSYNC MOBILE-FIRST CSS
+   Optimized for Phones & Tablets
+   ============================================ */
+
+:root {
+  /* Touch Target Sizes */
+  --touch-min: 48px;
+  --touch-comfortable: 56px;
+  --touch-large: 64px;
+  
+  /* Mobile Spacing (Base) */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+  
+  /* Mobile Typography */
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-base: 15px;
+  --text-lg: 17px;
+  --text-xl: 19px;
+  --text-2xl: 22px;
+  --text-3xl: 28px;
+  
+  /* Safe Areas (for notched phones) */
+  --safe-area-top: env(safe-area-inset-top);
+  --safe-area-bottom: env(safe-area-inset-bottom);
+  --safe-area-left: env(safe-area-inset-left);
+  --safe-area-right: env(safe-area-inset-right);
+}
+
+/* Tablet adjustments */
+@media (min-width: 768px) {
+  :root {
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+    --text-base: 16px;
+    --text-3xl: 32px;
+  }
+}
+
+/* ============================================
+   BOTTOM NAVIGATION BAR
+   ============================================ */
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: calc(64px + var(--safe-area-bottom));
+  background: white;
+  border-top: 1px solid #E5E5E5;
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
+  padding-top: 8px;
+  padding-bottom: var(--safe-area-bottom);
+  z-index: 1000;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  color: #666666;
+  text-decoration: none;
+  transition: color 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  min-width: var(--touch-min);
+  min-height: var(--touch-min);
+}
+
+.bottom-nav-item.active {
+  color: #9333EA;
+}
+
+.bottom-nav-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.bottom-nav-label {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* Hide bottom nav on desktop */
+@media (min-width: 1024px) {
+  .bottom-nav {
+    display: none;
+  }
+}
+
+/* ============================================
+   MOBILE HEADER
+   ============================================ */
+
+.mobile-header {
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: calc(56px + var(--safe-area-top));
+  background: white;
+  border-bottom: 1px solid #E5E5E5;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  padding-top: var(--safe-area-top);
+  z-index: 999;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.mobile-header-title {
+  flex: 1;
+  font-size: 19px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.mobile-header-action {
+  width: var(--touch-min);
+  height: var(--touch-min);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-header-action:active {
+  background: #F5F5F5;
+}
+
+/* ============================================
+   MOBILE LAYOUT
+   ============================================ */
+
+.mobile-container {
+  padding: 16px;
+  padding-bottom: calc(80px + var(--safe-area-bottom)); /* Space for bottom nav */
+  min-height: 100vh;
+}
+
+.mobile-section {
+  margin-bottom: 24px;
+}
+
+.mobile-section-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 12px;
+}
+
+/* ============================================
+   MOBILE BUTTONS
+   ============================================ */
+
+.btn-mobile-primary {
+  width: 100%;
+  height: var(--touch-comfortable);
+  background: linear-gradient(180deg, #A855F7 0%, #9333EA 100%);
+  color: white;
+  font-size: 17px;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 2px 8px rgba(147, 51, 234, 0.3);
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.1s ease;
+}
+
+.btn-mobile-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-mobile-secondary {
+  width: 100%;
+  height: var(--touch-comfortable);
+  background: white;
+  color: #666666;
+  font-size: 17px;
+  font-weight: 600;
+  border: 2px solid #E5E5E5;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.1s ease;
+}
+
+.btn-mobile-secondary:active {
+  background: #F5F5F5;
+  transform: scale(0.98);
+}
+
+/* Icon-only button (for inline actions) */
+.btn-mobile-icon {
+  width: var(--touch-min);
+  height: var(--touch-min);
+  background: white;
+  border: 2px solid #E5E5E5;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-mobile-icon:active {
+  background: #F5F5F5;
+}
+
+/* ============================================
+   MOBILE CUSTOMER CARDS
+   ============================================ */
+
+.customer-card-mobile {
+  background: white;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.customer-card-mobile-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.customer-avatar-mobile {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #A855F7 0%, #3B82F6 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 20px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.customer-info-mobile {
+  flex: 1;
+  min-width: 0;
+}
+
+.customer-name-mobile {
+  font-size: 17px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 4px;
+}
+
+.customer-credits-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: #F0FDF4;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #10B981;
+}
+
+.customer-contact-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #F5F5F5;
+}
+
+.customer-contact-item-mobile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  color: #666666;
+}
+
+.customer-actions-mobile {
+  display: flex;
+  gap: 8px;
+}
+
+.customer-action-btn {
+  flex: 1;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  border: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.customer-action-call {
+  background: #DBEAFE;
+  color: #3B82F6;
+}
+
+.customer-action-message {
+  background: #D1FAE5;
+  color: #10B981;
+}
+
+.customer-action-call:active,
+.customer-action-message:active {
+  opacity: 0.8;
+}
+
+/* Swipe action overlay */
+.customer-card-swipe-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+}
+
+.customer-card-mobile.swiped .customer-card-swipe-actions {
+  transform: translateX(0);
+}
+
+.swipe-action-btn {
+  width: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: white;
+}
+
+.swipe-action-edit {
+  background: #3B82F6;
+}
+
+.swipe-action-delete {
+  background: #EF4444;
+}
+
+/* ============================================
+   MOBILE TRAINING PLAN CARDS
+   ============================================ */
+
+.training-plan-card-mobile {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.training-plan-header-mobile {
+  height: 100px;
+  background: linear-gradient(135deg, #A855F7 0%, #3B82F6 100%);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+
+.training-plan-badges-mobile {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.training-plan-badge-mobile {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.25);
+  color: white;
+  backdrop-filter: blur(10px);
+}
+
+.training-plan-body-mobile {
+  padding: 16px;
+}
+
+.training-plan-title-mobile {
+  font-size: 19px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+}
+
+.training-plan-description-mobile {
+  font-size: 15px;
+  color: #666666;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+.training-plan-meta-mobile {
+  display: flex;
+  gap: 16px;
+  padding: 12px;
+  background: #F9FAFB;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.training-plan-meta-item-mobile {
+  flex: 1;
+}
+
+.training-plan-meta-label-mobile {
+  font-size: 12px;
+  color: #999999;
+  margin-bottom: 4px;
+}
+
+.training-plan-meta-value-mobile {
+  font-size: 17px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.training-plan-actions-mobile {
+  display: flex;
+  gap: 8px;
+}
+
+/* ============================================
+   MOBILE CALENDAR - DAY VIEW
+   ============================================ */
+
+.calendar-mobile {
+  padding-bottom: calc(80px + var(--safe-area-bottom));
+}
+
+.calendar-date-selector {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: white;
+  border-bottom: 1px solid #E5E5E5;
+  position: sticky;
+  top: calc(56px + var(--safe-area-top));
+  z-index: 998;
+}
+
+.calendar-date-nav {
+  width: var(--touch-min);
+  height: var(--touch-min);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.calendar-date-nav:active {
+  background: #F5F5F5;
+}
+
+.calendar-date-current {
+  font-size: 19px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.calendar-time-blocks {
+  padding: 16px;
+}
+
+.calendar-time-block-mobile {
+  margin-bottom: 16px;
+}
+
+.calendar-time-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #999999;
+  margin-bottom: 8px;
+}
+
+.calendar-session-mobile {
+  background: white;
+  border-left: 4px solid #9333EA;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.calendar-session-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.calendar-session-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #A855F7 0%, #3B82F6 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.calendar-session-info {
+  flex: 1;
+}
+
+.calendar-session-name {
+  font-size: 17px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 2px;
+}
+
+.calendar-session-type {
+  font-size: 13px;
+  color: #666666;
+}
+
+.calendar-session-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.calendar-session-action-btn {
+  flex: 1;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  background: #F5F5F5;
+  color: #666666;
+  border: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.calendar-session-action-btn:active {
+  background: #E5E5E5;
+}
+
+.calendar-empty-slot {
+  background: #F9FAFB;
+  border: 2px dashed #E5E5E5;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+}
+
+.calendar-empty-slot-text {
+  font-size: 15px;
+  color: #999999;
+  margin-bottom: 12px;
+}
+
+/* ============================================
+   MOBILE FORMS
+   ============================================ */
+
+.form-mobile {
+  padding: 16px;
+}
+
+.form-group-mobile {
+  margin-bottom: 20px;
+}
+
+.form-label-mobile {
+  display: block;
+  font-size: 15px;
+  font-weight: 500;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+}
+
+.form-input-mobile {
+  width: 100%;
+  height: var(--touch-comfortable);
+  padding: 0 16px;
+  font-size: 16px; /* Prevents iOS zoom */
+  color: #1a1a1a;
+  background: white;
+  border: 2px solid #E5E5E5;
+  border-radius: 12px;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.form-input-mobile:focus {
+  outline: none;
+  border-color: #9333EA;
+  box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.1);
+}
+
+.form-textarea-mobile {
+  width: 100%;
+  min-height: 120px;
+  padding: 16px;
+  font-size: 16px;
+  color: #1a1a1a;
+  background: white;
+  border: 2px solid #E5E5E5;
+  border-radius: 12px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.form-textarea-mobile:focus {
+  outline: none;
+  border-color: #9333EA;
+  box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.1);
+}
+
+.form-submit-mobile {
+  position: sticky;
+  bottom: calc(64px + var(--safe-area-bottom));
+  left: 0;
+  right: 0;
+  padding: 16px;
+  background: white;
+  border-top: 1px solid #E5E5E5;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+  z-index: 997;
+}
+
+/* ============================================
+   BOTTOM SHEET (Modal Alternative)
+   ============================================ */
+
+.bottom-sheet-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9998;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.bottom-sheet-overlay.active {
+  opacity: 1;
+}
+
+.bottom-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: 90vh;
+  background: white;
+  border-radius: 24px 24px 0 0;
+  z-index: 9999;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.bottom-sheet.active {
+  transform: translateY(0);
+}
+
+.bottom-sheet-handle {
+  width: 40px;
+  height: 4px;
+  background: #E5E5E5;
+  border-radius: 2px;
+  margin: 12px auto;
+  flex-shrink: 0;
+}
+
+.bottom-sheet-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #E5E5E5;
+  flex-shrink: 0;
+}
+
+.bottom-sheet-title {
+  font-size: 19px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.bottom-sheet-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ============================================
+   FLOATING ACTION BUTTON (FAB)
+   ============================================ */
+
+.fab {
+  position: fixed;
+  bottom: calc(80px + var(--safe-area-bottom));
+  right: 16px;
+  width: var(--touch-large);
+  height: var(--touch-large);
+  background: linear-gradient(135deg, #A855F7 0%, #9333EA 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(147, 51, 234, 0.4);
+  z-index: 996;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.2s ease;
+}
+
+.fab:active {
+  transform: scale(0.95);
+}
+
+.fab-icon {
+  width: 28px;
+  height: 28px;
+  color: white;
+}
+
+/* ============================================
+   PULL TO REFRESH
+   ============================================ */
+
+.pull-to-refresh {
+  position: relative;
+  overflow: hidden;
+}
+
+.pull-to-refresh-indicator {
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: top 0.2s ease;
+}
+
+.pull-to-refresh.pulling .pull-to-refresh-indicator {
+  top: 20px;
+}
+
+/* ============================================
+   MOBILE UTILITIES
+   ============================================ */
+
+/* Hide on mobile */
+.hide-mobile {
+  display: none !important;
+}
+
+/* Show only on mobile */
+.show-mobile {
+  display: block !important;
+}
+
+@media (min-width: 768px) {
+  .hide-mobile {
+    display: block !important;
+  }
+  .show-mobile {
+    display: none !important;
+  }
+}
+
+/* Prevent text selection on buttons */
+button, .btn-mobile-primary, .btn-mobile-secondary, .btn-mobile-icon {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Remove tap highlight */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Prevent zoom on input focus (iOS) */
+@media screen and (max-width: 767px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Safe area padding helpers */
+.safe-top {
+  padding-top: var(--safe-area-top);
+}
+
+.safe-bottom {
+  padding-bottom: var(--safe-area-bottom);
+}
+
+.safe-left {
+  padding-left: var(--safe-area-left);
+}
+
+.safe-right {
+  padding-right: var(--safe-area-right);
+}

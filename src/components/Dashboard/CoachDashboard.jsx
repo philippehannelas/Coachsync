@@ -572,63 +572,61 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
             {filteredCustomers.map((customer) => (
               <div
                 key={customer.id}
-                className="bg-white rounded-xl shadow-md hover:shadow-xl border-l-4 border-blue-500 p-6 transition-all duration-300 transform hover:-translate-y-1"
+                className="customer-card-mobile"
               >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-2 rounded-lg">
-                      <User className="h-6 w-6 text-white" />
+                <div className="customer-card-mobile-header">
+                  <div className="customer-avatar-mobile">
+                    {(customer.user?.first_name || customer.first_name)?.[0]}{(customer.user?.last_name || customer.last_name)?.[0]}
+                  </div>
+                  <div className="customer-info-mobile">
+                    <div className="customer-name-mobile">
+                      {customer.user?.first_name || customer.first_name} {customer.user?.last_name || customer.last_name}
                     </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-gray-900">
-                        {customer.user?.first_name || customer.first_name} {customer.user?.last_name || customer.last_name}
-                      </h3>
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
-                        Customer
-                      </span>
+                    <div className="customer-credits-badge">
+                      💳 {customer.session_credits || 0} credits
                     </div>
                   </div>
                 </div>
 
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center space-x-2 text-gray-600">
-                    <Mail className="h-4 w-4 text-gray-400" />
-                    <span className="text-sm">{customer.user?.email || customer.email || 'No email'}</span>
+                <div className="customer-contact-mobile">
+                  <div className="customer-contact-item-mobile">
+                    <Mail size={16} />
+                    <span>{customer.user?.email || customer.email || 'No email'}</span>
                   </div>
                   {(customer.user?.phone || customer.phone) && (
-                    <div className="flex items-center space-x-2 text-gray-600">
-                      <Phone className="h-4 w-4 text-gray-400" />
-                      <span className="text-sm">{customer.user?.phone || customer.phone}</span>
+                    <div className="customer-contact-item-mobile">
+                      <Phone size={16} />
+                      <span>{customer.user?.phone || customer.phone}</span>
                     </div>
                   )}
-                  <div className="flex items-center space-x-2">
-                    <CreditCard className="h-4 w-4 text-green-500" />
-                    <span className="text-sm font-semibold text-gray-900">
-                      {customer.session_credits || 0} credits
-                    </span>
-                  </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2">
-                  <button
+                <div className="customer-actions-mobile">
+                  {(customer.user?.phone || customer.phone) && (
+                    <button 
+                      className="customer-action-btn customer-action-call"
+                      onClick={() => window.location.href = `tel:${customer.user?.phone || customer.phone}`}
+                    >
+                      <Phone size={18} />
+                      Call
+                    </button>
+                  )}
+                  {(customer.user?.email || customer.email) && (
+                    <button 
+                      className="customer-action-btn customer-action-message"
+                      onClick={() => window.location.href = `mailto:${customer.user?.email || customer.email}`}
+                    >
+                      <Mail size={18} />
+                      Email
+                    </button>
+                  )}
+                  <button 
+                    className="customer-action-btn"
                     onClick={() => openEditModal(customer)}
-                    className="flex-1 flex items-center justify-center space-x-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-all duration-200 text-sm"
+                    style={{background: '#F5F5F5', color: '#666666'}}
                   >
-                    <Edit className="h-4 w-4" />
-                    <span>Edit</span>
-                  </button>
-                  <button
-                    onClick={() => openCreditsModal(customer)}
-                    className="flex-1 flex items-center justify-center space-x-1 px-3 py-2 bg-green-500 hover:bg-green-600 text-white font-medium rounded-lg transition-all duration-200 text-sm"
-                  >
-                    <Plus className="h-4 w-4" />
-                    <span>Credits</span>
-                  </button>
-                  <button
-                    onClick={() => handleDeleteCustomer(customer.id)}
-                    className="flex items-center justify-center px-3 py-2 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-all duration-200 text-sm"
-                  >
-                    <Trash2 className="h-4 w-4" />
+                    <Edit size={18} />
+                    Edit
                   </button>
                 </div>
               </div>
@@ -654,7 +652,7 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
                     required
                     value={formData.first_name}
                     onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    className="form-input-mobile"
                   />
                 </div>
                 <div>
@@ -664,7 +662,7 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
                     required
                     value={formData.last_name}
                     onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    className="form-input-mobile"
                   />
                 </div>
               </div>
@@ -676,7 +674,7 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  className="form-input-mobile"
                 />
               </div>
               <div>
@@ -688,7 +686,7 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
                   pattern="[0-9]{8}"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  className="form-input-mobile"
                 />
                 <p className="text-xs text-gray-500 mt-1">* At least one contact method (email or phone) is required</p>
               </div>
@@ -699,7 +697,7 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
                   min="0"
                   value={formData.initial_credits}
                   onChange={(e) => setFormData({ ...formData, initial_credits: parseInt(e.target.value) || 0 })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  className="form-input-mobile"
                 />
               </div>
               <div className="flex gap-3 pt-4">
@@ -736,7 +734,7 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
                     required
                     value={formData.first_name}
                     onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    className="form-input-mobile"
                   />
                 </div>
                 <div>
@@ -746,7 +744,7 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
                     required
                     value={formData.last_name}
                     onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    className="form-input-mobile"
                   />
                 </div>
               </div>
@@ -758,7 +756,7 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  className="form-input-mobile"
                 />
               </div>
               <div>
@@ -770,7 +768,7 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
                   pattern="[0-9]{8}"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  className="form-input-mobile"
                 />
                 <p className="text-xs text-gray-500 mt-1">* At least one contact method (email or phone) is required</p>
               </div>

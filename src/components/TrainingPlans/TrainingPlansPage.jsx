@@ -248,76 +248,67 @@ function TrainingPlansPage({ userProfile }) {
             {filteredPlans.map((plan) => (
               <div
                 key={plan.id}
-                className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow overflow-hidden"
+                className="training-plan-card-mobile"
               >
-                {/* Plan Header */}
-                <div className="p-6 border-b border-gray-100">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h3 className="text-lg font-bold text-gray-900">{plan.name}</h3>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          plan.status === 'active' ? 'bg-green-100 text-green-800' :
-                          plan.status === 'upcoming' ? 'bg-blue-100 text-blue-800' :
-                          plan.status === 'expired' ? 'bg-red-100 text-red-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
-                          {plan.status}
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-600 line-clamp-2">{plan.description}</p>
-                    </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      plan.difficulty === 'beginner' ? 'bg-green-100 text-green-800' :
-                      plan.difficulty === 'intermediate' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-red-100 text-red-800'
-                    }`}>
+                {/* Mobile Header with Gradient */}
+                <div className="training-plan-header-mobile">
+                  <div className="training-plan-badges-mobile">
+                    <span className="training-plan-badge-mobile">
+                      {plan.status}
+                    </span>
+                    <span className="training-plan-badge-mobile">
                       {plan.difficulty}
                     </span>
                   </div>
                 </div>
 
-                {/* Plan Stats */}
-                <div className="px-6 py-4 bg-gray-50">
-                  <div className="grid grid-cols-2 gap-4 text-sm mb-3">
-                    <div>
-                      <p className="text-gray-600">Duration</p>
-                      <p className="font-semibold text-gray-900">{plan.duration_weeks} weeks</p>
+                {/* Mobile Body */}
+                <div className="training-plan-body-mobile">
+                  <h3 className="training-plan-title-mobile">{plan.name}</h3>
+                  <p className="training-plan-description-mobile">{plan.description}</p>
+
+                  {/* Mobile Meta Grid */}
+                  <div className="training-plan-meta-mobile">
+                    <div className="training-plan-meta-item-mobile">
+                      <div className="training-plan-meta-label-mobile">Duration</div>
+                      <div className="training-plan-meta-value-mobile">{plan.duration_weeks} weeks</div>
                     </div>
-                    <div>
-                      <p className="text-gray-600">Assigned</p>
-                      <p className="font-semibold text-gray-900">
+                    <div className="training-plan-meta-item-mobile">
+                      <div className="training-plan-meta-label-mobile">Assigned</div>
+                      <div className="training-plan-meta-value-mobile">
                         {plan.assigned_customer_ids?.length || 0} clients
-                      </p>
+                      </div>
                     </div>
                   </div>
+
+                  {/* Validity Period */}
                   {(plan.start_date || plan.end_date) && (
-                    <div className="pt-3 border-t border-gray-200">
-                      <p className="text-xs text-gray-600 mb-1">Validity Period</p>
-                      <p className="text-sm font-medium text-gray-900">
-                        {plan.start_date ? new Date(plan.start_date).toLocaleDateString() : 'Not set'}
+                    <div style={{padding: '12px', background: '#FEF3C7', borderRadius: '8px', marginBottom: '16px'}}>
+                      <div style={{fontSize: '13px', color: '#92400E', fontWeight: 500}}>
+                        📅 {plan.start_date ? new Date(plan.start_date).toLocaleDateString() : 'Not set'}
                         {' → '}
                         {plan.end_date ? new Date(plan.end_date).toLocaleDateString() : 'Not set'}
-                      </p>
+                      </div>
                     </div>
                   )}
-                </div>
 
-                {/* Actions */}
-                <div className="px-6 py-4 flex gap-2">
-                  <button
-                    onClick={() => handleEditPlan(plan)}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-                  >
-                    <Edit className="w-4 h-4" />
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDeletePlan(plan.id)}
-                    className="px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  {/* Mobile Actions */}
+                  <div className="training-plan-actions-mobile">
+                    <button
+                      onClick={() => handleEditPlan(plan)}
+                      className="btn-mobile-primary"
+                    >
+                      <Edit size={20} />
+                      Edit Plan
+                    </button>
+                    <button
+                      onClick={() => handleDeletePlan(plan.id)}
+                      className="btn-mobile-icon"
+                      style={{background: '#FEE2E2', color: '#EF4444', border: 'none'}}
+                    >
+                      <Trash2 size={20} />
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import './mobile-first.css';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import AuthForm from './components/AuthForm';
 import CoachDashboard from './components/Dashboard/CoachDashboard';
@@ -18,6 +19,7 @@ import ProgressDashboardPage from './components/Customer/ProgressDashboardPage';
 import WorkoutHistoryPage from './components/Customer/WorkoutHistoryPage';
 import CustomerProfilePage from './components/Customer/CustomerProfilePage';
 import BrandingSettings from './components/Dashboard/BrandingSettings';
+import BottomNav from './components/Navigation/BottomNav';
 
 // Wrapper component for CoachDashboard with navigation
 function CoachDashboardWrapper() {
@@ -43,7 +45,12 @@ function CoachDashboardWrapper() {
     navigate('/login');
   };
 
-  return <CoachDashboard user={user} onNavigate={handleNavigate} onLogout={handleLogout} />;
+  return (
+    <>
+      <CoachDashboard user={user} onNavigate={handleNavigate} onLogout={handleLogout} />
+      <BottomNav />
+    </>
+  );
 }
 
 // Wrapper component for CustomerDashboard with navigation
