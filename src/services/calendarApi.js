@@ -183,6 +183,11 @@ export const bookingApi = {
     });
     if (!response.ok) throw new Error('Failed to cancel booking');
     return response.json();
+  },
+
+  // Alias for updateBookingAsCoach (for backward compatibility)
+  updateBooking: async (id, data) => {
+    return bookingApi.updateBookingAsCoach(id, data);
   }
 };
 
