@@ -211,7 +211,10 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
       phone: customer.user?.phone || customer.phone || '',
       initial_credits: customer.session_credits || 0
     });
-    setShowEditModal(t  const openCreditsModal = (customer) => {
+    setShowEditModal(true);
+  };
+
+  const openCreditsModal = (customer) => {
     setSelectedCustomer(customer);
     setCreditsAmount(0);
     setShowCreditsModal(true);
@@ -912,4 +915,5 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
 }
 
 export default CoachDashboard;
+
 
