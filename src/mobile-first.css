@@ -1036,6 +1036,10 @@ html {
   transform: scale(0.95);
 }
 
+.swipe-action-plans {
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+}
+
 .swipe-action-credits {
   background: linear-gradient(135deg, #10B981 0%, #059669 100%);
 }
@@ -1077,5 +1081,127 @@ html {
   
   .swipe-hint {
     display: none;
+  }
+}
+
+/* ============================================
+   BOTTOM SHEET (Mobile-Friendly Modals)
+   ============================================ */
+
+.bottom-sheet-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 10000;
+  display: flex;
+  align-items: flex-end;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.bottom-sheet {
+  background: white;
+  width: 100%;
+  border-radius: 24px 24px 0 0;
+  animation: slideUpSheet 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-bottom: calc(var(--safe-area-bottom) + 16px);
+}
+
+.bottom-sheet-handle-container {
+  padding: 12px 0 8px;
+  display: flex;
+  justify-content: center;
+}
+
+.bottom-sheet-handle {
+  width: 40px;
+  height: 4px;
+  background: #D1D5DB;
+  border-radius: 2px;
+}
+
+.bottom-sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid #F3F4F6;
+}
+
+.bottom-sheet-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.bottom-sheet-close {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: #F3F4F6;
+  color: #6B7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.bottom-sheet-close:active {
+  background: #E5E7EB;
+  transform: scale(0.95);
+}
+
+.bottom-sheet-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  -webkit-overflow-scrolling: touch;
+}
+
+@keyframes slideUpSheet {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* Desktop: Show as centered modal instead */
+@media (min-width: 1024px) {
+  .bottom-sheet-overlay {
+    align-items: center;
+    justify-content: center;
+  }
+
+  .bottom-sheet {
+    max-width: 500px;
+    border-radius: 16px;
+    animation: scaleIn 0.2s ease-out;
+    padding-bottom: 0;
+  }
+
+  .bottom-sheet-handle-container {
+    display: none;
+  }
+
+  @keyframes scaleIn {
+    from {
+      transform: scale(0.95);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
   }
 }

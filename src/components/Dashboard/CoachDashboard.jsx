@@ -3,6 +3,7 @@ import { Users, Search, Plus, Edit, Trash2, CreditCard, LogOut, Mail, Phone, Use
 import AthleteHubLogo from '../AthleteHubLogo';
 import { coachAPI } from '../../services/api.jsx';
 import InvitationLinkModal from '../Modals/InvitationLinkModal';
+import SwipeableCustomerCard from '../Swipeable/SwipeableCustomerCard';
 
 function CoachDashboard({ user, onLogout, onNavigate }) {
   const [customers, setCustomers] = useState([]);
@@ -12,7 +13,9 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
   const [showAddModal, setShowAddModal] = useState(false); // Used for the invite modal
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCreditsModal, setShowCreditsModal] = useState(false);
+  const [showCustomerPlansModal, setShowCustomerPlansModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [customerPlans, setCustomerPlans] = useState([]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -208,15 +211,33 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
       phone: customer.user?.phone || customer.phone || '',
       initial_credits: customer.session_credits || 0
     });
-    setShowEditModal(true);
-  };
-
-  const openCreditsModal = (customer) => {
+    setShowEditModal(t  const openCreditsModal = (customer) => {
     setSelectedCustomer(customer);
+    setCreditsAmount(0);
     setShowCreditsModal(true);
   };
 
-  const filteredCustomers = customers.filter(customer => {
+  const handleViewPlans = async (customer) => {
+    setSelectedCustomer(customer);
+    setShowCustomerPlansModal(true);
+    
+    // Fetch training plans assigned to this customer
+    try {
+      const response = await coachAPI.getTrainingPlans();
+      const allPlans = response.data || [];
+      
+      // Filter plans assigned to this customer
+      const assignedPlans = allPlans.filter(plan => 
+        plan.assigned_customer_ids && 
+        plan.assigned_customer_ids.includes(customer.id)
+      );
+      
+      setCustomerPlans(assignedPlans);
+    } catch (err) {
+      console.error('Error fetching customer plans:', err);
+      setCustomerPlans([]);
+    }
+  };teredCustomers = customers.filter(customer => {
     const firstName = customer.user?.first_name || customer.first_name || '';
     const lastName = customer.user?.last_name || customer.last_name || '';
     const email = customer.user?.email || customer.email || '';
@@ -570,73 +591,14 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
               ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredCustomers.map((customer) => (
-              <div
+              <SwipeableCustomerCard
                 key={customer.id}
-                className="customer-card-mobile"
-              >
-                <div className="customer-card-mobile-header">
-                  <div className="customer-avatar-mobile">
-                    {(customer.user?.first_name || customer.first_name)?.[0]}{(customer.user?.last_name || customer.last_name)?.[0]}
-                  </div>
-                  <div className="customer-info-mobile">
-                    <div className="customer-name-mobile">
-                      {customer.user?.first_name || customer.first_name} {customer.user?.last_name || customer.last_name}
-                    </div>
-                    <div className="customer-credits-badge">
-                      💳 {customer.session_credits || 0} credits
-                    </div>
-                  </div>
-                </div>
-
-                <div className="customer-contact-mobile">
-                  <div className="customer-contact-item-mobile">
-                    <Mail size={16} />
-                    <span>{customer.user?.email || customer.email || 'No email'}</span>
-                  </div>
-                  {(customer.user?.phone || customer.phone) && (
-                    <div className="customer-contact-item-mobile">
-                      <Phone size={16} />
-                      <span>{customer.user?.phone || customer.phone}</span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="customer-actions-mobile">
-                  {(customer.user?.phone || customer.phone) && (
-                    <button 
-                      className="customer-action-btn customer-action-call"
-                      onClick={() => window.location.href = `tel:${customer.user?.phone || customer.phone}`}
-                    >
-                      <Phone size={18} />
-                      Call
-                    </button>
-                  )}
-                  {(customer.user?.email || customer.email) && (
-                    <button 
-                      className="customer-action-btn customer-action-message"
-                      onClick={() => window.location.href = `mailto:${customer.user?.email || customer.email}`}
-                    >
-                      <Mail size={18} />
-                      Email
-                    </button>
-                  )}
-                  <button 
-                    className="customer-action-btn customer-action-credits"
-                    onClick={() => openCreditsModal(customer)}
-                  >
-                    <CreditCard size={18} />
-                    Credits
-                  </button>
-                  <button 
-                    className="customer-action-btn"
-                    onClick={() => openEditModal(customer)}
-                    style={{background: '#F5F5F5', color: '#666666'}}
-                  >
-                    <Edit size={18} />
-                    Edit
-                  </button>
-                </div>
-              </div>
+                customer={customer}
+                onEdit={openEditModal}
+                onDelete={handleDeleteCustomer}
+                onAddCredits={openCreditsModal}
+                onViewPlans={handleViewPlans}
+              />
             ))}
           </div>
               )}
@@ -862,6 +824,89 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
         inviteLink={inviteLink}
         customerName={inviteCustomerName}
       />
+
+      {/* Customer Training Plans Modal */}
+      {showCustomerPlansModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Training Plans for {selectedCustomer?.user?.first_name || selectedCustomer?.first_name}
+                </h2>
+                <button
+                  onClick={() => setShowCustomerPlansModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div className="p-6 overflow-y-auto max-h-[60vh]">
+              {customerPlans.length === 0 ? (
+                <div className="text-center py-12">
+                  <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500 text-lg">No training plans assigned yet</p>
+                  <button
+                    onClick={() => {
+                      setShowCustomerPlansModal(false);
+                      onNavigate('/coach/training-plans');
+                    }}
+                    className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Create Training Plan
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {customerPlans.map((plan) => (
+                    <div key={plan.id} className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900">{plan.name}</h3>
+                          <p className="text-sm text-gray-600 mt-1">{plan.description}</p>
+                        </div>
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          plan.status === 'active' ? 'bg-green-100 text-green-700' :
+                          plan.status === 'upcoming' ? 'bg-blue-100 text-blue-700' :
+                          plan.status === 'expired' ? 'bg-red-100 text-red-700' :
+                          'bg-gray-100 text-gray-700'
+                        }`}>
+                          {plan.status || 'draft'}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <span className="text-gray-500">Duration:</span>
+                          <span className="ml-2 font-medium">{plan.duration_weeks} weeks</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Difficulty:</span>
+                          <span className="ml-2 font-medium capitalize">{plan.difficulty}</span>
+                        </div>
+                        {plan.start_date && (
+                          <div>
+                            <span className="text-gray-500">Start:</span>
+                            <span className="ml-2 font-medium">{new Date(plan.start_date).toLocaleDateString()}</span>
+                          </div>
+                        )}
+                        {plan.end_date && (
+                          <div>
+                            <span className="text-gray-500">End:</span>
+                            <span className="ml-2 font-medium">{new Date(plan.end_date).toLocaleDateString()}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
