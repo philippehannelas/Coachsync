@@ -46,7 +46,11 @@ def get_coach_training_plans(current_user):
         
         return jsonify([plan.to_dict() for plan in plans]), 200
     except Exception as e:
-        return jsonify({'message': f'Error fetching training plans: {str(e)}'}), 500
+        import traceback
+        error_details = traceback.format_exc()
+        print(f"ERROR in get_coach_training_plans: {str(e)}")
+        print(f"Full traceback: {error_details}")
+        return jsonify({'message': f'Error fetching training plans: {str(e)}', 'details': error_details}), 500
 
 
 @training_plan_bp.route('/coach/training-plans', methods=['POST'])
@@ -349,7 +353,11 @@ def get_customer_training_plans(current_user):
         
         return jsonify(plans_with_exercises), 200
     except Exception as e:
-        return jsonify({'message': f'Error fetching training plans: {str(e)}'}), 500
+        import traceback
+        error_details = traceback.format_exc()
+        print(f"ERROR in get_coach_training_plans: {str(e)}")
+        print(f"Full traceback: {error_details}")
+        return jsonify({'message': f'Error fetching training plans: {str(e)}', 'details': error_details}), 500
 
 
 @training_plan_bp.route('/customer/training-plans/<plan_id>/exercises', methods=['GET'])
