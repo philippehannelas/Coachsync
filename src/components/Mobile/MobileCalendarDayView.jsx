@@ -126,11 +126,11 @@ const MobileCalendarDayView = ({ bookings = [], onDateChange, onBookingClick }) 
                 {/* Customer Info */}
                 <div className="mobile-calendar-booking-customer">
                   <div className="mobile-calendar-booking-avatar">
-                    {booking.customer_name?.[0] || booking.customer?.first_name?.[0] || 'C'}
+                    {booking.customer?.name?.[0] || 'C'}
                   </div>
                   <div>
                     <div className="mobile-calendar-booking-name">
-                      {booking.customer_name || `${booking.customer?.first_name || ''} ${booking.customer?.last_name || ''}`.trim() || 'Customer'}
+                      {booking.customer?.name || 'Customer'}
                     </div>
                     {booking.service && (
                       <div className="mobile-calendar-booking-service">

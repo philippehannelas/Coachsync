@@ -71,7 +71,7 @@ function SessionNotesModal({ booking, onClose, onSave }) {
     }
   };
 
-  const customerName = booking.customer_name || 'Customer';
+  const customerName = booking.customer?.name || 'Customer';
   const sessionDate = new Date(booking.start_time).toLocaleDateString('en-US', {
     weekday: 'long',
     year: 'numeric',
