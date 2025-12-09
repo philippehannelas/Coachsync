@@ -5,9 +5,11 @@ import { X, User, Calendar, Clock, Dumbbell, ChevronDown, ChevronUp, Phone, Mail
  * SessionDetailModal - View session details with customer info and training plan
  * Used when coach clicks on a session from Today's Sessions
  */
-function SessionDetailModal({ booking, customer, onClose, onViewPlanDetail }) {
+function SessionDetailModal({ booking, customer, onClose }) {
   const [trainingPlans, setTrainingPlans] = useState([]);
+  const [planExercises, setPlanExercises] = useState({}); // Store exercises by plan ID
   const [loading, setLoading] = useState(true);
+  const [loadingExercises, setLoadingExercises] = useState({});
   const [expandedPlans, setExpandedPlans] = useState([]);
 
   useEffect(() => {
@@ -33,9 +35,10 @@ function SessionDetailModal({ booking, customer, onClose, onViewPlanDetail }) {
           plan.assigned_customer_ids?.includes(customer.id) && plan.status === 'active'
         );
         setTrainingPlans(customerPlans);
-        // Auto-expand first plan
+        // Auto-expand first plan and load its exercises
         if (customerPlans.length > 0) {
           setExpandedPlans([customerPlans[0].id]);
+          fetchPlanExercises(customerPlans[0].id);
         }
       }
     } catch (error) {
@@ -45,10 +48,46 @@ function SessionDetailModal({ booking, customer, onClose, onViewPlanDetail }) {
     }
   };
 
+  const fetchPlanExercises = async (planId) => {
+    // Don't fetch if already loaded
+    if (planExercises[planId]) return;
+    
+    try {
+      setLoadingExercises(prev => ({ ...prev, [planId]: true }));
+      const response = await fetch(`https://coachsync-pro.onrender.com/api/coach/training-plans/${planId}/exercises`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('coachsync_token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const exercises = await response.json();
+        console.log(`SessionDetailModal - Loaded exercises for plan ${planId}:`, exercises);
+        setPlanExercises(prev => ({ ...prev, [planId]: exercises || [] }));
+      } else {
+        console.error(`SessionDetailModal - Failed to load exercises for plan ${planId}:`, response.status);
+        setPlanExercises(prev => ({ ...prev, [planId]: [] }));
+      }
+    } catch (error) {
+      console.error(`SessionDetailModal - Error loading exercises for plan ${planId}:`, error);
+      setPlanExercises(prev => ({ ...prev, [planId]: [] }));
+    } finally {
+      setLoadingExercises(prev => ({ ...prev, [planId]: false }));
+    }
+  };
+
   const togglePlan = (planId) => {
+    const isExpanding = !expandedPlans.includes(planId);
+    
     setExpandedPlans(prev =>
       prev.includes(planId) ? prev.filter(id => id !== planId) : [...prev, planId]
     );
+    
+    // Fetch exercises when expanding
+    if (isExpanding) {
+      fetchPlanExercises(planId);
+    }
   };
 
   if (!booking || !customer) return null;
@@ -58,20 +97,10 @@ function SessionDetailModal({ booking, customer, onClose, onViewPlanDetail }) {
   const duration = Math.round((endTime - startTime) / (1000 * 60)); // minutes
 
   // Group exercises by day for each plan
-  const getExercisesByDay = (plan) => {
-    // Parse exercises if they're a JSON string
-    let exercises = plan.exercises || [];
-    if (typeof exercises === 'string') {
-      try {
-        exercises = JSON.parse(exercises);
-      } catch (e) {
-        console.error('SessionDetailModal - Failed to parse exercises:', e);
-        exercises = [];
-      }
-    }
-    
+  const getExercisesByDay = (planId) => {
+    const exercises = planExercises[planId] || [];
     const exercisesByDay = {};
-    (exercises || []).forEach(exercise => {
+    exercises.forEach(exercise => {
       const day = exercise.day_number || 1;
       if (!exercisesByDay[day]) {
         exercisesByDay[day] = [];
@@ -175,9 +204,11 @@ function SessionDetailModal({ booking, customer, onClose, onViewPlanDetail }) {
             ) : (
               <div className="space-y-4">
                 {trainingPlans.map(plan => {
-                  const exercisesByDay = getExercisesByDay(plan);
+                  const exercisesByDay = getExercisesByDay(plan.id);
                   const sortedDays = Object.keys(exercisesByDay).sort((a, b) => parseInt(a) - parseInt(b));
                   const isExpanded = expandedPlans.includes(plan.id);
+                  const exercises = planExercises[plan.id] || [];
+                  const isLoadingExercises = loadingExercises[plan.id];
 
                   return (
                     <div key={plan.id} className="border border-gray-200 rounded-xl overflow-hidden">
@@ -193,14 +224,12 @@ function SessionDetailModal({ booking, customer, onClose, onViewPlanDetail }) {
                             <span className="capitalize">{plan.difficulty}</span>
                             <span>•</span>
                             <span>{plan.duration_weeks} weeks</span>
-                            <span>•</span>
-                            <span>{(() => {
-                              let exs = plan.exercises || [];
-                              if (typeof exs === 'string') {
-                                try { exs = JSON.parse(exs); } catch(e) { exs = []; }
-                              }
-                              return exs.length;
-                            })()} exercises</span>
+                            {exercises.length > 0 && (
+                              <>
+                                <span>•</span>
+                                <span>{exercises.length} exercises</span>
+                              </>
+                            )}
                           </div>
                         </div>
                         {isExpanded ? (
@@ -213,49 +242,46 @@ function SessionDetailModal({ booking, customer, onClose, onViewPlanDetail }) {
                       {/* Exercises */}
                       {isExpanded && (
                         <div className="p-4 bg-white">
-                          {sortedDays.map(day => {
-                            const dayExercises = exercisesByDay[day];
-                            return (
-                              <div key={day} className="mb-4 last:mb-0">
-                                <div className="bg-gray-100 px-3 py-2 rounded-lg mb-2">
-                                  <h5 className="font-semibold text-gray-900 text-sm">Day {day} ({dayExercises.length} exercises)</h5>
-                                </div>
-                                <div className="space-y-3 pl-3">
-                                  {dayExercises.map((exercise, index) => (
-                                    <div key={index} className="border-l-2 border-purple-200 pl-3">
-                                      <h6 className="font-semibold text-gray-900 text-sm">{exercise.name}</h6>
-                                      <div className="flex flex-wrap gap-3 text-xs text-gray-600 mt-1">
-                                        <span className="font-medium">{exercise.sets} sets × {exercise.reps} reps</span>
-                                        {exercise.rest_seconds && (
-                                          <span className="flex items-center gap-1">
-                                            <Clock size={12} />
-                                            {exercise.rest_seconds}s rest
-                                          </span>
+                          {isLoadingExercises ? (
+                            <div className="flex items-center justify-center py-8">
+                              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                            </div>
+                          ) : sortedDays.length === 0 ? (
+                            <div className="text-center py-8 text-gray-500">
+                              <Dumbbell size={32} className="mx-auto text-gray-300 mb-2" />
+                              <p>No exercises added yet</p>
+                            </div>
+                          ) : (
+                            sortedDays.map(day => {
+                              const dayExercises = exercisesByDay[day];
+                              return (
+                                <div key={day} className="mb-4 last:mb-0">
+                                  <div className="bg-gray-100 px-3 py-2 rounded-lg mb-2">
+                                    <h5 className="font-semibold text-gray-900 text-sm">Day {day} ({dayExercises.length} exercises)</h5>
+                                  </div>
+                                  <div className="space-y-3 pl-3">
+                                    {dayExercises.map((exercise, index) => (
+                                      <div key={index} className="border-l-2 border-purple-200 pl-3">
+                                        <h6 className="font-semibold text-gray-900 text-sm">{exercise.name}</h6>
+                                        <div className="flex flex-wrap gap-3 text-xs text-gray-600 mt-1">
+                                          <span className="font-medium">{exercise.sets} sets × {exercise.reps} reps</span>
+                                          {exercise.rest_seconds && (
+                                            <span className="flex items-center gap-1">
+                                              <Clock size={12} />
+                                              {exercise.rest_seconds}s rest
+                                            </span>
+                                          )}
+                                          {exercise.tempo && <span>Tempo: {exercise.tempo}</span>}
+                                        </div>
+                                        {exercise.instructions && (
+                                          <p className="text-xs text-gray-500 mt-1 italic">{exercise.instructions}</p>
                                         )}
-                                        {exercise.tempo && <span>Tempo: {exercise.tempo}</span>}
                                       </div>
-                                      {exercise.instructions && (
-                                        <p className="text-xs text-gray-500 mt-1 italic">{exercise.instructions}</p>
-                                      )}
-                                    </div>
-                                  ))}
+                                    ))}
+                                  </div>
                                 </div>
-                              </div>
-                            );
-                          })}
-                          
-                          {/* View Full Plan Button */}
-                          {onViewPlanDetail && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onViewPlanDetail(plan);
-                              }}
-                              className="mt-4 w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2"
-                            >
-                              <FileText size={16} />
-                              View Full Plan Details
-                            </button>
+                              );
+                            })
                           )}
                         </div>
                       )}
