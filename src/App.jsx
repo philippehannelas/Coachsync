@@ -178,14 +178,6 @@ function AppContent() {
         }
       />
       <Route
-        path="/coach/customers"
-        element={
-          <ProtectedRoute allowedRole="coach">
-            <CoachDashboardWrapper />
-          </ProtectedRoute>
-        }
-      />
-      <Route
         path="/coach/training-plans"
         element={
           <ProtectedRoute allowedRole="coach">
