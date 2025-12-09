@@ -170,7 +170,10 @@ function AppContent() {
         path="/coach/calendar"
         element={
           <ProtectedRoute allowedRole="coach">
-            <CoachCalendarPage />
+            <>
+              <CoachCalendarPage />
+              <BottomNav />
+            </>
           </ProtectedRoute>
         }
       />
@@ -186,7 +189,10 @@ function AppContent() {
         path="/coach/training-plans"
         element={
           <ProtectedRoute allowedRole="coach">
-            <TrainingPlansPage userProfile={user} />
+            <>
+              <TrainingPlansPage userProfile={user} />
+              <BottomNav />
+            </>
           </ProtectedRoute>
         }
       />
@@ -194,7 +200,10 @@ function AppContent() {
         path="/coach/branding"
         element={
           <ProtectedRoute allowedRole="coach">
-            <BrandingSettings />
+            <>
+              <BrandingSettings />
+              <BottomNav />
+            </>
           </ProtectedRoute>
         }
       />

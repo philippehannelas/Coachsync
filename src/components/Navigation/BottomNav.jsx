@@ -10,7 +10,7 @@ const BottomNav = () => {
 
   const navItems = [
     { path: '/coach/dashboard', icon: Home, label: 'Home' },
-    { path: '/coach/dashboard', icon: Users, label: 'Clients', scrollTo: 'customer-section' },
+    { path: '/coach/customers', icon: Users, label: 'Clients' },
     { path: '/coach/training-plans', icon: FileText, label: 'Plans' },
     { path: '/coach/calendar', icon: Calendar, label: 'Calendar' },
     { action: 'more', icon: MoreHorizontal, label: 'More' },
@@ -126,7 +126,7 @@ const BottomNav = () => {
       )}
 
       {/* Bottom Navigation */}
-      <nav className="bottom-nav">
+      <nav className="bottom-nav bottom-nav-dark">
         {navItems.map((item, index) => {
           const Icon = item.icon;
           const active = item.path ? isActive(item) : showMoreMenu;
