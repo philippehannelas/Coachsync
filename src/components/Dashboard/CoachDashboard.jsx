@@ -356,7 +356,7 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
           )}
         </div>
       )}
-      <div
+      <div>
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200" style={branding?.brand_color_primary ? { background: `linear-gradient(to right, ${branding.brand_color_primary}, ${branding.brand_color_primary}dd)` } : {}}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
