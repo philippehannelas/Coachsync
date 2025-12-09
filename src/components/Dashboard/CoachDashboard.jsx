@@ -377,66 +377,146 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
                   
                   const sessionCustomer = customers.find(c => c.id === session.customer_id);
                   
+                  // Calculate countdown for upcoming sessions
+                  const minutesUntilStart = Math.floor((startTime - now) / (1000 * 60));
+                  const hoursUntilStart = Math.floor(minutesUntilStart / 60);
+                  const isUpcoming = minutesUntilStart > 0;
+                  
+                  // Get customer initials for avatar
+                  const customerName = session.customer?.name || session.event_title || 'Session';
+                  const initials = customerName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+                  
                   return (
-                    <button
+                    <div
                       key={session.id}
-                      onClick={() => {
-                        if (session.event_type === 'customer_session' && sessionCustomer) {
-                          setSelectedBooking(session);
-                          setSelectedCustomer(sessionCustomer);
-                          setShowSessionDetailModal(true);
-                        }
-                      }}
-                      className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
+                      className={`w-full p-4 rounded-lg border-2 transition-all ${
                         isCurrent
-                          ? 'bg-green-50 border-green-500 shadow-lg hover:shadow-xl'
+                          ? 'bg-green-50 border-green-500 shadow-lg'
                           : isPast
-                          ? 'bg-gray-50 border-gray-300 hover:bg-gray-100'
+                          ? 'bg-gray-50 border-gray-300'
                           : 'bg-white border-purple-300 hover:border-purple-400 hover:shadow-md'
-                      } ${session.event_type === 'customer_session' ? 'cursor-pointer' : 'cursor-default'}`}
-                      disabled={session.event_type !== 'customer_session'}
+                      }`}
                     >
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex-1">
-                          <p className="font-semibold text-gray-800">
-                            {session.customer?.name || session.event_title || 'Session'}
-                          </p>
-                          <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
-                            <Clock className="w-3 h-3" />
-                            {startTime.toLocaleTimeString('en-US', {
-                              hour: 'numeric',
-                              minute: '2-digit'
-                            })}
-                            {' - '}
-                            {endTime.toLocaleTimeString('en-US', {
-                              hour: 'numeric',
-                              minute: '2-digit'
-                            })}
-                          </p>
+                      {/* Header with Avatar and Status */}
+                      <div className="flex items-start gap-3 mb-3">
+                        {/* Customer Avatar */}
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-white text-sm flex-shrink-0 ${
+                          isCurrent ? 'bg-green-500' : isPast ? 'bg-gray-400' : 'bg-purple-500'
+                        }`}>
+                          {initials}
                         </div>
-                        {isCurrent && (
-                          <span className="px-2 py-1 bg-green-500 text-white text-xs rounded-full font-medium">
-                            Now
-                          </span>
-                        )}
-                        {isPast && (
-                          <span className="px-2 py-1 bg-gray-400 text-white text-xs rounded-full font-medium">
-                            Done
-                          </span>
-                        )}
+                        
+                        {/* Session Info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-gray-800 truncate">
+                                {customerName}
+                              </p>
+                              <p className="text-sm text-gray-600 flex items-center gap-1 mt-0.5">
+                                <Clock className="w-3 h-3 flex-shrink-0" />
+                                {startTime.toLocaleTimeString('en-US', {
+                                  hour: 'numeric',
+                                  minute: '2-digit'
+                                })}
+                                {' - '}
+                                {endTime.toLocaleTimeString('en-US', {
+                                  hour: 'numeric',
+                                  minute: '2-digit'
+                                })}
+                              </p>
+                            </div>
+                            
+                            {/* Status Badge */}
+                            {isCurrent && (
+                              <span className="px-2 py-1 bg-green-500 text-white text-xs rounded-full font-medium whitespace-nowrap">
+                                In Progress
+                              </span>
+                            )}
+                            {isPast && (
+                              <span className="px-2 py-1 bg-gray-400 text-white text-xs rounded-full font-medium whitespace-nowrap">
+                                Completed
+                              </span>
+                            )}
+                            {isUpcoming && !isCurrent && (
+                              <span className="px-2 py-1 bg-purple-500 text-white text-xs rounded-full font-medium whitespace-nowrap">
+                                Upcoming
+                              </span>
+                            )}
+                          </div>
+                          
+                          {/* Countdown Timer for Upcoming Sessions */}
+                          {isUpcoming && minutesUntilStart <= 120 && (
+                            <p className="text-xs text-purple-600 font-medium mt-1">
+                              {hoursUntilStart > 0 
+                                ? `Starts in ${hoursUntilStart}h ${minutesUntilStart % 60}m`
+                                : `Starts in ${minutesUntilStart}m`
+                              }
+                            </p>
+                          )}
+                        </div>
                       </div>
+                      
+                      {/* Session Type Badge */}
+                      {session.event_type === 'customer_session' && (
+                        <div className="mb-3">
+                          <span className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-md font-medium">
+                            <User className="w-3 h-3 mr-1" />
+                            1-on-1 Session
+                          </span>
+                        </div>
+                      )}
+                      
+                      {/* Notes Preview */}
                       {session.notes && (
-                        <p className="text-xs text-gray-500 mt-2 line-clamp-2">
+                        <p className="text-xs text-gray-500 mb-3 line-clamp-2">
                           {session.notes}
                         </p>
                       )}
+                      
+                      {/* Quick Actions */}
                       {session.event_type === 'customer_session' && sessionCustomer && (
-                        <div className="mt-3 text-xs text-purple-600 font-medium flex items-center gap-1">
-                          <span>Click to view details</span>
-                          <ChevronRight size={14} />
+                        <div className="flex gap-2 pt-3 border-t border-gray-200">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (sessionCustomer.user?.phone || sessionCustomer.phone) {
+                                window.location.href = `tel:${sessionCustomer.user?.phone || sessionCustomer.phone}`;
+                              }
+                            }}
+                            className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors text-xs font-medium"
+                            disabled={!sessionCustomer.user?.phone && !sessionCustomer.phone}
+                          >
+                            <Phone className="w-3 h-3" />
+                            Call
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (sessionCustomer.user?.email || sessionCustomer.email) {
+                                window.location.href = `mailto:${sessionCustomer.user?.email || sessionCustomer.email}`;
+                              }
+                            }}
+                            className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-xs font-medium"
+                          >
+                            <Mail className="w-3 h-3" />
+                            Message
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedBooking(session);
+                              setSelectedCustomer(sessionCustomer);
+                              setShowSessionDetailModal(true);
+                            }}
+                            className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors text-xs font-medium"
+                          >
+                            <FileText className="w-3 h-3" />
+                            Details
+                          </button>
                         </div>
                       )}
-                    </button>
+                    </div>
                   );
                 })}
               </div>
