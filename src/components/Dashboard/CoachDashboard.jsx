@@ -615,6 +615,31 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
           </button>
         </div>
 
+        {/* Desktop Navigation Tabs (hidden on mobile) */}
+        <div className="hidden lg:flex gap-3 mb-6">
+          <button
+            onClick={() => onNavigate && onNavigate('training-plans')}
+            className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all"
+          >
+            <AthleteHubLogo className="h-5 w-auto" color="currentColor" />
+            <span>Training Plans</span>
+          </button>
+          <button
+            onClick={() => onNavigate && onNavigate('calendar')}
+            className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-pink-600 to-pink-700 hover:from-pink-700 hover:to-pink-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all"
+          >
+            <Calendar className="h-5 w-auto" />
+            <span>View Calendar</span>
+          </button>
+          <button
+            onClick={() => onNavigate && onNavigate('branding')}
+            className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all"
+          >
+            <Palette className="h-5 w-auto" />
+            <span>Branding</span>
+          </button>
+        </div>
+
         {/* Filter Chips */}
         <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
           <button
