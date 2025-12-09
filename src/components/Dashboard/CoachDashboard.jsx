@@ -387,15 +387,23 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
                   const initials = customerName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
                   
                   return (
-                    <div
+                    <button
                       key={session.id}
-                      className={`w-full p-4 rounded-lg border-2 transition-all ${
+                      onClick={() => {
+                        if (session.event_type === 'customer_session' && sessionCustomer) {
+                          setSelectedBooking(session);
+                          setSelectedCustomer(sessionCustomer);
+                          setShowSessionDetailModal(true);
+                        }
+                      }}
+                      className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
                         isCurrent
-                          ? 'bg-green-50 border-green-500 shadow-lg'
+                          ? 'bg-green-50 border-green-500 shadow-lg hover:shadow-xl'
                           : isPast
-                          ? 'bg-gray-50 border-gray-300'
+                          ? 'bg-gray-50 border-gray-300 hover:bg-gray-100'
                           : 'bg-white border-purple-300 hover:border-purple-400 hover:shadow-md'
-                      }`}
+                      } ${session.event_type === 'customer_session' ? 'cursor-pointer' : 'cursor-default'}`}
+                      disabled={session.event_type !== 'customer_session'}
                     >
                       {/* Header with Avatar and Status */}
                       <div className="flex items-start gap-3 mb-3">
@@ -474,49 +482,14 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
                         </p>
                       )}
                       
-                      {/* Quick Actions */}
+                      {/* Click to view details */}
                       {session.event_type === 'customer_session' && sessionCustomer && (
-                        <div className="flex gap-2 pt-3 border-t border-gray-200">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (sessionCustomer.user?.phone || sessionCustomer.phone) {
-                                window.location.href = `tel:${sessionCustomer.user?.phone || sessionCustomer.phone}`;
-                              }
-                            }}
-                            className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors text-xs font-medium"
-                            disabled={!sessionCustomer.user?.phone && !sessionCustomer.phone}
-                          >
-                            <Phone className="w-3 h-3" />
-                            Call
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (sessionCustomer.user?.email || sessionCustomer.email) {
-                                window.location.href = `mailto:${sessionCustomer.user?.email || sessionCustomer.email}`;
-                              }
-                            }}
-                            className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-xs font-medium"
-                          >
-                            <Mail className="w-3 h-3" />
-                            Message
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedBooking(session);
-                              setSelectedCustomer(sessionCustomer);
-                              setShowSessionDetailModal(true);
-                            }}
-                            className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors text-xs font-medium"
-                          >
-                            <FileText className="w-3 h-3" />
-                            Details
-                          </button>
+                        <div className="mt-3 text-xs text-purple-600 font-medium flex items-center gap-1">
+                          <span>Click to view details</span>
+                          <ChevronRight size={14} />
                         </div>
                       )}
-                    </div>
+                    </button>
                   );
                 })}
               </div>
