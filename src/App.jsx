@@ -5,14 +5,14 @@ import { AuthProvider, useAuth } from './hooks/useAuth';
 import AuthForm from './components/AuthForm';
 import CoachDashboard from './components/Dashboard/CoachDashboard';
 import CustomerDashboard from './components/Dashboard/CustomerDashboard';
-import AdminDashboard from './components/Dashboard/AdminDashboard'; // NEW: Admin Dashboard Component
+import AdminDashboard from './components/Dashboard/AdminDashboard';
 import CoachCalendarPage from './components/Calendar/CoachCalendarPage';
 import CustomerCalendarPage from './components/Calendar/CustomerCalendarPage';
 import AcceptInvitePage from './pages/AcceptInvitePage';
 import TrainingPlansPage from './components/TrainingPlans/TrainingPlansPage';
 import CustomerTrainingPlans from './components/TrainingPlans/CustomerTrainingPlans';
 
-// NEW IMPORTS - Customer Portal Pages
+// Customer Portal Pages
 import StartWorkoutPage from './components/Customer/StartWorkoutPage';
 import WorkoutViewerPage from './components/Customer/WorkoutViewerPage';
 import ProgressDashboardPage from './components/Customer/ProgressDashboardPage';
@@ -20,6 +20,16 @@ import WorkoutHistoryPage from './components/Customer/WorkoutHistoryPage';
 import CustomerProfilePage from './components/Customer/CustomerProfilePage';
 import BrandingSettings from './components/Dashboard/BrandingSettings';
 import BottomNav from './components/Navigation/BottomNav';
+
+// NEW: Coach Layout Wrapper - Adds bottom nav to all coach pages
+function CoachLayout({ children }) {
+  return (
+    <>
+      {children}
+      <BottomNav />
+    </>
+  );
+}
 
 // Wrapper component for CoachDashboard with navigation
 function CoachDashboardWrapper() {
@@ -46,10 +56,37 @@ function CoachDashboardWrapper() {
   };
 
   return (
-    <>
+    <CoachLayout>
       <CoachDashboard user={user} onNavigate={handleNavigate} onLogout={handleLogout} />
-      <BottomNav />
-    </>
+    </CoachLayout>
+  );
+}
+
+// NEW: Wrapper for CoachCalendarPage with bottom nav
+function CoachCalendarWrapper() {
+  return (
+    <CoachLayout>
+      <CoachCalendarPage />
+    </CoachLayout>
+  );
+}
+
+// NEW: Wrapper for TrainingPlansPage with bottom nav
+function TrainingPlansWrapper() {
+  const { user } = useAuth();
+  return (
+    <CoachLayout>
+      <TrainingPlansPage userProfile={user} />
+    </CoachLayout>
+  );
+}
+
+// NEW: Wrapper for BrandingSettings with bottom nav
+function BrandingWrapper() {
+  return (
+    <CoachLayout>
+      <BrandingSettings />
+    </CoachLayout>
   );
 }
 
@@ -65,13 +102,13 @@ function CustomerDashboardWrapper() {
       navigate('/customer/dashboard');
     } else if (page === 'training-plans') {
       navigate('/customer/training-plans');
-    } else if (page === 'start-workout') {  // NEW
+    } else if (page === 'start-workout') {
       navigate('/customer/start-workout');
-    } else if (page === 'progress') {  // NEW
+    } else if (page === 'progress') {
       navigate('/customer/progress');
-    } else if (page === 'workout-history') {  // NEW
+    } else if (page === 'workout-history') {
       navigate('/customer/workout-history');
-    } else if (page === 'profile') {  // NEW
+    } else if (page === 'profile') {
       navigate('/customer/profile');
     }
   };
@@ -125,7 +162,7 @@ function AppContent() {
       />
       <Route path="/accept-invite/:token" element={<AcceptInvitePage />} />
 
-      {/* Coach Routes */}
+      {/* Coach Routes - All wrapped with CoachLayout for persistent bottom nav */}
       <Route
         path="/coach/dashboard"
         element={
@@ -138,7 +175,7 @@ function AppContent() {
         path="/coach/calendar"
         element={
           <ProtectedRoute allowedRole="coach">
-            <CoachCalendarPage />
+            <CoachCalendarWrapper />
           </ProtectedRoute>
         }
       />
@@ -154,7 +191,7 @@ function AppContent() {
         path="/coach/training-plans"
         element={
           <ProtectedRoute allowedRole="coach">
-            <TrainingPlansPage userProfile={user} />
+            <TrainingPlansWrapper />
           </ProtectedRoute>
         }
       />
@@ -162,7 +199,7 @@ function AppContent() {
         path="/coach/branding"
         element={
           <ProtectedRoute allowedRole="coach">
-            <BrandingSettings />
+            <BrandingWrapper />
           </ProtectedRoute>
         }
       />
@@ -193,7 +230,7 @@ function AppContent() {
         }
       />
 
-      {/* NEW CUSTOMER ROUTES - Mobile-Optimized Workout Features */}
+      {/* Customer Workout Routes */}
       <Route
         path="/customer/start-workout"
         element={
@@ -235,20 +272,6 @@ function AppContent() {
         }
       />
 
-      {/* Default Routes */}
-      <Route 
-        path="/" 
-        element={
-          user ? 
-            <Navigate to={
-              user.role === 'coach' ? '/coach/dashboard' : 
-              user.role === 'customer' ? '/customer/dashboard' :
-              user.role === 'admin' ? '/admin/dashboard' :
-              '/login'
-            } replace /> 
-            : <Navigate to="/login" replace />
-        } 
-      />
       {/* Admin Routes */}
       <Route
         path="/admin/dashboard"
@@ -259,7 +282,20 @@ function AppContent() {
         }
       />
 
-      <Route path="*" element={<Navigate to="/" replace />} />
+      {/* Default Route */}
+      <Route
+        path="/"
+        element={
+          user ? 
+            <Navigate to={
+              user.role === 'coach' ? '/coach/dashboard' : 
+              user.role === 'customer' ? '/customer/dashboard' :
+              user.role === 'admin' ? '/admin/dashboard' :
+              '/login'
+            } replace /> 
+            : <Navigate to="/login" replace />
+        }
+      />
     </Routes>
   );
 }
@@ -275,4 +311,3 @@ function App() {
 }
 
 export default App;
-
