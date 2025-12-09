@@ -1052,6 +1052,10 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
             setShowSessionDetailModal(false);
             setSelectedBooking(null);
           }}
+          onViewPlanDetail={(plan) => {
+            setSelectedPlan(plan);
+            setShowPlanDetailModal(true);
+          }}
         />
       )}
     </div>

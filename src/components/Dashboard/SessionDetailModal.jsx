@@ -5,7 +5,7 @@ import { X, User, Calendar, Clock, Dumbbell, ChevronDown, ChevronUp, Phone, Mail
  * SessionDetailModal - View session details with customer info and training plan
  * Used when coach clicks on a session from Today's Sessions
  */
-function SessionDetailModal({ booking, customer, onClose }) {
+function SessionDetailModal({ booking, customer, onClose, onViewPlanDetail }) {
   const [trainingPlans, setTrainingPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedPlans, setExpandedPlans] = useState([]);
@@ -59,8 +59,19 @@ function SessionDetailModal({ booking, customer, onClose }) {
 
   // Group exercises by day for each plan
   const getExercisesByDay = (plan) => {
+    // Parse exercises if they're a JSON string
+    let exercises = plan.exercises || [];
+    if (typeof exercises === 'string') {
+      try {
+        exercises = JSON.parse(exercises);
+      } catch (e) {
+        console.error('SessionDetailModal - Failed to parse exercises:', e);
+        exercises = [];
+      }
+    }
+    
     const exercisesByDay = {};
-    (plan.exercises || []).forEach(exercise => {
+    (exercises || []).forEach(exercise => {
       const day = exercise.day_number || 1;
       if (!exercisesByDay[day]) {
         exercisesByDay[day] = [];
@@ -183,7 +194,13 @@ function SessionDetailModal({ booking, customer, onClose }) {
                             <span>•</span>
                             <span>{plan.duration_weeks} weeks</span>
                             <span>•</span>
-                            <span>{(plan.exercises || []).length} exercises</span>
+                            <span>{(() => {
+                              let exs = plan.exercises || [];
+                              if (typeof exs === 'string') {
+                                try { exs = JSON.parse(exs); } catch(e) { exs = []; }
+                              }
+                              return exs.length;
+                            })()} exercises</span>
                           </div>
                         </div>
                         {isExpanded ? (
@@ -226,6 +243,20 @@ function SessionDetailModal({ booking, customer, onClose }) {
                               </div>
                             );
                           })}
+                          
+                          {/* View Full Plan Button */}
+                          {onViewPlanDetail && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onViewPlanDetail(plan);
+                              }}
+                              className="mt-4 w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-all flex items-center justify-center gap-2"
+                            >
+                              <FileText size={16} />
+                              View Full Plan Details
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>

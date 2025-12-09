@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Users, Calendar, ChevronRight, Search } from 'lucide-react';
+import { Plus, Edit, Trash2, Users, Calendar, ChevronRight, Search, Eye } from 'lucide-react';
 import AthleteHubLogo from '../AthleteHubLogo';
 import TrainingPlanBuilder from './TrainingPlanBuilder';
+import TrainingPlanDetailModal from './TrainingPlanDetailModal';
 
 function TrainingPlansPage({ userProfile }) {
   const [trainingPlans, setTrainingPlans] = useState([]);
@@ -11,6 +12,8 @@ function TrainingPlansPage({ userProfile }) {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [showPlanDetailModal, setShowPlanDetailModal] = useState(false);
+  const [viewingPlan, setViewingPlan] = useState(null);
 
   useEffect(() => {
     loadData();
@@ -295,11 +298,23 @@ function TrainingPlansPage({ userProfile }) {
                   {/* Mobile Actions */}
                   <div className="training-plan-actions-mobile">
                     <button
+                      onClick={() => {
+                        setViewingPlan(plan);
+                        setShowPlanDetailModal(true);
+                      }}
+                      className="btn-mobile-secondary"
+                      style={{background: '#EDE9FE', color: '#7C3AED', border: 'none', flex: 1}}
+                    >
+                      <Eye size={20} />
+                      View
+                    </button>
+                    <button
                       onClick={() => handleEditPlan(plan)}
                       className="btn-mobile-primary"
+                      style={{flex: 1}}
                     >
                       <Edit size={20} />
-                      Edit Plan
+                      Edit
                     </button>
                     <button
                       onClick={() => handleDeletePlan(plan.id)}
@@ -315,6 +330,21 @@ function TrainingPlansPage({ userProfile }) {
           </div>
         )}
       </div>
+
+      {/* Training Plan Detail Modal */}
+      {showPlanDetailModal && viewingPlan && (
+        <TrainingPlanDetailModal
+          plan={viewingPlan}
+          onClose={() => {
+            setShowPlanDetailModal(false);
+            setViewingPlan(null);
+          }}
+          onEdit={(plan) => {
+            setShowPlanDetailModal(false);
+            handleEditPlan(plan);
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -10,9 +10,27 @@ function TrainingPlanDetailModal({ plan, onClose, onEdit }) {
 
   if (!plan) return null;
 
+  // Debug: Log plan data
+  console.log('TrainingPlanDetailModal - Plan data:', plan);
+  console.log('TrainingPlanDetailModal - Exercises:', plan.exercises);
+  console.log('TrainingPlanDetailModal - Exercises type:', typeof plan.exercises);
+  console.log('TrainingPlanDetailModal - Exercises length:', plan.exercises?.length);
+
+  // Parse exercises if they're a JSON string
+  let exercises = plan.exercises || [];
+  if (typeof exercises === 'string') {
+    try {
+      exercises = JSON.parse(exercises);
+      console.log('TrainingPlanDetailModal - Parsed exercises:', exercises);
+    } catch (e) {
+      console.error('TrainingPlanDetailModal - Failed to parse exercises:', e);
+      exercises = [];
+    }
+  }
+
   // Group exercises by day
   const exercisesByDay = {};
-  (plan.exercises || []).forEach(exercise => {
+  (exercises || []).forEach(exercise => {
     const day = exercise.day_number || 1;
     if (!exercisesByDay[day]) {
       exercisesByDay[day] = [];
