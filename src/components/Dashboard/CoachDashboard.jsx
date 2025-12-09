@@ -1112,6 +1112,7 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
           }}
         />
       )}
+      </div>
     </div>
   );
 }
