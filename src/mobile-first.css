@@ -344,6 +344,59 @@
   opacity: 0.8;
 }
 
+/* Compact grid layout for all actions */
+.customer-actions-mobile-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.customer-action-btn-compact {
+  height: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+  border: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.15s ease;
+}
+
+.customer-action-btn-compact:active {
+  transform: scale(0.95);
+  opacity: 0.8;
+}
+
+.customer-action-btn-compact span {
+  line-height: 1;
+  text-align: center;
+}
+
+.customer-action-view {
+  background: #DBEAFE;
+  color: #3B82F6;
+}
+
+.customer-action-edit {
+  background: #F3F4F6;
+  color: #6B7280;
+}
+
+.customer-action-plans {
+  background: #EDE9FE;
+  color: #7C3AED;
+}
+
+.customer-action-delete {
+  background: #FEE2E2;
+  color: #DC2626;
+}
+
 /* Swipe action overlay */
 .customer-card-swipe-actions {
   position: absolute;
