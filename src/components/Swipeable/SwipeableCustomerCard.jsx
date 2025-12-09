@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Mail, Phone, Edit, Trash2, CreditCard, FileText } from 'lucide-react';
+import { Mail, Phone, Edit, Trash2, CreditCard, FileText, Eye } from 'lucide-react';
 
-const SwipeableCustomerCard = ({ customer, onEdit, onDelete, onAddCredits, onViewPlans }) => {
+const SwipeableCustomerCard = ({ customer, onView, onEdit, onDelete, onAddCredits, onViewPlans }) => {
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
   const cardRef = useRef(null);
@@ -22,9 +22,14 @@ const SwipeableCustomerCard = ({ customer, onEdit, onDelete, onAddCredits, onVie
     currentX.current = e.touches[0].clientX;
     const diff = currentX.current - startX.current;
     
-    // Only allow left swipe (negative diff)
+    // Allow both left swipe (negative) and right swipe (positive) to close
     if (diff < 0) {
+      // Swipe left to open
       const offset = Math.max(diff, -MAX_SWIPE);
+      setSwipeOffset(offset);
+    } else if (swipeOffset < 0) {
+      // Swipe right to close (only if already open)
+      const offset = Math.min(swipeOffset + diff * 0.5, 0);
       setSwipeOffset(offset);
     }
   };
@@ -72,9 +77,9 @@ const SwipeableCustomerCard = ({ customer, onEdit, onDelete, onAddCredits, onVie
             closeSwipe();
             if (onViewPlans) onViewPlans(customer);
           }}
-          title="View Training Plans"
         >
           <FileText size={20} />
+          <span className="swipe-action-label">Plans</span>
         </button>
         <button
           className="swipe-action swipe-action-credits"
@@ -82,9 +87,9 @@ const SwipeableCustomerCard = ({ customer, onEdit, onDelete, onAddCredits, onVie
             closeSwipe();
             onAddCredits(customer);
           }}
-          title="Add Credits"
         >
           <CreditCard size={20} />
+          <span className="swipe-action-label">Credits</span>
         </button>
         <button
           className="swipe-action swipe-action-delete"
@@ -92,9 +97,9 @@ const SwipeableCustomerCard = ({ customer, onEdit, onDelete, onAddCredits, onVie
             closeSwipe();
             onDelete(customer.id);
           }}
-          title="Delete Customer"
         >
           <Trash2 size={20} />
+          <span className="swipe-action-label">Delete</span>
         </button>
       </div>
 
@@ -161,6 +166,14 @@ const SwipeableCustomerCard = ({ customer, onEdit, onDelete, onAddCredits, onVie
               Email
             </button>
           )}
+          <button
+            className="customer-action-btn"
+            onClick={() => onView(customer)}
+            style={{ background: '#E0F2FE', color: '#0284C7' }}
+          >
+            <Eye size={18} />
+            View
+          </button>
           <button
             className="customer-action-btn"
             onClick={() => onEdit(customer)}

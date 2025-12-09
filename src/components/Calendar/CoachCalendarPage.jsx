@@ -4,6 +4,7 @@ import WeekCalendar from './WeekCalendar';
 import BookingModal from './BookingModal';
 import AvailabilityManager from './AvailabilityManager';
 import SessionNotesModal from '../SessionNotes/SessionNotesModal';
+import MobileCalendarDayView from '../Mobile/MobileCalendarDayView';
 import { availabilityApi, bookingApi } from '../../services/calendarApi';
 import { dateSpecificApi } from '../../services/dateSpecificApi';
 
@@ -25,6 +26,7 @@ const CoachCalendarPage = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [showCompleted, setShowCompleted] = useState(true);
+  const [calendarView, setCalendarView] = useState('week'); // 'day' or 'week'
 
   useEffect(() => {
     loadData();
@@ -250,23 +252,63 @@ const CoachCalendarPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Calendar */}
           <div className="lg:col-span-2">
+            {/* Mobile View Toggle */}
+            <div className="md:hidden mb-4 flex gap-2 bg-white rounded-lg p-1 shadow-sm">
+              <button
+                onClick={() => setCalendarView('day')}
+                className={`flex-1 py-2 px-4 rounded-md font-medium transition-all ${
+                  calendarView === 'day'
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                Day View
+              </button>
+              <button
+                onClick={() => setCalendarView('week')}
+                className={`flex-1 py-2 px-4 rounded-md font-medium transition-all ${
+                  calendarView === 'week'
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                Week View
+              </button>
+            </div>
+
             {isLoading ? (
               <div className="bg-white rounded-xl shadow-lg p-12 text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
                 <p className="mt-4 text-gray-600">Loading calendar...</p>
               </div>
             ) : (
-              <WeekCalendar
-                mode="coach"
-                availability={availability}
-                dateSpecific={dateSpecific}
-                bookings={bookings}
-                onSlotClick={handleSlotClick}
-                onBookingClick={handleBookingClick}
-                onCancelBooking={handleCancelBooking}
-                onCompleteBooking={handleCompleteBooking}
-                onEditBooking={handleEditBooking}
-              />
+              <>
+                {/* Mobile Day View */}
+                {calendarView === 'day' && (
+                  <div className="md:hidden">
+                    <MobileCalendarDayView
+                      bookings={bookings}
+                      onBookingClick={handleBookingClick}
+                      onSlotClick={handleSlotClick}
+                    />
+                  </div>
+                )}
+                
+                {/* Week View (default on desktop, optional on mobile) */}
+                <div className={calendarView === 'week' ? 'block' : 'hidden md:block'}>
+                  <WeekCalendar
+                    mode="coach"
+                    availability={availability}
+                    dateSpecific={dateSpecific}
+                    bookings={bookings}
+                    onSlotClick={handleSlotClick}
+                    onBookingClick={handleBookingClick}
+                    onCancelBooking={handleCancelBooking}
+                    onCompleteBooking={handleCompleteBooking}
+                    onEditBooking={handleEditBooking}
+                  />
+                </div>
+              </>
             )}
           </div>
 

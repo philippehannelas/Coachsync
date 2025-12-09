@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Search, Plus, Edit, Trash2, CreditCard, LogOut, Mail, Phone, User, Calendar, Clock, ChevronRight, Palette } from 'lucide-react';
+import { Users, Search, Plus, Edit, Trash2, CreditCard, LogOut, Mail, Phone, User, Calendar, Clock, ChevronRight, Palette, FileText } from 'lucide-react';
 import AthleteHubLogo from '../AthleteHubLogo';
 import { coachAPI } from '../../services/api.jsx';
 import InvitationLinkModal from '../Modals/InvitationLinkModal';
@@ -11,11 +11,13 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false); // Used for the invite modal
+  const [showViewModal, setShowViewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCreditsModal, setShowCreditsModal] = useState(false);
   const [showCustomerPlansModal, setShowCustomerPlansModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [customerPlans, setCustomerPlans] = useState([]);
+  const [loadingPlans, setLoadingPlans] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -214,6 +216,11 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
     setShowEditModal(true);
   };
 
+  const openViewModal = (customer) => {
+    setSelectedCustomer(customer);
+    setShowViewModal(true);
+  };
+
   const openCreditsModal = (customer) => {
     setSelectedCustomer(customer);
     setCreditsAmount(0);
@@ -223,6 +230,8 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
   const handleViewPlans = async (customer) => {
     setSelectedCustomer(customer);
     setShowCustomerPlansModal(true);
+    setLoadingPlans(true);
+    setCustomerPlans([]); // Clear previous plans
     
     // Fetch training plans assigned to this customer
     try {
@@ -239,6 +248,8 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
     } catch (err) {
       console.error('Error fetching customer plans:', err);
       setCustomerPlans([]);
+    } finally {
+      setLoadingPlans(false);
     }
   };
 
@@ -599,6 +610,7 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
               <SwipeableCustomerCard
                 key={customer.id}
                 customer={customer}
+                onView={openViewModal}
                 onEdit={openEditModal}
                 onDelete={handleDeleteCustomer}
                 onAddCredits={openCreditsModal}
@@ -690,6 +702,71 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
 	                </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* View Customer Modal */}
+      {showViewModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 animate-fade-in">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 transform animate-slide-up">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">Customer Details</h2>
+              <button
+                onClick={() => setShowViewModal(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div className="bg-blue-50 rounded-lg p-4 text-center">
+                <div className="w-20 h-20 bg-blue-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-3">
+                  {(selectedCustomer?.user?.first_name || selectedCustomer?.first_name)?.[0]}
+                  {(selectedCustomer?.user?.last_name || selectedCustomer?.last_name)?.[0]}
+                </div>
+                <h3 className="text-xl font-bold text-gray-900">
+                  {selectedCustomer?.user?.first_name || selectedCustomer?.first_name}{' '}
+                  {selectedCustomer?.user?.last_name || selectedCustomer?.last_name}
+                </h3>
+                <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-semibold">
+                  <CreditCard size={16} />
+                  {selectedCustomer?.session_credits || 0} Credits
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="border-b border-gray-200 pb-3">
+                  <label className="text-sm font-medium text-gray-500">Email</label>
+                  <p className="text-gray-900 mt-1">{selectedCustomer?.user?.email || selectedCustomer?.email || 'Not provided'}</p>
+                </div>
+                <div className="border-b border-gray-200 pb-3">
+                  <label className="text-sm font-medium text-gray-500">Phone</label>
+                  <p className="text-gray-900 mt-1">{selectedCustomer?.user?.phone || selectedCustomer?.phone || 'Not provided'}</p>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  onClick={() => {
+                    setShowViewModal(false);
+                    openEditModal(selectedCustomer);
+                  }}
+                  className="flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
+                >
+                  <Edit size={18} />
+                  Edit Details
+                </button>
+                <button
+                  onClick={() => setShowViewModal(false)}
+                  className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg transition-all duration-200"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -850,7 +927,11 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
               </div>
             </div>
             <div className="p-6 overflow-y-auto max-h-[60vh]">
-              {customerPlans.length === 0 ? (
+              {loadingPlans ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                </div>
+              ) : customerPlans.length === 0 ? (
                 <div className="text-center py-12">
                   <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
                   <p className="text-gray-500 text-lg">No training plans assigned yet</p>
