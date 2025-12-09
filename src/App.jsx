@@ -5,27 +5,49 @@ import { AuthProvider, useAuth } from './hooks/useAuth';
 import AuthForm from './components/AuthForm';
 import CoachDashboard from './components/Dashboard/CoachDashboard';
 import CustomerDashboard from './components/Dashboard/CustomerDashboard';
-import AdminDashboard from './components/Dashboard/AdminDashboard';
+import AdminDashboard from './components/Dashboard/AdminDashboard'; // NEW: Admin Dashboard Component
 import CoachCalendarPage from './components/Calendar/CoachCalendarPage';
 import CustomerCalendarPage from './components/Calendar/CustomerCalendarPage';
 import AcceptInvitePage from './pages/AcceptInvitePage';
 import TrainingPlansPage from './components/TrainingPlans/TrainingPlansPage';
 import CustomerTrainingPlans from './components/TrainingPlans/CustomerTrainingPlans';
 
-// Customer Portal Pages
+// NEW IMPORTS - Customer Portal Pages
 import StartWorkoutPage from './components/Customer/StartWorkoutPage';
 import WorkoutViewerPage from './components/Customer/WorkoutViewerPage';
 import ProgressDashboardPage from './components/Customer/ProgressDashboardPage';
 import WorkoutHistoryPage from './components/Customer/WorkoutHistoryPage';
 import CustomerProfilePage from './components/Customer/CustomerProfilePage';
 import BrandingSettings from './components/Dashboard/BrandingSettings';
+import CustomersPage from './components/Customers/CustomersPage';
 import BottomNav from './components/Navigation/BottomNav';
 
-// NEW: Coach Layout Wrapper - Adds bottom nav to all coach pages
-function CoachLayout({ children }) {
+// Wrapper component for CustomersPage with navigation
+function CustomersPageWrapper() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleNavigate = (page) => {
+    if (page === 'calendar') {
+      navigate('/coach/calendar');
+    } else if (page === 'dashboard') {
+      navigate('/coach/dashboard');
+    } else if (page === 'customers') {
+      navigate('/coach/customers');
+    } else if (page === 'training-plans') {
+      navigate('/coach/training-plans');
+    } else if (page === 'branding') {
+      navigate('/coach/branding');
+    }
+  };
+
+  const handleBack = () => {
+    navigate('/coach/dashboard');
+  };
+
   return (
     <>
-      {children}
+      <CustomersPage user={user} onNavigate={handleNavigate} onBack={handleBack} />
       <BottomNav />
     </>
   );
@@ -56,37 +78,10 @@ function CoachDashboardWrapper() {
   };
 
   return (
-    <CoachLayout>
+    <>
       <CoachDashboard user={user} onNavigate={handleNavigate} onLogout={handleLogout} />
-    </CoachLayout>
-  );
-}
-
-// NEW: Wrapper for CoachCalendarPage with bottom nav
-function CoachCalendarWrapper() {
-  return (
-    <CoachLayout>
-      <CoachCalendarPage />
-    </CoachLayout>
-  );
-}
-
-// NEW: Wrapper for TrainingPlansPage with bottom nav
-function TrainingPlansWrapper() {
-  const { user } = useAuth();
-  return (
-    <CoachLayout>
-      <TrainingPlansPage userProfile={user} />
-    </CoachLayout>
-  );
-}
-
-// NEW: Wrapper for BrandingSettings with bottom nav
-function BrandingWrapper() {
-  return (
-    <CoachLayout>
-      <BrandingSettings />
-    </CoachLayout>
+      <BottomNav />
+    </>
   );
 }
 
@@ -102,13 +97,13 @@ function CustomerDashboardWrapper() {
       navigate('/customer/dashboard');
     } else if (page === 'training-plans') {
       navigate('/customer/training-plans');
-    } else if (page === 'start-workout') {
+    } else if (page === 'start-workout') {  // NEW
       navigate('/customer/start-workout');
-    } else if (page === 'progress') {
+    } else if (page === 'progress') {  // NEW
       navigate('/customer/progress');
-    } else if (page === 'workout-history') {
+    } else if (page === 'workout-history') {  // NEW
       navigate('/customer/workout-history');
-    } else if (page === 'profile') {
+    } else if (page === 'profile') {  // NEW
       navigate('/customer/profile');
     }
   };
@@ -162,7 +157,7 @@ function AppContent() {
       />
       <Route path="/accept-invite/:token" element={<AcceptInvitePage />} />
 
-      {/* Coach Routes - All wrapped with CoachLayout for persistent bottom nav */}
+      {/* Coach Routes */}
       <Route
         path="/coach/dashboard"
         element={
@@ -175,7 +170,7 @@ function AppContent() {
         path="/coach/calendar"
         element={
           <ProtectedRoute allowedRole="coach">
-            <CoachCalendarWrapper />
+            <CoachCalendarPage />
           </ProtectedRoute>
         }
       />
@@ -191,7 +186,7 @@ function AppContent() {
         path="/coach/training-plans"
         element={
           <ProtectedRoute allowedRole="coach">
-            <TrainingPlansWrapper />
+            <TrainingPlansPage userProfile={user} />
           </ProtectedRoute>
         }
       />
@@ -199,7 +194,15 @@ function AppContent() {
         path="/coach/branding"
         element={
           <ProtectedRoute allowedRole="coach">
-            <BrandingWrapper />
+            <BrandingSettings />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/coach/customers"
+        element={
+          <ProtectedRoute allowedRole="coach">
+            <CustomersPageWrapper />
           </ProtectedRoute>
         }
       />
@@ -230,7 +233,7 @@ function AppContent() {
         }
       />
 
-      {/* Customer Workout Routes */}
+      {/* NEW CUSTOMER ROUTES - Mobile-Optimized Workout Features */}
       <Route
         path="/customer/start-workout"
         element={
@@ -272,6 +275,20 @@ function AppContent() {
         }
       />
 
+      {/* Default Routes */}
+      <Route 
+        path="/" 
+        element={
+          user ? 
+            <Navigate to={
+              user.role === 'coach' ? '/coach/dashboard' : 
+              user.role === 'customer' ? '/customer/dashboard' :
+              user.role === 'admin' ? '/admin/dashboard' :
+              '/login'
+            } replace /> 
+            : <Navigate to="/login" replace />
+        } 
+      />
       {/* Admin Routes */}
       <Route
         path="/admin/dashboard"
@@ -282,20 +299,7 @@ function AppContent() {
         }
       />
 
-      {/* Default Route */}
-      <Route
-        path="/"
-        element={
-          user ? 
-            <Navigate to={
-              user.role === 'coach' ? '/coach/dashboard' : 
-              user.role === 'customer' ? '/customer/dashboard' :
-              user.role === 'admin' ? '/admin/dashboard' :
-              '/login'
-            } replace /> 
-            : <Navigate to="/login" replace />
-        }
-      />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
@@ -311,3 +315,4 @@ function App() {
 }
 
 export default App;
+
