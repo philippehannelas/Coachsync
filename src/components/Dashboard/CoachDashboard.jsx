@@ -12,6 +12,7 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [customerFilter, setCustomerFilter] = useState('all'); // 'all', 'active', 'inactive', 'no-credits'
   const [showAddModal, setShowAddModal] = useState(false); // Used for the invite modal
   const [showViewModal, setShowViewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -260,45 +261,60 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
   };
 
   const filteredCustomers = customers.filter(customer => {
+    // Search filter
     const firstName = customer.user?.first_name || customer.first_name || '';
     const lastName = customer.user?.last_name || customer.last_name || '';
     const email = customer.user?.email || customer.email || '';
     const phone = customer.user?.phone || customer.phone || '';
-    return firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       phone.includes(searchTerm);
+    
+    // Category filter
+    const credits = customer.session_credits || 0;
+    let matchesFilter = true;
+    if (customerFilter === 'active') {
+      matchesFilter = credits > 0;
+    } else if (customerFilter === 'inactive') {
+      matchesFilter = credits === 0;
+    } else if (customerFilter === 'no-credits') {
+      matchesFilter = credits === 0;
+    }
+    
+    return matchesSearch && matchesFilter;
   });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Header */}
-      <header className="bg-white shadow-md border-b border-gray-200" style={branding?.brand_color_primary ? { background: `linear-gradient(to right, ${branding.brand_color_primary}, ${branding.brand_color_primary}dd)` } : {}}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <header className="bg-white shadow-sm border-b border-gray-200" style={branding?.brand_color_primary ? { background: `linear-gradient(to right, ${branding.brand_color_primary}, ${branding.brand_color_primary}dd)` } : {}}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-3">
               {branding?.logo_url ? (
-                <img src={branding.logo_url} alt="Logo" className="h-8 w-auto" />
+                <img src={branding.logo_url} alt="Logo" className="h-6 w-auto" />
               ) : (
-                <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-2 rounded-lg">
-                  <AthleteHubLogo className="h-6 w-auto" color="white" />
+                <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-1.5 rounded-lg">
+                  <AthleteHubLogo className="h-5 w-auto" color="white" />
                 </div>
               )}
               <div>
-                <h1 className="text-2xl font-bold" style={branding?.brand_color_primary ? { color: 'white' } : { color: '#111827' }}>
+                <h1 className="text-lg font-bold" style={branding?.brand_color_primary ? { color: 'white' } : { color: '#111827' }}>
                   {branding?.business_name || 'AthleteHub'}
                 </h1>
-                <p className="text-sm" style={branding?.brand_color_primary ? { color: 'rgba(255,255,255,0.9)' } : { color: '#4B5563' }}>
+                <p className="text-xs" style={branding?.brand_color_primary ? { color: 'rgba(255,255,255,0.8)' } : { color: '#6B7280' }}>
                   {branding?.motto || `Welcome back, ${user.first_name}!`}
                 </p>
               </div>
             </div>
             <button
               onClick={onLogout}
-              className="flex items-center space-x-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg transition-all duration-200 transform hover:scale-105"
+              className="flex items-center space-x-1 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-lg transition-all"
+              title="Logout"
             >
               <LogOut className="h-4 w-4" />
-              <span>Logout</span>
+              <span className="hidden sm:inline">Logout</span>
             </button>
           </div>
         </div>
@@ -451,7 +467,7 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
         })()}
 
         {/* Dashboard Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-2 gap-4 mb-6">
           <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500 transform hover:-translate-y-1 transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
@@ -502,10 +518,31 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
               </div>
             </div>
           </div>
+
+          <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-orange-500 transform hover:-translate-y-1 transition-all duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-600 text-sm font-medium">Session Notes</p>
+                <p className="text-3xl font-bold text-gray-900 mt-1">
+                  {(() => {
+                    const completedSessions = bookings.filter(b => {
+                      const endTime = new Date(b.end_time);
+                      return endTime <= new Date() && b.status === 'confirmed' && b.event_type === 'customer_session';
+                    });
+                    const withNotes = completedSessions.filter(b => b.session_summary || b.has_session_notes);
+                    return `${withNotes.length}/${Math.min(completedSessions.length, 5)}`;
+                  })()}
+                </p>
+              </div>
+              <div className="bg-orange-100 p-3 rounded-lg">
+                <FileText className="h-8 w-8 text-orange-600" />
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Search and Add Button */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row gap-4 mb-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input
@@ -518,31 +555,44 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
           </div>
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105"
+            className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all"
           >
             <Plus className="h-5 w-auto" />
             <span>Add Customer</span>
           </button>
+        </div>
+
+        {/* Filter Chips */}
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
           <button
-            onClick={() => onNavigate && onNavigate('training-plans')}
-            className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105"
+            onClick={() => setCustomerFilter('all')}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
+              customerFilter === 'all'
+                ? 'bg-blue-600 text-white shadow-md'
+                : 'bg-white text-gray-700 border border-gray-300 hover:border-blue-400'
+            }`}
           >
-            <AthleteHubLogo className="h-5 w-auto" color="currentColor" />
-            <span>Training Plans</span>
+            All ({customers.length})
           </button>
           <button
-            onClick={() => onNavigate && onNavigate('calendar')}
-            className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-pink-600 to-pink-700 hover:from-pink-700 hover:to-pink-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105"
+            onClick={() => setCustomerFilter('active')}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
+              customerFilter === 'active'
+                ? 'bg-green-600 text-white shadow-md'
+                : 'bg-white text-gray-700 border border-gray-300 hover:border-green-400'
+            }`}
           >
-            <AthleteHubLogo className="h-5 w-auto" color="currentColor" />
-            <span>View Calendar</span>
+            Active ({customers.filter(c => (c.session_credits || 0) > 0).length})
           </button>
           <button
-            onClick={() => onNavigate && onNavigate('branding')}
-            className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105"
+            onClick={() => setCustomerFilter('no-credits')}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
+              customerFilter === 'no-credits'
+                ? 'bg-orange-600 text-white shadow-md'
+                : 'bg-white text-gray-700 border border-gray-300 hover:border-orange-400'
+            }`}
           >
-            <Palette className="h-5 w-auto" />
-            <span>Branding</span>
+            No Credits ({customers.filter(c => (c.session_credits || 0) === 0).length})
           </button>
         </div>
 

@@ -1481,3 +1481,65 @@ html {
   gap: 4px;
   padding: 12px 16px;
 }
+
+/* ============================================
+   MOBILE DASHBOARD ENHANCEMENTS
+   ============================================ */
+
+/* Ensure stats cards are readable in 2-column layout on mobile */
+@media (max-width: 640px) {
+  /* Compact stats cards for mobile */
+  .bg-white.rounded-xl.shadow-md.p-6 {
+    padding: 1rem !important;
+  }
+  
+  /* Smaller text in stats cards on very small screens */
+  .bg-white.rounded-xl.shadow-md.p-6 .text-3xl {
+    font-size: 1.875rem !important;
+  }
+  
+  .bg-white.rounded-xl.shadow-md.p-6 .text-sm {
+    font-size: 0.75rem !important;
+  }
+  
+  /* Smaller icons in stats cards */
+  .bg-white.rounded-xl.shadow-md.p-6 .h-8 {
+    height: 1.5rem !important;
+    width: 1.5rem !important;
+  }
+  
+  .bg-white.rounded-xl.shadow-md.p-6 .p-3 {
+    padding: 0.5rem !important;
+  }
+}
+
+/* Filter chips horizontal scroll */
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.overflow-x-auto::-webkit-scrollbar {
+  display: none;
+}
+
+/* Compact header on mobile */
+@media (max-width: 640px) {
+  header .text-2xl {
+    font-size: 1.125rem !important;
+  }
+  
+  header .text-lg {
+    font-size: 1rem !important;
+  }
+}
+
+/* Add bottom padding to main content to account for bottom nav */
+main {
+  padding-bottom: calc(80px + var(--safe-area-bottom)) !important;
+}
+
+/* Ensure filter chips don't wrap on mobile */
+.flex.gap-2.mb-6.overflow-x-auto button {
+  flex-shrink: 0;
+}
