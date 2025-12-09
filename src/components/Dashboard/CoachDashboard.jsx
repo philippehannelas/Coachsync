@@ -4,6 +4,8 @@ import AthleteHubLogo from '../AthleteHubLogo';
 import { coachAPI } from '../../services/api.jsx';
 import InvitationLinkModal from '../Modals/InvitationLinkModal';
 import SwipeableCustomerCard from '../Swipeable/SwipeableCustomerCard';
+import TrainingPlanDetailModal from '../TrainingPlans/TrainingPlanDetailModal';
+import SessionDetailModal from './SessionDetailModal';
 
 function CoachDashboard({ user, onLogout, onNavigate }) {
   const [customers, setCustomers] = useState([]);
@@ -15,6 +17,10 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCreditsModal, setShowCreditsModal] = useState(false);
   const [showCustomerPlansModal, setShowCustomerPlansModal] = useState(false);
+  const [showPlanDetailModal, setShowPlanDetailModal] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [showSessionDetailModal, setShowSessionDetailModal] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState(null);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [customerPlans, setCustomerPlans] = useState([]);
   const [loadingPlans, setLoadingPlans] = useState(false);
@@ -353,16 +359,26 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
                   const isPast = endTime <= now;
                   const isCurrent = startTime <= now && endTime > now;
                   
+                  const sessionCustomer = customers.find(c => c.id === session.customer_id);
+                  
                   return (
-                    <div
+                    <button
                       key={session.id}
-                      className={`p-4 rounded-lg border-2 transition-all ${
+                      onClick={() => {
+                        if (session.event_type === 'customer_session' && sessionCustomer) {
+                          setSelectedBooking(session);
+                          setSelectedCustomer(sessionCustomer);
+                          setShowSessionDetailModal(true);
+                        }
+                      }}
+                      className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
                         isCurrent
-                          ? 'bg-green-50 border-green-500 shadow-lg'
+                          ? 'bg-green-50 border-green-500 shadow-lg hover:shadow-xl'
                           : isPast
-                          ? 'bg-gray-50 border-gray-300'
-                          : 'bg-white border-purple-300'
-                      }`}
+                          ? 'bg-gray-50 border-gray-300 hover:bg-gray-100'
+                          : 'bg-white border-purple-300 hover:border-purple-400 hover:shadow-md'
+                      } ${session.event_type === 'customer_session' ? 'cursor-pointer' : 'cursor-default'}`}
+                      disabled={session.event_type !== 'customer_session'}
                     >
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex-1">
@@ -398,7 +414,13 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
                           {session.notes}
                         </p>
                       )}
-                    </div>
+                      {session.event_type === 'customer_session' && sessionCustomer && (
+                        <div className="mt-3 text-xs text-purple-600 font-medium flex items-center gap-1">
+                          <span>Click to view details</span>
+                          <ChevronRight size={14} />
+                        </div>
+                      )}
+                    </button>
                   );
                 })}
               </div>
@@ -948,7 +970,14 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
               ) : (
                 <div className="space-y-4">
                   {customerPlans.map((plan) => (
-                    <div key={plan.id} className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
+                    <button
+                      key={plan.id}
+                      onClick={() => {
+                        setSelectedPlan(plan);
+                        setShowPlanDetailModal(true);
+                      }}
+                      className="w-full border border-gray-200 rounded-xl p-4 hover:shadow-md hover:border-purple-300 transition-all text-left"
+                    >
                       <div className="flex items-start justify-between mb-3">
                         <div>
                           <h3 className="text-lg font-semibold text-gray-900">{plan.name}</h3>
@@ -985,13 +1014,45 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
                           </div>
                         )}
                       </div>
-                    </div>
+                      <div className="mt-3 text-sm text-purple-600 font-medium flex items-center gap-1">
+                        <span>Click to view exercises</span>
+                        <ChevronRight size={16} />
+                      </div>
+                    </button>
                   ))}
                 </div>
               )}
             </div>
           </div>
         </div>
+      )}
+
+      {/* Training Plan Detail Modal */}
+      {showPlanDetailModal && (
+        <TrainingPlanDetailModal
+          plan={selectedPlan}
+          onClose={() => {
+            setShowPlanDetailModal(false);
+            setSelectedPlan(null);
+          }}
+          onEdit={(plan) => {
+            setShowPlanDetailModal(false);
+            setShowCustomerPlansModal(false);
+            onNavigate('/coach/training-plans');
+          }}
+        />
+      )}
+
+      {/* Session Detail Modal */}
+      {showSessionDetailModal && (
+        <SessionDetailModal
+          booking={selectedBooking}
+          customer={selectedCustomer}
+          onClose={() => {
+            setShowSessionDetailModal(false);
+            setSelectedBooking(null);
+          }}
+        />
       )}
     </div>
   );
