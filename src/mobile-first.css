@@ -94,30 +94,6 @@
   font-weight: 500;
 }
 
-/* Dark Theme for Bottom Nav */
-.bottom-nav-dark {
-  background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
-  border-top: 1px solid #333;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
-}
-
-.bottom-nav-dark .bottom-nav-item {
-  color: #9ca3af;
-}
-
-.bottom-nav-dark .bottom-nav-item.active {
-  color: #a78bfa;
-}
-
-.bottom-nav-dark .bottom-nav-item.active .bottom-nav-icon {
-  filter: drop-shadow(0 0 8px rgba(167, 139, 250, 0.6));
-}
-
-.bottom-nav-dark .bottom-nav-item:active {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-}
-
 /* Hide bottom nav on desktop */
 @media (min-width: 1024px) {
   .bottom-nav {
@@ -1044,16 +1020,19 @@ html {
 }
 
 .swipe-action {
-  width: 56px;
-  height: 56px;
+  width: 60px;
+  height: 60px;
   border-radius: 12px;
   border: none;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 2px;
   cursor: pointer;
   transition: all 0.2s;
   color: white;
+  padding: 8px 4px;
 }
 
 .swipe-action:active {
@@ -1493,17 +1472,13 @@ html {
 
 /* Swipe action labels */
 .swipe-action-label {
-  font-size: 11px;
+  font-size: 9px;
   font-weight: 600;
-  margin-top: 4px;
+  margin-top: 2px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.swipe-action {
-  flex-direction: column;
-  gap: 4px;
-  padding: 12px 16px;
+  letter-spacing: 0.3px;
+  line-height: 1;
+  text-align: center;
 }
 
 /* ============================================

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Mail, Phone, Edit, Trash2, CreditCard, FileText, Eye } from 'lucide-react';
 
-const SwipeableCustomerCard = ({ customer, onView, onEdit, onDelete, onAddCredits, onViewPlans }) => {
+const SwipeableCustomerCard = ({ customer, lastSession, onView, onEdit, onDelete, onAddCredits, onViewPlans }) => {
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
   const cardRef = useRef(null);
@@ -124,9 +124,36 @@ const SwipeableCustomerCard = ({ customer, onView, onEdit, onDelete, onAddCredit
               {customer.user?.first_name || customer.first_name}{' '}
               {customer.user?.last_name || customer.last_name}
             </div>
-            <div className="customer-credits-badge">
-              💳 {customer.session_credits || 0} credits
+            <div className="flex items-center gap-2 mt-1">
+              <div className="customer-credits-badge">
+                💳 {customer.session_credits || 0} credits
+              </div>
+              {customer.has_training_plan && (
+                <div className="inline-flex items-center px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-md font-medium">
+                  📋 Plan
+                </div>
+              )}
             </div>
+            {lastSession ? (
+              <div className="text-xs text-gray-500 mt-1">
+                Last session: {(() => {
+                  const endTime = new Date(lastSession.end_time);
+                  const now = new Date();
+                  const diffMs = now - endTime;
+                  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                  
+                  if (diffDays === 0) return 'today';
+                  if (diffDays === 1) return 'yesterday';
+                  if (diffDays < 7) return `${diffDays} days ago`;
+                  if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+                  return `${Math.floor(diffDays / 30)} months ago`;
+                })()}
+              </div>
+            ) : (
+              <div className="text-xs text-gray-400 mt-1">
+                No sessions yet
+              </div>
+            )}
           </div>
         </div>
 
@@ -181,6 +208,22 @@ const SwipeableCustomerCard = ({ customer, onView, onEdit, onDelete, onAddCredit
           >
             <Edit size={18} />
             Edit
+          </button>
+          <button
+            className="customer-action-btn hidden md:flex"
+            onClick={() => onAddCredits(customer)}
+            style={{ background: '#D1FAE5', color: '#059669' }}
+          >
+            <CreditCard size={18} />
+            Credits
+          </button>
+          <button
+            className="customer-action-btn hidden md:flex"
+            onClick={() => onViewPlans(customer)}
+            style={{ background: '#EDE9FE', color: '#7C3AED' }}
+          >
+            <FileText size={18} />
+            Plans
           </button>
         </div>
 

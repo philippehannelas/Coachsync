@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Search, Plus, ArrowLeft, Edit, CreditCard } from 'lucide-react';
+import { Users, Search, Plus, ArrowLeft, Edit, CreditCard, FileText } from 'lucide-react';
 import { coachAPI } from '../../services/api.jsx';
 import SwipeableCustomerCard from '../Swipeable/SwipeableCustomerCard';
 import InvitationLinkModal from '../Modals/InvitationLinkModal';
@@ -20,6 +20,11 @@ function CustomersPage({ user, onNavigate, onBack }) {
   const [showViewModal, setShowViewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [showCreditsModal, setShowCreditsModal] = useState(false);
+  const [creditsAmount, setCreditsAmount] = useState(0);
+  const [showCustomerPlansModal, setShowCustomerPlansModal] = useState(false);
+  const [customerPlans, setCustomerPlans] = useState([]);
+  const [loadingPlans, setLoadingPlans] = useState(false);
   
   // Pull-to-refresh states
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -174,11 +179,48 @@ function CustomersPage({ user, onNavigate, onBack }) {
   };
 
   const handleAddCredits = (customer) => {
-    openEditModal(customer);
+    setSelectedCustomer(customer);
+    setCreditsAmount(0);
+    setShowCreditsModal(true);
   };
 
-  const handleViewPlans = (customer) => {
-    console.log('View plans for customer:', customer);
+  const handleAddCreditsSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await coachAPI.addCredits(selectedCustomer.id, creditsAmount);
+      setShowCreditsModal(false);
+      setSelectedCustomer(null);
+      setCreditsAmount(0);
+      await fetchCustomers();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to add credits');
+      setTimeout(() => setError(''), 3000);
+    }
+  };
+
+  const handleViewPlans = async (customer) => {
+    setSelectedCustomer(customer);
+    setShowCustomerPlansModal(true);
+    setLoadingPlans(true);
+    setCustomerPlans([]);
+    
+    try {
+      const response = await coachAPI.getTrainingPlans();
+      const allPlans = response.data || [];
+      
+      // Filter plans assigned to this customer
+      const assignedPlans = allPlans.filter(plan => 
+        plan.assigned_customer_ids && 
+        plan.assigned_customer_ids.includes(customer.id)
+      );
+      
+      setCustomerPlans(assignedPlans);
+    } catch (err) {
+      console.error('Error fetching customer plans:', err);
+      setCustomerPlans([]);
+    } finally {
+      setLoadingPlans(false);
+    }
   };
 
   // Filter customers
@@ -607,6 +649,103 @@ function CustomersPage({ user, onNavigate, onBack }) {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Add Credits Modal */}
+      {showCreditsModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 animate-fade-in">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 transform animate-slide-up">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Add Credits</h2>
+            <p className="text-gray-600 mb-4">
+              Add session credits for <span className="font-semibold">
+                {selectedCustomer?.user?.first_name || selectedCustomer?.first_name}{' '}
+                {selectedCustomer?.user?.last_name || selectedCustomer?.last_name}
+              </span>
+            </p>
+            <form onSubmit={handleAddCreditsSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Number of Credits</label>
+                <input
+                  type="number"
+                  min="1"
+                  required
+                  value={creditsAmount}
+                  onChange={(e) => setCreditsAmount(parseInt(e.target.value) || 0)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                  placeholder="Enter number of credits"
+                />
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowCreditsModal(false)}
+                  className="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg transition-all duration-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+                >
+                  Add Credits
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Customer Training Plans Modal */}
+      {showCustomerPlansModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Training Plans for {selectedCustomer?.user?.first_name || selectedCustomer?.first_name}
+                </h2>
+                <button
+                  onClick={() => setShowCustomerPlansModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div className="p-6 overflow-y-auto max-h-[calc(80vh-100px)]">
+              {loadingPlans ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                </div>
+              ) : customerPlans.length === 0 ? (
+                <div className="text-center py-12">
+                  <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-700 mb-2">No Training Plans</h3>
+                  <p className="text-gray-500">This customer has no training plans assigned yet.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {customerPlans.map((plan) => (
+                    <div key={plan.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{plan.name}</h3>
+                      {plan.description && (
+                        <p className="text-sm text-gray-600 mb-3">{plan.description}</p>
+                      )}
+                      <div className="flex items-center gap-4 text-sm text-gray-500">
+                        <span>📅 Created: {new Date(plan.created_at).toLocaleDateString()}</span>
+                        {plan.exercises_count && (
+                          <span>💪 {plan.exercises_count} exercises</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
