@@ -23,7 +23,7 @@ const PackagesPage = () => {
     valid_end_time: ''
   });
 
-  const API_URL = import.meta.env.VITE_API_URL || 'https://coachsync-pro.onrender.com';
+  const API_URL = 'https://coachsync-web.onrender.com';
 
   useEffect(() => {
     fetchPackages();
@@ -32,7 +32,7 @@ const PackagesPage = () => {
   const fetchPackages = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/packages/packages`, {
+      const response = await axios.get(`${API_URL}/api/packages`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setPackages(response.data.packages || []);
@@ -56,7 +56,7 @@ const PackagesPage = () => {
         valid_end_time: formData.valid_end_time || null
       };
       
-      await axios.post(`${API_URL}/api/packages/packages`, payload, {
+      await axios.post(`${API_URL}/api/packages`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -82,7 +82,7 @@ const PackagesPage = () => {
         valid_end_time: formData.valid_end_time || null
       };
       
-      await axios.put(`${API_URL}/api/packages/packages/${selectedPackage.id}`, payload, {
+      await axios.put(`${API_URL}/api/packages/${selectedPackage.id}`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -102,7 +102,7 @@ const PackagesPage = () => {
     
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`${API_URL}/api/packages/packages/${packageId}`, {
+      await axios.delete(`${API_URL}/api/packages/${packageId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchPackages();

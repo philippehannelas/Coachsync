@@ -1,5 +1,5 @@
 // Version control - increment this on each deployment
-const VERSION = '1.0.1';
+const VERSION = '1.0.2';
 const CACHE_NAME = `athletehub-v${VERSION}`;
 const DATA_CACHE_NAME = `athletehub-data-v${VERSION}`;
 
