@@ -31,7 +31,7 @@ app.config['SECRET_KEY'] = 'asdf#FGSgvasgf$5$WGT'
 
 # Enable CORS for all routes
 CORS(app, 
-     origins=["https://coachsync-web.onrender.com", "https://www.coachsync-web.onrender.com", "http://localhost:5173"],
+     origins=["https://coachsync-web.onrender.com", "http://localhost:5173"],
      supports_credentials=True,
      allow_headers=["Content-Type", "Authorization"],
      methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])

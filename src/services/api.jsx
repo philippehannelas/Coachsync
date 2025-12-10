@@ -3,7 +3,7 @@ import axios from 'axios';
 // Backend API base URL
 const API_BASE_URL = import.meta.env.DEV
   ? 'http://localhost:5000/api'
-  : 'https://coachsync-backend.onrender.com/api';
+  : 'https://coachsync-pro.onrender.com/api';
 
 // Create axios instance with default config
 const api = axios.create({
