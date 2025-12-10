@@ -20,7 +20,7 @@ def coach_required(f):
 # PACKAGE CRUD OPERATIONS
 # ============================================================================
 
-@package_bp.route('/', methods=['POST'])
+@package_bp.route('', strict_slashes=False, methods=['POST'])
 @token_required
 @coach_required
 def create_package(current_user):
@@ -67,7 +67,7 @@ def create_package(current_user):
         return jsonify({'message': f'Failed to create package: {str(e)}'}), 500
 
 
-@package_bp.route('/', methods=['GET'])
+@package_bp.route('', strict_slashes=False, methods=['GET'])
 @token_required
 @coach_required
 def get_packages(current_user):
