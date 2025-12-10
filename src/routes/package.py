@@ -582,7 +582,7 @@ def trigger_auto_booking(current_user):
 # CREDIT CONVERSION (Pending → Confirmed)
 # ============================================================================
 
-@package_bp.route('/convert-pending-bookings', methods='POST'])
+@package_bp.route('/convert-pending-bookings', methods=['POST'])
 @token_required
 @coach_required
 def convert_pending_bookings(current_user):
