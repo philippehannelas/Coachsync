@@ -85,6 +85,7 @@ export const coachAPI = {
   deleteTrainingPlan: (planId) => api.delete(`/coach/training-plans/${planId}`),
   
   getBookings: () => api.get('/coach/bookings'),
+  getCoachBookings: () => api.get('/coach/bookings'), // Alias for consistency
   createBooking: (bookingData) => api.post('/coach/bookings', bookingData),
   updateBooking: (bookingId, bookingData) => api.put(`/coach/bookings/${bookingId}`, bookingData),
   cancelBooking: (bookingId) => api.delete(`/coach/bookings/${bookingId}`),
