@@ -20,6 +20,7 @@ import WorkoutHistoryPage from './components/Customer/WorkoutHistoryPage';
 import CustomerProfilePage from './components/Customer/CustomerProfilePage';
 import BrandingSettings from './components/Dashboard/BrandingSettings';
 import CustomersPage from './components/Customers/CustomersPage';
+import PackagesPage from './components/Packages/PackagesPage';
 import BottomNav from './components/Navigation/BottomNav';
 import SettingsPage from './components/Settings/SettingsPage';
 import DesktopNav from './components/Navigation/DesktopNav';
@@ -196,6 +197,17 @@ function AppContent() {
           <ProtectedRoute allowedRole="coach">
             <>
               <TrainingPlansPage userProfile={user} />
+              <BottomNav />
+            </>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/coach/packages"
+        element={
+          <ProtectedRoute allowedRole="coach">
+            <>
+              <PackagesPage />
               <BottomNav />
             </>
           </ProtectedRoute>

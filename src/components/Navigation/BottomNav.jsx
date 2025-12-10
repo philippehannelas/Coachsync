@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Users, FileText, Calendar, MoreHorizontal, Settings, LogOut, Palette, User } from 'lucide-react';
+import { Home, Users, FileText, Calendar, MoreHorizontal, Settings, LogOut, Palette, User, Package } from 'lucide-react';
 
 const BottomNav = () => {
   const navigate = useNavigate();
@@ -86,6 +86,16 @@ const BottomNav = () => {
               >
                 <Palette size={20} />
                 <span>Branding</span>
+              </button>
+              <button 
+                className="mobile-more-menu-item"
+                onClick={() => {
+                  navigate('/coach/packages');
+                  setShowMoreMenu(false);
+                }}
+              >
+                <Package size={20} />
+                <span>Packages</span>
               </button>
               <button 
                 className="mobile-more-menu-item"

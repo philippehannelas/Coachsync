@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Settings, LogOut, Palette, ChevronDown } from 'lucide-react';
+import { User, Settings, LogOut, Palette, ChevronDown, Package } from 'lucide-react';
 import { authAPI } from '../../services/api.jsx';
 
 const DesktopNav = () => {
@@ -90,6 +90,17 @@ const DesktopNav = () => {
           >
             <Palette size={18} />
             <span>Branding</span>
+          </button>
+          
+          <button
+            onClick={() => {
+              navigate('/coach/packages');
+              setShowDropdown(false);
+            }}
+            className="desktop-nav-dropdown-item"
+          >
+            <Package size={18} />
+            <span>Packages</span>
           </button>
           
           <div className="desktop-nav-dropdown-divider"></div>
