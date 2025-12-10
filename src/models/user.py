@@ -336,3 +336,165 @@ class DateSpecificAvailability(db.Model):
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
+        }
+
+class Package(db.Model):
+    """Customizable subscription packages for customers"""
+    __tablename__ = 'package'
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    coach_id = db.Column(db.String(36), db.ForeignKey('coach_profile.id'), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    
+    # Credit allocation
+    credits_per_period = db.Column(db.Integer, nullable=False)
+    is_unlimited = db.Column(db.Boolean, default=False)
+    
+    # Pricing
+    price = db.Column(db.Numeric(10, 2), nullable=True)
+    currency = db.Column(db.String(3), default='USD')
+    
+    # Duration and renewal
+    period_type = db.Column(db.Enum('weekly', 'monthly', 'quarterly', 'yearly', 'one_time', name='period_type'), default='monthly')
+    auto_renew = db.Column(db.Boolean, default=True)
+    
+    # Restrictions (optional)
+    valid_days = db.Column(db.JSON, nullable=True)
+    valid_start_time = db.Column(db.Time, nullable=True)
+    valid_end_time = db.Column(db.Time, nullable=True)
+    
+    # Status
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    subscriptions = db.relationship('PackageSubscription', backref='package', lazy='dynamic', cascade='all, delete-orphan')
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'coach_id': self.coach_id,
+            'name': self.name,
+            'description': self.description,
+            'credits_per_period': self.credits_per_period,
+            'is_unlimited': self.is_unlimited,
+            'price': float(self.price) if self.price else None,
+            'currency': self.currency,
+            'period_type': self.period_type,
+            'auto_renew': self.auto_renew,
+            'valid_days': self.valid_days or [],
+            'valid_start_time': self.valid_start_time.strftime('%H:%M') if self.valid_start_time else None,
+            'valid_end_time': self.valid_end_time.strftime('%H:%M') if self.valid_end_time else None,
+            'is_active': self.is_active,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+
+
+class PackageSubscription(db.Model):
+    """Customer subscription to a package"""
+    __tablename__ = 'package_subscription'
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    package_id = db.Column(db.String(36), db.ForeignKey('package.id'), nullable=False)
+    customer_id = db.Column(db.String(36), db.ForeignKey('customer_profile.id'), nullable=False)
+    coach_id = db.Column(db.String(36), db.ForeignKey('coach_profile.id'), nullable=False)
+    
+    # Subscription period
+    start_date = db.Column(db.Date, nullable=False)
+    end_date = db.Column(db.Date, nullable=True)
+    next_renewal_date = db.Column(db.Date, nullable=True)
+    
+    # Credits tracking
+    credits_allocated = db.Column(db.Integer, default=0)
+    credits_used = db.Column(db.Integer, default=0)
+    credits_remaining = db.Column(db.Integer, default=0)
+    
+    # Status
+    status = db.Column(db.Enum('active', 'paused', 'cancelled', 'expired', name='subscription_status'), default='active')
+    auto_renew = db.Column(db.Boolean, default=True)
+    
+    # Audit
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    cancelled_at = db.Column(db.DateTime, nullable=True)
+    cancellation_reason = db.Column(db.Text, nullable=True)
+    
+    # Relationships
+    customer = db.relationship('CustomerProfile', backref='package_subscriptions')
+    recurring_schedules = db.relationship('RecurringSchedule', backref='subscription', lazy='dynamic', cascade='all, delete-orphan')
+    
+    @property
+    def is_expired(self):
+        """Check if subscription has expired"""
+        if not self.end_date:
+            return False
+        from datetime import date
+        return self.end_date < date.today()
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'package_id': self.package_id,
+            'customer_id': self.customer_id,
+            'coach_id': self.coach_id,
+            'start_date': self.start_date.isoformat() if self.start_date else None,
+            'end_date': self.end_date.isoformat() if self.end_date else None,
+            'next_renewal_date': self.next_renewal_date.isoformat() if self.next_renewal_date else None,
+            'credits_allocated': self.credits_allocated,
+            'credits_used': self.credits_used,
+            'credits_remaining': self.credits_remaining,
+            'status': self.status,
+            'auto_renew': self.auto_renew,
+            'is_expired': self.is_expired,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'cancelled_at': self.cancelled_at.isoformat() if self.cancelled_at else None,
+            'cancellation_reason': self.cancellation_reason
+        }
+
+
+class RecurringSchedule(db.Model):
+    """Recurring booking template for package subscribers"""
+    __tablename__ = 'recurring_schedule'
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    subscription_id = db.Column(db.String(36), db.ForeignKey('package_subscription.id'), nullable=False)
+    customer_id = db.Column(db.String(36), db.ForeignKey('customer_profile.id'), nullable=False)
+    coach_id = db.Column(db.String(36), db.ForeignKey('coach_profile.id'), nullable=False)
+    
+    # Schedule pattern
+    day_of_week = db.Column(db.Integer, nullable=False)
+    start_time = db.Column(db.Time, nullable=False)
+    end_time = db.Column(db.Time, nullable=False)
+    
+    # Auto-booking settings
+    auto_book_enabled = db.Column(db.Boolean, default=True)
+    book_weeks_ahead = db.Column(db.Integer, default=4)
+    
+    # Status
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    paused_at = db.Column(db.DateTime, nullable=True)
+    paused_until = db.Column(db.Date, nullable=True)
+    
+    # Relationships
+    customer = db.relationship('CustomerProfile', backref='recurring_schedules')
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'subscription_id': self.subscription_id,
+            'customer_id': self.customer_id,
+            'coach_id': self.coach_id,
+            'day_of_week': self.day_of_week,
+            'start_time': self.start_time.strftime('%H:%M') if self.start_time else None,
+            'end_time': self.end_time.strftime('%H:%M') if self.end_time else None,
+            'auto_book_enabled': self.auto_book_enabled,
+            'book_weeks_ahead': self.book_weeks_ahead,
+            'is_active': self.is_active,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'paused_at': self.paused_at.isoformat() if self.paused_at else None,
+            'paused_until': self.paused_until.isoformat() if self.paused_until else None
+        }
