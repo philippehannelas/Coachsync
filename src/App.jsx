@@ -23,6 +23,7 @@ import CustomersPage from './components/Customers/CustomersPage';
 import BottomNav from './components/Navigation/BottomNav';
 import SettingsPage from './components/Settings/SettingsPage';
 import DesktopNav from './components/Navigation/DesktopNav';
+import UpdateNotification from './components/UpdateNotification';
 import './dark-theme.css';
 import './desktop-nav.css';
 
@@ -336,6 +337,7 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <AppContent />
+        <UpdateNotification />
       </AuthProvider>
     </BrowserRouter>
   );

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Moon, Sun, Bell, Lock, LogOut, ChevronRight, Mail, Phone, Palette } from 'lucide-react';
+import { User, Moon, Sun, Bell, Lock, LogOut, ChevronRight, Mail, Phone, Palette, RefreshCw } from 'lucide-react';
 import { authAPI } from '../../services/api.jsx';
 import { useNavigate } from 'react-router-dom';
 
@@ -40,6 +40,35 @@ const SettingsPage = () => {
     } else {
       document.documentElement.classList.remove('dark-theme');
       localStorage.setItem('theme', 'light');
+    }
+  };
+
+  const handleClearCache = async () => {
+    if (window.confirm('This will clear all cached data and reload the app. Continue?')) {
+      try {
+        // Clear all caches
+        if ('caches' in window) {
+          const cacheNames = await caches.keys();
+          await Promise.all(cacheNames.map(name => caches.delete(name)));
+        }
+        
+        // Unregister service workers
+        if ('serviceWorker' in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(registrations.map(reg => reg.unregister()));
+        }
+        
+        // Clear localStorage (except auth token)
+        const token = localStorage.getItem('coachsync_token');
+        localStorage.clear();
+        if (token) localStorage.setItem('coachsync_token', token);
+        
+        // Reload the page
+        window.location.reload(true);
+      } catch (error) {
+        console.error('Error clearing cache:', error);
+        alert('Failed to clear cache. Please try again.');
+      }
     }
   };
 
@@ -186,6 +215,15 @@ const SettingsPage = () => {
             </button>
           </div>
         </div>
+
+        {/* Clear Cache */}
+        <button
+          onClick={handleClearCache}
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-orange-50 hover:bg-orange-100 text-orange-600 font-semibold rounded-lg transition-all duration-200 mb-3"
+        >
+          <RefreshCw size={18} />
+          Clear Cache & Reload
+        </button>
 
         {/* Logout */}
         <button
