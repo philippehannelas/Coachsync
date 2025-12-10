@@ -20,7 +20,7 @@ def coach_required(f):
 # PACKAGE CRUD OPERATIONS
 # ============================================================================
 
-@package_bp.route('/packages', methods=['POST'])
+@package_bp.route('/', methods=['POST'])
 @token_required
 @coach_required
 def create_package(current_user):
@@ -67,7 +67,7 @@ def create_package(current_user):
         return jsonify({'message': f'Failed to create package: {str(e)}'}), 500
 
 
-@package_bp.route('/packages', methods=['GET'])
+@package_bp.route('/', methods=['GET'])
 @token_required
 @coach_required
 def get_packages(current_user):
@@ -87,7 +87,7 @@ def get_packages(current_user):
         return jsonify({'message': f'Failed to get packages: {str(e)}'}), 500
 
 
-@package_bp.route('/packages/<package_id>', methods=['GET'])
+@package_bp.route('/<package_id>', methods=['GET'])
 @token_required
 @coach_required
 def get_package(current_user, package_id):
@@ -108,7 +108,7 @@ def get_package(current_user, package_id):
         return jsonify({'message': f'Failed to get package: {str(e)}'}), 500
 
 
-@package_bp.route('/packages/<package_id>', methods=['PUT'])
+@package_bp.route('/<package_id>', methods=['PUT'])
 @token_required
 @coach_required
 def update_package(current_user, package_id):
@@ -163,7 +163,7 @@ def update_package(current_user, package_id):
         return jsonify({'message': f'Failed to update package: {str(e)}'}), 500
 
 
-@package_bp.route('/packages/<package_id>', methods=['DELETE'])
+@package_bp.route('/<package_id>', methods=['DELETE'])
 @token_required
 @coach_required
 def delete_package(current_user, package_id):
@@ -582,7 +582,7 @@ def trigger_auto_booking(current_user):
 # CREDIT CONVERSION (Pending → Confirmed)
 # ============================================================================
 
-@package_bp.route('/convert-pending-bookings', methods=['POST'])
+@package_bp.route('/convert-pending-bookings', methods='POST'])
 @token_required
 @coach_required
 def convert_pending_bookings(current_user):
