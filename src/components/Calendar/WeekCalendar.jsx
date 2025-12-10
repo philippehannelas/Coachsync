@@ -314,7 +314,8 @@ const WeekCalendar = ({
                       ${booking ? 'cursor-pointer' : ''}
                       ${isPast && !booking ? 'bg-gray-50 border-gray-200 cursor-not-allowed opacity-50' : ''}
                       ${dateSpecificInfo.type === 'unavailable' && !booking ? 'bg-red-50 border-red-200 cursor-not-allowed' : ''}
-                      ${booking && booking.event_type === 'customer_session' ? 'bg-blue-100 border-blue-400 hover:bg-blue-200' : ''}
+                      ${booking && booking.event_type === 'customer_session' && booking.status !== 'pending_credits' ? 'bg-blue-100 border-blue-400 hover:bg-blue-200' : ''}
+                      ${booking && booking.event_type === 'customer_session' && booking.status === 'pending_credits' ? 'bg-amber-100 border-amber-400 hover:bg-amber-200' : ''}
                       ${booking && booking.event_type === 'personal_event' ? 'bg-purple-100 border-purple-400 hover:bg-purple-200' : ''}
                       ${available && !booking && !isPast && dateSpecificInfo.type !== 'unavailable' ? 'bg-green-50 border-green-300 hover:bg-green-100 cursor-pointer' : ''}
                       ${!available && !booking && !isPast && dateSpecificInfo.type !== 'unavailable' ? 'bg-gray-100 border-gray-300 cursor-not-allowed' : ''}
@@ -326,8 +327,13 @@ const WeekCalendar = ({
                       </div>
                     )}
                     {booking && booking.event_type === 'customer_session' && (
-                      <div className="text-xs font-medium text-blue-700 p-1 truncate">
+                      <div className={`text-xs font-medium p-1 truncate ${
+                        booking.status === 'pending_credits' ? 'text-amber-700' : 'text-blue-700'
+                      }`}>
                         {booking.customer?.name || 'Booked'}
+                        {booking.status === 'pending_credits' && (
+                          <div className="text-[10px] text-amber-600">Pending</div>
+                        )}
                       </div>
                     )}
                     {booking && booking.event_type === 'personal_event' && (
@@ -357,6 +363,10 @@ const WeekCalendar = ({
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 bg-blue-100 border-2 border-blue-400 rounded"></div>
           <span className="text-sm text-gray-600">Customer Session</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 bg-amber-100 border-2 border-amber-400 rounded"></div>
+          <span className="text-sm text-gray-600">Pending Credits</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 bg-purple-100 border-2 border-purple-400 rounded"></div>

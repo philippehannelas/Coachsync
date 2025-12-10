@@ -40,6 +40,9 @@ const BookingModal = ({
   const [duration, setDuration] = useState(60);
   const [notes, setNotes] = useState(booking?.notes || '');
   const [error, setError] = useState('');
+  
+  // Allow pending credits (for coaches creating customer sessions)
+  const [allowPendingCredits, setAllowPendingCredits] = useState(false);
 
   const DAYS = [
     { name: 'Mon', value: 0 },
@@ -58,10 +61,9 @@ const BookingModal = ({
   }
 
   useEffect(() => {
-    // Reset recurring options when event type changes
-    if (eventType === 'customer_session') {
-      setIsRecurring(false);
-      setRecurringDays([]);
+    // Reset recurring options when event type changes to personal event
+    if (eventType === 'personal_event') {
+      // Keep recurring options available for personal events
     }
   }, [eventType]);
 
@@ -75,6 +77,15 @@ const BookingModal = ({
       // Only validate customer selection for coaches
       if (isCoach && !selectedCustomer) {
         setError('Please select a customer');
+        return;
+      }
+      // Validate recurring options for customer sessions
+      if (isRecurring && recurringDays.length === 0) {
+        setError('Please select at least one day for recurring sessions');
+        return;
+      }
+      if (isRecurring && !recurringEndDate) {
+        setError('Please select an end date for recurring sessions');
         return;
       }
     } else if (eventType === 'personal_event') {
@@ -104,6 +115,14 @@ const BookingModal = ({
       // Only add customer_id if coach is creating the booking
       if (isCoach) {
         bookingData.customer_id = selectedCustomer;
+        // Add allow_pending_credits flag for coaches
+        bookingData.allow_pending_credits = allowPendingCredits;
+        // Add recurring fields for customer sessions
+        bookingData.is_recurring = isRecurring;
+        if (isRecurring) {
+          bookingData.recurring_days = recurringDays;
+          bookingData.recurring_end_date = recurringEndDate;
+        }
       }
       // For customers, backend will use their own profile
     } else if (eventType === 'personal_event') {
@@ -268,6 +287,94 @@ const BookingModal = ({
                   ))}
                 </select>
               </div>
+              
+              {/* Allow Pending Credits Checkbox */}
+              <div className="flex items-center justify-between p-4 bg-amber-50 rounded-lg border border-amber-200">
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    id="allowPendingCredits"
+                    checked={allowPendingCredits}
+                    onChange={(e) => setAllowPendingCredits(e.target.checked)}
+                    className="mt-1 w-4 h-4 text-amber-600 border-gray-300 rounded focus:ring-amber-500"
+                  />
+                  <div>
+                    <label htmlFor="allowPendingCredits" className="text-sm font-medium text-gray-700 cursor-pointer">
+                      Allow booking without credits
+                    </label>
+                    <p className="text-xs text-gray-600 mt-1">
+                      Create pending booking if customer has no credits. Will auto-confirm when credits are added.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Recurring Customer Sessions Toggle */}
+              <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Repeat className="w-5 h-5 text-blue-600" />
+                  <span className="text-sm font-medium text-gray-700">Recurring Sessions</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsRecurring(!isRecurring)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    isRecurring ? 'bg-blue-600' : 'bg-gray-300'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      isRecurring ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {/* Recurring Options for Customer Sessions */}
+              {isRecurring && (
+                <div className="space-y-3 p-4 bg-blue-50 rounded-lg">
+                  {/* Day Selection */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Repeat On
+                    </label>
+                    <div className="flex gap-2">
+                      {DAYS.map(day => (
+                        <button
+                          key={day.value}
+                          type="button"
+                          onClick={() => toggleRecurringDay(day.value)}
+                          className={`flex-1 py-2 px-1 rounded-lg text-xs font-medium transition-all ${
+                            recurringDays.includes(day.value)
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-white text-gray-600 border border-gray-300 hover:border-blue-300'
+                          }`}
+                        >
+                          {day.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* End Date */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      End Date
+                    </label>
+                    <input
+                      type="date"
+                      value={recurringEndDate}
+                      onChange={(e) => setRecurringEndDate(e.target.value)}
+                      min={selectedDate?.toISOString().split('T')[0]}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  
+                  <div className="text-xs text-gray-600 bg-white p-3 rounded border border-blue-200">
+                    💡 This will create multiple bookings at the same time on selected days until the end date.
+                  </div>
+                </div>
+              )}
             </>
           )}
 

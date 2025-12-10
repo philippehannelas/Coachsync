@@ -188,7 +188,7 @@ def create_booking_as_coach(current_user):
         is_recurring = data.get('is_recurring', False)
         created_bookings = []
         
-        if is_recurring and event_type == 'personal_event':
+        if is_recurring and event_type in ['personal_event', 'customer_session']:
             # Create recurring instances
             recurring_days = data.get('recurring_days', [])
             recurring_end_date_str = data.get('recurring_end_date')
@@ -204,19 +204,65 @@ def create_booking_as_coach(current_user):
             except ValueError:
                 return jsonify({'message': 'Invalid recurring_end_date format'}), 400
             
+            # Handle credits for recurring customer sessions
+            booking_status = 'confirmed'
+            subscription_id = None
+            allow_pending = data.get('allow_pending_credits', False)
+            
+            if event_type == 'customer_session' and customer_id:
+                # Find active subscription for this customer
+                active_subscription = PackageSubscription.query.filter_by(
+                    customer_id=customer_id,
+                    coach_id=coach_profile.id,
+                    status='active'
+                ).first()
+                
+                # Calculate total bookings needed
+                total_bookings_needed = len([d for d in recurring_days]) * (
+                    (recurring_end_date - start_time.date()).days // 7 + 1
+                )
+                
+                if active_subscription:
+                    subscription_id = active_subscription.id
+                    # Check if subscription has enough credits
+                    has_enough_credits = (active_subscription.package.is_unlimited or 
+                                         active_subscription.credits_remaining >= total_bookings_needed)
+                    
+                    if has_enough_credits:
+                        booking_status = 'confirmed'
+                    elif allow_pending:
+                        booking_status = 'pending_credits'
+                    else:
+                        return jsonify({
+                            'message': f'Customer needs {total_bookings_needed} credits but has {active_subscription.credits_remaining}. Set allow_pending_credits=true to create pending bookings.',
+                            'has_subscription': True,
+                            'credits_remaining': active_subscription.credits_remaining,
+                            'credits_needed': total_bookings_needed
+                        }), 400
+                else:
+                    # No active subscription
+                    if allow_pending:
+                        booking_status = 'pending_credits'
+                    else:
+                        return jsonify({
+                            'message': 'Customer has no active subscription. Set allow_pending_credits=true to create pending bookings.',
+                            'has_subscription': False
+                        }), 400
+            
             # Create parent event (first occurrence)
             parent_booking = Booking(
-                customer_id=None,
+                customer_id=customer_id if event_type == 'customer_session' else None,
                 coach_id=coach_profile.id,
                 start_time=start_time,
                 end_time=end_time,
-                status=data.get('status', 'confirmed'),
+                status=booking_status,
                 event_type=event_type,
                 event_title=data.get('event_title'),
                 is_recurring=True,
                 recurring_days=recurring_days,
                 recurring_end_date=recurring_end_date,
                 parent_event_id=None,
+                subscription_id=subscription_id,
                 notes=data.get('notes')
             )
             
@@ -247,23 +293,33 @@ def create_booking_as_coach(current_user):
                     
                     if not conflict:
                         instance_booking = Booking(
-                            customer_id=None,
+                            customer_id=customer_id if event_type == 'customer_session' else None,
                             coach_id=coach_profile.id,
                             start_time=instance_start,
                             end_time=instance_end,
-                            status=data.get('status', 'confirmed'),
+                            status=booking_status,
                             event_type=event_type,
                             event_title=data.get('event_title'),
                             is_recurring=True,
                             recurring_days=recurring_days,
                             recurring_end_date=recurring_end_date,
                             parent_event_id=parent_booking.id,
+                            subscription_id=subscription_id,
                             notes=data.get('notes')
                         )
                         db.session.add(instance_booking)
                         created_bookings.append(instance_booking)
                 
                 current_date += timedelta(days=1)
+            
+            # Deduct credits for confirmed recurring customer sessions
+            if event_type == 'customer_session' and booking_status == 'confirmed' and subscription_id:
+                active_subscription = PackageSubscription.query.get(subscription_id)
+                if active_subscription and not active_subscription.package.is_unlimited:
+                    # Deduct credits for all created bookings
+                    credits_to_deduct = len(created_bookings)
+                    active_subscription.credits_used += credits_to_deduct
+                    active_subscription.credits_remaining -= credits_to_deduct
             
             db.session.commit()
             
