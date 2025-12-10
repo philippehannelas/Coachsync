@@ -21,6 +21,8 @@ import CustomerProfilePage from './components/Customer/CustomerProfilePage';
 import BrandingSettings from './components/Dashboard/BrandingSettings';
 import CustomersPage from './components/Customers/CustomersPage';
 import BottomNav from './components/Navigation/BottomNav';
+import SettingsPage from './components/Settings/SettingsPage';
+import './dark-theme.css';
 
 // Wrapper component for CustomersPage with navigation
 function CustomersPageWrapper() {
@@ -170,10 +172,15 @@ function AppContent() {
         path="/coach/calendar"
         element={
           <ProtectedRoute allowedRole="coach">
-            <>
-              <CoachCalendarPage />
-              <BottomNav />
-            </>
+            <CoachCalendarPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/coach/customers"
+        element={
+          <ProtectedRoute allowedRole="coach">
+            <CoachDashboardWrapper />
           </ProtectedRoute>
         }
       />
@@ -181,10 +188,7 @@ function AppContent() {
         path="/coach/training-plans"
         element={
           <ProtectedRoute allowedRole="coach">
-            <>
-              <TrainingPlansPage userProfile={user} />
-              <BottomNav />
-            </>
+            <TrainingPlansPage userProfile={user} />
           </ProtectedRoute>
         }
       />
@@ -192,10 +196,23 @@ function AppContent() {
         path="/coach/branding"
         element={
           <ProtectedRoute allowedRole="coach">
-            <>
-              <BrandingSettings />
-              <BottomNav />
-            </>
+            <BrandingSettings />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/coach/settings"
+        element={
+          <ProtectedRoute allowedRole="coach">
+            <SettingsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/coach/profile"
+        element={
+          <ProtectedRoute allowedRole="coach">
+            <SettingsPage />
           </ProtectedRoute>
         }
       />
