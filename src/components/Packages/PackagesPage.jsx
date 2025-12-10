@@ -33,7 +33,7 @@ const PackagesPage = () => {
 
   const fetchPackages = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('coachsync_token');
       const fullUrl = `${API_URL}/api/packages`;
       console.log('📡 Fetching packages from:', fullUrl);
       const response = await axios.get(fullUrl, {
@@ -51,7 +51,7 @@ const PackagesPage = () => {
   const handleCreatePackage = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('coachsync_token');
       const payload = {
         ...formData,
         credits_per_period: parseInt(formData.credits_per_period),
@@ -79,7 +79,7 @@ const PackagesPage = () => {
   const handleEditPackage = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('coachsync_token');
       const payload = {
         ...formData,
         credits_per_period: parseInt(formData.credits_per_period),
@@ -108,7 +108,7 @@ const PackagesPage = () => {
     }
     
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('coachsync_token');
       await axios.delete(`${API_URL}/api/packages/${packageId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -161,50 +161,44 @@ const PackagesPage = () => {
     }));
   };
 
-  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  const periodTypes = [
-    { value: 'weekly', label: 'Weekly' },
-    { value: 'monthly', label: 'Monthly' },
-    { value: 'quarterly', label: 'Quarterly' },
-    { value: 'yearly', label: 'Yearly' },
-    { value: 'one_time', label: 'One Time' }
-  ];
+  const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center">
-                <Package className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white">Packages</h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{packages.length} packages</p>
-              </div>
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-6">
+        <div className="flex items-center justify-between max-w-7xl mx-auto">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center">
+              <Package className="w-6 h-6 text-white" />
             </div>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-indigo-700 transition-colors"
-            >
-              <Plus className="w-5 h-5" />
-              <span className="hidden sm:inline">Create</span>
-            </button>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Packages</h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{packages.length} packages</p>
+            </div>
           </div>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-indigo-700 transition-colors"
+          >
+            <Plus className="w-5 h-5" />
+            <span className="hidden sm:inline">Create</span>
+          </button>
         </div>
       </div>
 
-      {/* Package List */}
+      {/* Packages Grid */}
       <div className="max-w-7xl mx-auto px-4 py-6">
-        {loading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full mx-auto"></div>
-            <p className="mt-4 text-gray-500 dark:text-gray-400">Loading packages...</p>
-          </div>
-        ) : packages.length === 0 ? (
-          <div className="text-center py-12">
+        {packages.length === 0 ? (
+          <div className="text-center py-16">
             <Package className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No packages yet</h3>
             <p className="text-gray-500 dark:text-gray-400 mb-6">Create your first package to get started</p>
@@ -361,19 +355,19 @@ const PackagesPage = () => {
                     disabled={formData.is_unlimited}
                     value={formData.credits_per_period}
                     onChange={(e) => setFormData({ ...formData, credits_per_period: e.target.value })}
-                    placeholder="8"
+                    placeholder="10"
                     className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:opacity-50"
                   />
                 </div>
                 <div className="flex items-end">
-                  <label className="flex items-center gap-2 cursor-pointer bg-gray-50 dark:bg-gray-700 px-4 py-3 rounded-lg w-full">
+                  <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={formData.is_unlimited}
                       onChange={(e) => setFormData({ ...formData, is_unlimited: e.target.checked })}
                       className="w-5 h-5 text-indigo-600 rounded focus:ring-2 focus:ring-indigo-500"
                     />
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Unlimited</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Unlimited Credits</span>
                   </label>
                 </div>
               </div>
@@ -382,30 +376,31 @@ const PackagesPage = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Price ($)
+                    Price
                   </label>
                   <input
                     type="number"
                     step="0.01"
                     value={formData.price}
                     onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                    placeholder="320.00"
+                    placeholder="99.99"
                     className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Period *
+                    Period Type
                   </label>
                   <select
-                    required
                     value={formData.period_type}
                     onChange={(e) => setFormData({ ...formData, period_type: e.target.value })}
                     className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   >
-                    {periodTypes.map(pt => (
-                      <option key={pt.value} value={pt.value}>{pt.label}</option>
-                    ))}
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="quarterly">Quarterly</option>
+                    <option value="yearly">Yearly</option>
+                    <option value="one_time">One-time</option>
                   </select>
                 </div>
               </div>
@@ -419,14 +414,14 @@ const PackagesPage = () => {
                     onChange={(e) => setFormData({ ...formData, auto_renew: e.target.checked })}
                     className="w-5 h-5 text-indigo-600 rounded focus:ring-2 focus:ring-indigo-500"
                   />
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Auto-renew subscription</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Auto-renew subscription</span>
                 </label>
               </div>
 
               {/* Valid Days */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Valid Days (optional)
+                  Valid Days (Optional)
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {dayNames.map((day, index) => (
@@ -437,7 +432,7 @@ const PackagesPage = () => {
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                         formData.valid_days.includes(index)
                           ? 'bg-indigo-600 text-white'
-                          : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                          : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                       }`}
                     >
                       {day}
@@ -450,7 +445,7 @@ const PackagesPage = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Valid From (optional)
+                    Valid From (Time)
                   </label>
                   <input
                     type="time"
@@ -461,7 +456,7 @@ const PackagesPage = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Valid Until (optional)
+                    Valid Until (Time)
                   </label>
                   <input
                     type="time"
@@ -472,21 +467,11 @@ const PackagesPage = () => {
                 </div>
               </div>
 
-              {/* Submit Buttons */}
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => {
-                    showCreateModal ? setShowCreateModal(false) : setShowEditModal(false);
-                    resetForm();
-                  }}
-                  className="flex-1 px-6 py-3 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                >
-                  Cancel
-                </button>
+              {/* Submit Button */}
+              <div className="pt-4">
                 <button
                   type="submit"
-                  className="flex-1 px-6 py-3 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors"
+                  className="w-full bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors"
                 >
                   {showEditModal ? 'Update Package' : 'Create Package'}
                 </button>
