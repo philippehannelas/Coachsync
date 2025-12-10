@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, current_app
-from src.models.user import db, Booking, CoachProfile, CustomerProfile, User, Availability
+from src.models.user import db, Booking, CoachProfile, CustomerProfile, User, Availability, PackageSubscription, Package
 from src.routes.auth import token_required
 import jwt
 from datetime import datetime, timedelta
@@ -287,13 +287,55 @@ def create_booking_as_coach(current_user):
                 notes=data.get('notes')
             )
             
-            # Deduct credit for customer sessions
+            # Handle credits for customer sessions
             if event_type == 'customer_session' and customer_id:
-                customer_profile = CustomerProfile.query.get(customer_id)
-                if customer_profile:
-                    if customer_profile.session_credits <= 0:
-                        return jsonify({'message': 'Customer has insufficient session credits'}), 400
-                    customer_profile.session_credits -= 1
+                # Check if coach wants to allow pending bookings
+                allow_pending = data.get('allow_pending_credits', False)
+                
+                # Find active subscription for this customer
+                active_subscription = PackageSubscription.query.filter_by(
+                    customer_id=customer_id,
+                    coach_id=coach_profile.id,
+                    status='active'
+                ).first()
+                
+                if active_subscription:
+                    # Check if subscription has credits
+                    has_credits = (active_subscription.package.is_unlimited or 
+                                  active_subscription.credits_remaining > 0)
+                    
+                    if has_credits:
+                        # Confirm booking and deduct credit
+                        booking.status = 'confirmed'
+                        booking.subscription_id = active_subscription.id
+                        
+                        if not active_subscription.package.is_unlimited:
+                            active_subscription.credits_used += 1
+                            active_subscription.credits_remaining -= 1
+                    elif allow_pending:
+                        # Create as pending_credits
+                        booking.status = 'pending_credits'
+                        booking.subscription_id = active_subscription.id
+                    else:
+                        return jsonify({
+                            'message': 'Customer has insufficient credits. Set allow_pending_credits=true to create pending booking.',
+                            'has_subscription': True,
+                            'credits_remaining': active_subscription.credits_remaining
+                        }), 400
+                else:
+                    # No active subscription - check old credit system for backward compatibility
+                    customer_profile = CustomerProfile.query.get(customer_id)
+                    if customer_profile and customer_profile.session_credits > 0:
+                        # Use old credit system
+                        customer_profile.session_credits -= 1
+                        booking.status = 'confirmed'
+                    elif allow_pending:
+                        booking.status = 'pending_credits'
+                    else:
+                        return jsonify({
+                            'message': 'Customer has no active subscription. Set allow_pending_credits=true to create pending booking.',
+                            'has_subscription': False
+                        }), 400
             
             db.session.add(booking)
             db.session.commit()
@@ -305,9 +347,25 @@ def create_booking_as_coach(current_user):
             
             # Include remaining credits for customer sessions
             if event_type == 'customer_session' and customer_id:
-                customer_profile = CustomerProfile.query.get(customer_id)
-                if customer_profile:
-                    response_data['remaining_credits'] = customer_profile.session_credits
+                # Check subscription credits first
+                active_subscription = PackageSubscription.query.filter_by(
+                    customer_id=customer_id,
+                    coach_id=coach_profile.id,
+                    status='active'
+                ).first()
+                
+                if active_subscription:
+                    response_data['subscription'] = {
+                        'id': active_subscription.id,
+                        'package_name': active_subscription.package.name,
+                        'credits_remaining': active_subscription.credits_remaining,
+                        'is_unlimited': active_subscription.package.is_unlimited
+                    }
+                else:
+                    # Fall back to old credit system
+                    customer_profile = CustomerProfile.query.get(customer_id)
+                    if customer_profile:
+                        response_data['remaining_credits'] = customer_profile.session_credits
             
             return jsonify(response_data), 201
         

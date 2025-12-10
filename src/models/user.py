@@ -236,9 +236,13 @@ class Booking(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     customer_id = db.Column(db.String(36), db.ForeignKey('customer_profile.id'), nullable=True)  # Nullable for personal events
     coach_id = db.Column(db.String(36), db.ForeignKey('coach_profile.id'), nullable=False)
+    
+    # Package subscription link for credit tracking
+    subscription_id = db.Column(db.String(36), db.ForeignKey('package_subscription.id'), nullable=True)
+    
     start_time = db.Column(db.DateTime, nullable=False)
     end_time = db.Column(db.DateTime, nullable=False)
-    status = db.Column(db.Enum('confirmed', 'pending', 'cancelled', name='booking_status'), default='confirmed')
+    status = db.Column(db.Enum('confirmed', 'pending', 'pending_credits', 'cancelled', name='booking_status'), default='confirmed')
     
     # Event type fields
     event_type = db.Column(db.Enum('customer_session', 'personal_event', name='event_type'), default='customer_session')
@@ -260,12 +264,16 @@ class Booking(db.Model):
     action_items = db.Column(db.JSON, nullable=True)  # List of action items for customer
     customer_notes = db.Column(db.Text, nullable=True)  # Customer's reflections
     notes_added_at = db.Column(db.DateTime, nullable=True)  # When coach added notes
+    
+    # Relationships
+    subscription = db.relationship('PackageSubscription', backref='bookings', foreign_keys=[subscription_id])
 
     def to_dict(self, include_coach_notes=False):
         result = {
             'id': self.id,
             'customer_id': self.customer_id,
             'coach_id': self.coach_id,
+            'subscription_id': self.subscription_id,
             'start_time': self.start_time.isoformat() if self.start_time else None,
             'end_time': self.end_time.isoformat() if self.end_time else None,
             'status': self.status,

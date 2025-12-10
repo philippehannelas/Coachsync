@@ -608,17 +608,18 @@ def convert_pending_bookings(current_user):
         if not subscription:
             return jsonify({'message': 'No active subscription found'}), 404
         
-        # Get pending bookings
-        pending_bookings = Booking.query.filter_by(
-            customer_id=customer_id,
-            coach_id=coach_profile.id,
-            status='pending'
+        # Get pending bookings (both 'pending' and 'pending_credits')
+        pending_bookings = Booking.query.filter(
+            Booking.customer_id == customer_id,
+            Booking.coach_id == coach_profile.id,
+            Booking.status.in_(['pending', 'pending_credits'])
         ).order_by(Booking.start_time).all()
         
         converted_count = 0
         for booking in pending_bookings:
             if subscription.credits_remaining > 0 or subscription.package.is_unlimited:
                 booking.status = 'confirmed'
+                booking.subscription_id = subscription.id  # Link to subscription
                 
                 if not subscription.package.is_unlimited:
                     subscription.credits_used += 1
@@ -638,3 +639,242 @@ def convert_pending_bookings(current_user):
     except Exception as e:
         db.session.rollback()
         return jsonify({'message': f'Failed to convert pending bookings: {str(e)}'}), 500
+
+
+# ============================================================================
+# RECURRING SCHEDULE MANAGEMENT
+# ============================================================================
+
+@package_bp.route('/subscriptions/<subscription_id>/recurring-schedules', methods=['POST'])
+@token_required
+@coach_required
+def create_recurring_schedule(current_user, subscription_id):
+    """Create a recurring booking template for a subscription"""
+    try:
+        data = request.json
+        
+        # Verify subscription
+        subscription = PackageSubscription.query.get(subscription_id)
+        if not subscription:
+            return jsonify({'message': 'Subscription not found'}), 404
+        
+        coach_profile = current_user.coach_profile
+        if subscription.coach_id != coach_profile.id:
+            return jsonify({'message': 'Unauthorized'}), 403
+        
+        # Parse time strings
+        try:
+            start_time_obj = datetime.strptime(data['start_time'], '%H:%M').time()
+            end_time_obj = datetime.strptime(data['end_time'], '%H:%M').time()
+        except ValueError:
+            return jsonify({'message': 'Invalid time format. Use HH:MM'}), 400
+        
+        # Create recurring schedule
+        schedule = RecurringSchedule(
+            subscription_id=subscription_id,
+            customer_id=subscription.customer_id,
+            coach_id=coach_profile.id,
+            day_of_week=data['day_of_week'],  # 0=Monday, 6=Sunday
+            start_time=start_time_obj,
+            end_time=end_time_obj,
+            auto_book_enabled=data.get('auto_book_enabled', True),
+            book_weeks_ahead=data.get('book_weeks_ahead', 4)
+        )
+        
+        db.session.add(schedule)
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Recurring schedule created',
+            'schedule': schedule.to_dict()
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'Failed to create schedule: {str(e)}'}), 500
+
+
+@package_bp.route('/subscriptions/<subscription_id>/recurring-schedules', methods=['GET'])
+@token_required
+@coach_required
+def get_recurring_schedules(current_user, subscription_id):
+    """Get all recurring schedules for a subscription"""
+    try:
+        # Verify subscription
+        subscription = PackageSubscription.query.get(subscription_id)
+        if not subscription:
+            return jsonify({'message': 'Subscription not found'}), 404
+        
+        coach_profile = current_user.coach_profile
+        if subscription.coach_id != coach_profile.id:
+            return jsonify({'message': 'Unauthorized'}), 403
+        
+        schedules = RecurringSchedule.query.filter_by(
+            subscription_id=subscription_id
+        ).all()
+        
+        return jsonify({
+            'schedules': [s.to_dict() for s in schedules]
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'message': f'Failed to get schedules: {str(e)}'}), 500
+
+
+@package_bp.route('/recurring-schedules/<schedule_id>', methods=['PUT'])
+@token_required
+@coach_required
+def update_recurring_schedule(current_user, schedule_id):
+    """Update a recurring schedule"""
+    try:
+        schedule = RecurringSchedule.query.get(schedule_id)
+        if not schedule:
+            return jsonify({'message': 'Schedule not found'}), 404
+        
+        coach_profile = current_user.coach_profile
+        if schedule.coach_id != coach_profile.id:
+            return jsonify({'message': 'Unauthorized'}), 403
+        
+        data = request.json
+        
+        # Update fields
+        if 'day_of_week' in data:
+            schedule.day_of_week = data['day_of_week']
+        
+        if 'start_time' in data:
+            schedule.start_time = datetime.strptime(data['start_time'], '%H:%M').time()
+        
+        if 'end_time' in data:
+            schedule.end_time = datetime.strptime(data['end_time'], '%H:%M').time()
+        
+        if 'auto_book_enabled' in data:
+            schedule.auto_book_enabled = data['auto_book_enabled']
+        
+        if 'book_weeks_ahead' in data:
+            schedule.book_weeks_ahead = data['book_weeks_ahead']
+        
+        if 'is_active' in data:
+            schedule.is_active = data['is_active']
+        
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Schedule updated',
+            'schedule': schedule.to_dict()
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'Failed to update schedule: {str(e)}'}), 500
+
+
+@package_bp.route('/recurring-schedules/<schedule_id>', methods=['DELETE'])
+@token_required
+@coach_required
+def delete_recurring_schedule(current_user, schedule_id):
+    """Delete a recurring schedule"""
+    try:
+        schedule = RecurringSchedule.query.get(schedule_id)
+        if not schedule:
+            return jsonify({'message': 'Schedule not found'}), 404
+        
+        coach_profile = current_user.coach_profile
+        if schedule.coach_id != coach_profile.id:
+            return jsonify({'message': 'Unauthorized'}), 403
+        
+        db.session.delete(schedule)
+        db.session.commit()
+        
+        return jsonify({'message': 'Schedule deleted'}), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'Failed to delete schedule: {str(e)}'}), 500
+
+
+@package_bp.route('/recurring-schedules/generate-bookings', methods=['POST'])
+@token_required
+@coach_required
+def generate_bookings_from_schedules(current_user):
+    """
+    Manually trigger generation of bookings from recurring schedules
+    Normally this would run as a daily cron job
+    """
+    try:
+        coach_profile = current_user.coach_profile
+        
+        # Get all active recurring schedules for this coach
+        schedules = RecurringSchedule.query.filter_by(
+            coach_id=coach_profile.id,
+            is_active=True,
+            auto_book_enabled=True
+        ).all()
+        
+        bookings_created = 0
+        errors = []
+        
+        for schedule in schedules:
+            try:
+                # Calculate target date range
+                today = date.today()
+                target_date = today + timedelta(weeks=schedule.book_weeks_ahead)
+                
+                # Adjust to correct day of week
+                days_ahead = (schedule.day_of_week - target_date.weekday()) % 7
+                if days_ahead == 0 and target_date <= today:
+                    days_ahead = 7
+                target_date = target_date + timedelta(days=days_ahead)
+                
+                # Create datetime objects
+                target_datetime = datetime.combine(target_date, schedule.start_time)
+                end_datetime = datetime.combine(target_date, schedule.end_time)
+                
+                # Check if booking already exists
+                existing = Booking.query.filter_by(
+                    customer_id=schedule.customer_id,
+                    coach_id=schedule.coach_id,
+                    start_time=target_datetime
+                ).first()
+                
+                if existing:
+                    continue  # Skip if already exists
+                
+                # Get subscription
+                subscription = schedule.subscription
+                has_credits = (subscription.package.is_unlimited or 
+                              subscription.credits_remaining > 0)
+                
+                # Create booking
+                booking = Booking(
+                    customer_id=schedule.customer_id,
+                    coach_id=schedule.coach_id,
+                    subscription_id=subscription.id,
+                    start_time=target_datetime,
+                    end_time=end_datetime,
+                    status='confirmed' if has_credits else 'pending_credits',
+                    event_type='customer_session'
+                )
+                
+                # Deduct credit if available
+                if has_credits and not subscription.package.is_unlimited:
+                    subscription.credits_used += 1
+                    subscription.credits_remaining -= 1
+                
+                db.session.add(booking)
+                bookings_created += 1
+                
+            except Exception as e:
+                errors.append(f'Schedule {schedule.id}: {str(e)}')
+                continue
+        
+        db.session.commit()
+        
+        return jsonify({
+            'message': f'{bookings_created} bookings created from recurring schedules',
+            'bookings_created': bookings_created,
+            'errors': errors if errors else None
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'Failed to generate bookings: {str(e)}'}), 500
