@@ -24,6 +24,8 @@ const PackagesPage = () => {
   });
 
   const API_URL = 'https://coachsync-web.onrender.com';
+  
+  console.log('🔧 PackagesPage loaded - API_URL:', API_URL);
 
   useEffect(() => {
     fetchPackages();
@@ -32,12 +34,15 @@ const PackagesPage = () => {
   const fetchPackages = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/packages`, {
+      const fullUrl = `${API_URL}/api/packages`;
+      console.log('📡 Fetching packages from:', fullUrl);
+      const response = await axios.get(fullUrl, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      console.log('✅ Packages response:', response.data);
       setPackages(response.data.packages || []);
     } catch (error) {
-      console.error('Error fetching packages:', error);
+      console.error('❌ Error fetching packages:', error);
     } finally {
       setLoading(false);
     }
@@ -56,7 +61,9 @@ const PackagesPage = () => {
         valid_end_time: formData.valid_end_time || null
       };
       
-      await axios.post(`${API_URL}/api/packages`, payload, {
+      const createUrl = `${API_URL}/api/packages`;
+      console.log('📤 Creating package at:', createUrl, 'Payload:', payload);
+      await axios.post(createUrl, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
