@@ -6,6 +6,7 @@ import InvitationLinkModal from '../Modals/InvitationLinkModal';
 import SwipeableCustomerCard from '../Swipeable/SwipeableCustomerCard';
 import TrainingPlanDetailModal from '../TrainingPlans/TrainingPlanDetailModal';
 import SessionDetailModal from './SessionDetailModal';
+import DesktopNav from '../Navigation/DesktopNav';
 
 function CoachDashboard({ user, onLogout, onNavigate }) {
   const [customers, setCustomers] = useState([]);
@@ -378,14 +379,7 @@ function CoachDashboard({ user, onLogout, onNavigate }) {
                 </p>
               </div>
             </div>
-            <button
-              onClick={onLogout}
-              className="flex items-center space-x-1 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-lg transition-all"
-              title="Logout"
-            >
-              <LogOut className="h-4 w-4" />
-              <span className="hidden sm:inline">Logout</span>
-            </button>
+            <DesktopNav />
           </div>
         </div>
       </header>

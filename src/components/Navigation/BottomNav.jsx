@@ -126,7 +126,7 @@ const BottomNav = () => {
       )}
 
       {/* Bottom Navigation */}
-      <nav className="bottom-nav bottom-nav-dark">
+      <nav className="bottom-nav">
         {navItems.map((item, index) => {
           const Icon = item.icon;
           const active = item.path ? isActive(item) : showMoreMenu;

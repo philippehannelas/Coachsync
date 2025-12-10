@@ -22,7 +22,9 @@ import BrandingSettings from './components/Dashboard/BrandingSettings';
 import CustomersPage from './components/Customers/CustomersPage';
 import BottomNav from './components/Navigation/BottomNav';
 import SettingsPage from './components/Settings/SettingsPage';
+import DesktopNav from './components/Navigation/DesktopNav';
 import './dark-theme.css';
+import './desktop-nav.css';
 
 // Wrapper component for CustomersPage with navigation
 function CustomersPageWrapper() {
@@ -172,47 +174,10 @@ function AppContent() {
         path="/coach/calendar"
         element={
           <ProtectedRoute allowedRole="coach">
-            <CoachCalendarPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/coach/customers"
-        element={
-          <ProtectedRoute allowedRole="coach">
-            <CoachDashboardWrapper />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/coach/training-plans"
-        element={
-          <ProtectedRoute allowedRole="coach">
-            <TrainingPlansPage userProfile={user} />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/coach/branding"
-        element={
-          <ProtectedRoute allowedRole="coach">
-            <BrandingSettings />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/coach/settings"
-        element={
-          <ProtectedRoute allowedRole="coach">
-            <SettingsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/coach/profile"
-        element={
-          <ProtectedRoute allowedRole="coach">
-            <SettingsPage />
+            <>
+              <CoachCalendarPage />
+              <BottomNav />
+            </>
           </ProtectedRoute>
         }
       />
@@ -221,6 +186,50 @@ function AppContent() {
         element={
           <ProtectedRoute allowedRole="coach">
             <CustomersPageWrapper />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/coach/training-plans"
+        element={
+          <ProtectedRoute allowedRole="coach">
+            <>
+              <TrainingPlansPage userProfile={user} />
+              <BottomNav />
+            </>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/coach/branding"
+        element={
+          <ProtectedRoute allowedRole="coach">
+            <>
+              <BrandingSettings />
+              <BottomNav />
+            </>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/coach/settings"
+        element={
+          <ProtectedRoute allowedRole="coach">
+            <>
+              <SettingsPage />
+              <BottomNav />
+            </>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/coach/profile"
+        element={
+          <ProtectedRoute allowedRole="coach">
+            <>
+              <SettingsPage />
+              <BottomNav />
+            </>
           </ProtectedRoute>
         }
       />
