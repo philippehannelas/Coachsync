@@ -23,7 +23,7 @@ const PackagesPage = () => {
     valid_end_time: ''
   });
 
-  const API_URL = 'https://coachsync-web.onrender.com';
+  const API_URL = 'https://coachsync-pro.onrender.com';
   
   console.log('🔧 PackagesPage loaded - API_URL:', API_URL);
 
