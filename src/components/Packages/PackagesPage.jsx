@@ -16,6 +16,7 @@ const PackagesPage = () => {
     credits_per_period: '',
     is_unlimited: false,
     price: '',
+    currency: 'USD',
     period_type: 'monthly',
     auto_renew: true,
     valid_days: [],
@@ -238,7 +239,7 @@ const PackagesPage = () => {
                     <div className="flex items-center gap-2">
                       <DollarSign className="w-5 h-5 text-gray-400" />
                       <span className="text-gray-700 dark:text-gray-300">
-                        ${pkg.price} {pkg.currency}
+                        {pkg.currency === 'EUR' ? '€' : pkg.currency === 'MUR' ? 'Rs ' : '$'}{pkg.price} {pkg.currency}
                       </span>
                     </div>
                   )}
@@ -372,8 +373,8 @@ const PackagesPage = () => {
                 </div>
               </div>
 
-              {/* Price & Period */}
-              <div className="grid grid-cols-2 gap-4">
+              {/* Price, Currency & Period */}
+              <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Price
@@ -386,6 +387,20 @@ const PackagesPage = () => {
                     placeholder="99.99"
                     className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Currency
+                  </label>
+                  <select
+                    value={formData.currency}
+                    onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  >
+                    <option value="USD">$ USD</option>
+                    <option value="EUR">€ EUR</option>
+                    <option value="MUR">Rs MUR</option>
+                  </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

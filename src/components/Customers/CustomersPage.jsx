@@ -25,6 +25,9 @@ function CustomersPage({ user, onNavigate, onBack }) {
   const [showCustomerPlansModal, setShowCustomerPlansModal] = useState(false);
   const [customerPlans, setCustomerPlans] = useState([]);
   const [loadingPlans, setLoadingPlans] = useState(false);
+  const [showAssignPackageModal, setShowAssignPackageModal] = useState(false);
+  const [availablePackages, setAvailablePackages] = useState([]);
+  const [selectedPackageId, setSelectedPackageId] = useState('');
   
   // Pull-to-refresh states
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -99,6 +102,19 @@ function CustomersPage({ user, onNavigate, onBack }) {
       setBookings(response.data || []);
     } catch (err) {
       console.error('Error fetching bookings:', err);
+    }
+  };
+
+  const fetchPackages = async () => {
+    try {
+      const token = localStorage.getItem('coachsync_token');
+      const response = await fetch('https://coachsync-pro.onrender.com/api/packages', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await response.json();
+      setAvailablePackages(data.packages || []);
+    } catch (err) {
+      console.error('Error fetching packages:', err);
     }
   };
 
@@ -220,6 +236,50 @@ function CustomersPage({ user, onNavigate, onBack }) {
       setCustomerPlans([]);
     } finally {
       setLoadingPlans(false);
+    }
+  };
+
+  const handleAssignPackage = async (customer) => {
+    setSelectedCustomer(customer);
+    setSelectedPackageId('');
+    await fetchPackages();
+    setShowAssignPackageModal(true);
+  };
+
+  const handleConfirmAssignment = async () => {
+    if (!selectedPackageId) {
+      setError('Please select a package');
+      setTimeout(() => setError(''), 3000);
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('coachsync_token');
+      const response = await fetch('https://coachsync-pro.onrender.com/api/subscriptions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          customer_id: selectedCustomer.id,
+          package_id: selectedPackageId
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to assign package');
+      }
+
+      setShowAssignPackageModal(false);
+      setSelectedPackageId('');
+      await fetchCustomers();
+      alert('Package assigned successfully!');
+    } catch (err) {
+      console.error('Error assigning package:', err);
+      setError(err.message || 'Failed to assign package');
+      setTimeout(() => setError(''), 5000);
     }
   };
 
@@ -420,6 +480,7 @@ function CustomersPage({ user, onNavigate, onBack }) {
                   onDelete={() => handleDeleteCustomer(customer.id)}
                   onAddCredits={() => handleAddCredits(customer)}
                   onViewPlans={() => handleViewPlans(customer)}
+                  onAssignPackage={() => handleAssignPackage(customer)}
                 />
               );
             })}
@@ -745,6 +806,65 @@ function CustomersPage({ user, onNavigate, onBack }) {
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Assign Package Modal */}
+      {showAssignPackageModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">
+                Assign Package
+              </h2>
+              <button
+                onClick={() => setShowAssignPackageModal(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="mb-6">
+              <p className="text-gray-600 mb-4">
+                Assign a package to <span className="font-semibold">{selectedCustomer?.user?.first_name || selectedCustomer?.first_name} {selectedCustomer?.user?.last_name || selectedCustomer?.last_name}</span>
+              </p>
+
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Select Package
+              </label>
+              <select
+                value={selectedPackageId}
+                onChange={(e) => setSelectedPackageId(e.target.value)}
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              >
+                <option value="">-- Choose a package --</option>
+                {availablePackages.map(pkg => (
+                  <option key={pkg.id} value={pkg.id}>
+                    {pkg.name} - {pkg.is_unlimited ? 'Unlimited' : `${pkg.credits_per_period} credits`} / {pkg.period_type} - {pkg.currency === 'EUR' ? '€' : pkg.currency === 'MUR' ? 'Rs ' : '$'}{pkg.price}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowAssignPackageModal(false)}
+                className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmAssignment}
+                disabled={!selectedPackageId}
+                className="flex-1 px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Assign Package
+              </button>
             </div>
           </div>
         </div>

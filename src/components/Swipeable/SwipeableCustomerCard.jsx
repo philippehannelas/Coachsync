@@ -1,7 +1,7 @@
 import React from 'react';
 import { Mail, Phone, Edit, Trash2, CreditCard, FileText, Eye } from 'lucide-react';
 
-const SwipeableCustomerCard = ({ customer, lastSession, onView, onEdit, onDelete, onAddCredits, onViewPlans }) => {
+const SwipeableCustomerCard = ({ customer, lastSession, onView, onEdit, onDelete, onAddCredits, onViewPlans, onAssignPackage }) => {
   return (
     <div className="customer-card-mobile">
       <div className="customer-card-mobile-header">
@@ -114,6 +114,14 @@ const SwipeableCustomerCard = ({ customer, lastSession, onView, onEdit, onDelete
         >
           <FileText size={16} />
           <span>Plans</span>
+        </button>
+        <button
+          className="customer-action-btn-compact customer-action-package"
+          onClick={() => onAssignPackage(customer)}
+          style={{ backgroundColor: '#10b981', color: 'white' }}
+        >
+          <CreditCard size={16} />
+          <span>Package</span>
         </button>
         <button
           className="customer-action-btn-compact customer-action-delete"
