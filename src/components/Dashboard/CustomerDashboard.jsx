@@ -139,6 +139,13 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
     return 'Good evening';
   };
 
+  // Get user initials for avatar
+  const getInitials = () => {
+    const firstName = user?.first_name || '';
+    const lastName = user?.last_name || '';
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || 'U';
+  };
+
   // Show loading spinner while data is being fetched
   if (loading) {
     console.log('⏳ Showing loading spinner');
@@ -183,6 +190,15 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
               ) : (
                 <AthleteHubLogo className="h-12 w-auto" color="white" />
               )}
+              {/* Customer Avatar with Initials */}
+              <div className="relative">
+                <div className="absolute inset-0 bg-white/30 rounded-full blur-lg"></div>
+                <div className="relative bg-white/20 backdrop-blur-sm p-3 rounded-full border-2 border-white/40 shadow-xl">
+                  <div className="w-10 h-10 flex items-center justify-center">
+                    <span className="text-xl font-bold text-white">{getInitials()}</span>
+                  </div>
+                </div>
+              </div>
               <div>
                 <p className="text-white/80 text-sm font-medium">{getGreeting()},</p>
                 <h1 className="text-3xl md:text-4xl font-bold">
@@ -329,6 +345,12 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
         {/* Enhanced Coach Profile Card with Collapsible Bio */}
         {coachBranding && (
           <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 mb-8 border border-gray-100">
+            {/* Your Personal Coach Header */}
+            <div className="flex items-center gap-2 mb-4">
+              <User className="h-5 w-5" style={{ color: brandColor }} />
+              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Your Personal Coach</h3>
+            </div>
+            
             <div className="flex items-start space-x-6">
               {coachBranding.profile_photo_url && (
                 <div className="relative">
@@ -372,6 +394,38 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
                     </button>
                   </>
                 )}
+              </div>
+            </div>
+            
+            {/* Contact Coach Buttons */}
+            <div className="mt-6 pt-6 border-t border-gray-100">
+              <div className="flex flex-wrap gap-3">
+                {userProfile?.coach?.user?.email && (
+                  <a
+                    href={`mailto:${userProfile.coach.user.email}`}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-white shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 active:scale-95"
+                    style={{ background: `linear-gradient(135deg, ${brandColor}, ${brandColor}dd)` }}
+                  >
+                    <Mail className="h-4 w-4" />
+                    <span>Email Coach</span>
+                  </a>
+                )}
+                {userProfile?.coach?.user?.phone && (
+                  <a
+                    href={`tel:${userProfile.coach.user.phone}`}
+                    className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 rounded-xl font-medium text-white shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 active:scale-95"
+                  >
+                    <Phone className="h-4 w-4" />
+                    <span>Call Coach</span>
+                  </a>
+                )}
+                <button
+                  onClick={() => navigate('/customer/calendar')}
+                  className="flex items-center gap-2 px-4 py-2 bg-purple-500 hover:bg-purple-600 rounded-xl font-medium text-white shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 active:scale-95"
+                >
+                  <Calendar className="h-4 w-4" />
+                  <span>Book Session</span>
+                </button>
               </div>
             </div>
           </div>
