@@ -76,6 +76,8 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
   const [loading, setLoading] = useState(true);
   const [coachBioExpanded, setCoachBioExpanded] = useState(false);
   const [animateCards, setAnimateCards] = useState(false);
+  const [completedSessions, setCompletedSessions] = useState([]);
+  const [weeklyGoal] = useState(3); // Default weekly goal
 
   console.log('🔍 CustomerDashboard render - user:', user, 'loading:', loading);
 
@@ -112,6 +114,12 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
         });
         setUpcomingBookings(upcoming);
 
+        // Filter for completed sessions (all time)
+        const completed = bookingsResponse.data.filter(booking => {
+          return booking.status === 'completed';
+        });
+        setCompletedSessions(completed);
+
         // Fetch coach branding using customerAPI
         console.log('📡 Fetching coach branding...');
         const brandingResponse = await customerAPI.getCoachBranding();
@@ -144,6 +152,71 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
     const firstName = user?.first_name || '';
     const lastName = user?.last_name || '';
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || 'U';
+  };
+
+  // Get sessions completed this week
+  const getCompletedThisWeek = () => {
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay()); // Sunday
+    startOfWeek.setHours(0, 0, 0, 0);
+    
+    return completedSessions.filter(session => {
+      const sessionDate = new Date(session.start_time);
+      return sessionDate >= startOfWeek && sessionDate <= now;
+    }).length;
+  };
+
+  // Get motivational message based on weekly progress
+  const getWeeklyMotivation = () => {
+    const completed = getCompletedThisWeek();
+    if (completed === 0) return "Let's get started! 🚀";
+    if (completed < weeklyGoal) return `${weeklyGoal - completed} more to hit your goal! 💪`;
+    if (completed === weeklyGoal) return "Goal crushed! Amazing! 🎉";
+    return "Overachiever! Keep it up! 🌟";
+  };
+
+  // Get next upcoming session
+  const getNextSession = () => {
+    if (upcomingBookings.length === 0) return null;
+    return upcomingBookings[0]; // Already sorted by date
+  };
+
+  // Format date for next session
+  const formatNextSessionDate = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(now.getDate() + 1);
+    
+    // Check if today
+    if (date.toDateString() === now.toDateString()) {
+      return 'Today';
+    }
+    // Check if tomorrow
+    if (date.toDateString() === tomorrow.toDateString()) {
+      return 'Tomorrow';
+    }
+    // Check if this week
+    const daysUntil = Math.ceil((date - now) / (1000 * 60 * 60 * 24));
+    if (daysUntil <= 7) {
+      return date.toLocaleDateString('en-US', { weekday: 'long' });
+    }
+    // Otherwise show date
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  // Format time for next session
+  const formatNextSessionTime = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  };
+
+  // Get member since date
+  const getMemberSince = () => {
+    if (!userProfile?.created_at) return 'Recently';
+    const date = new Date(userProfile.created_at);
+    return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
   };
 
   // Show loading spinner while data is being fetched
@@ -181,21 +254,12 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              {coachBranding?.logo_url ? (
-                <img 
-                  src={coachBranding.logo_url} 
-                  alt="Coach Logo" 
-                  className="h-12 w-auto drop-shadow-lg"
-                />
-              ) : (
-                <AthleteHubLogo className="h-12 w-auto" color="white" />
-              )}
               {/* Customer Avatar with Initials */}
               <div className="relative">
                 <div className="absolute inset-0 bg-white/30 rounded-full blur-lg"></div>
-                <div className="relative bg-white/20 backdrop-blur-sm p-3 rounded-full border-2 border-white/40 shadow-xl">
-                  <div className="w-10 h-10 flex items-center justify-center">
-                    <span className="text-xl font-bold text-white">{getInitials()}</span>
+                <div className="relative bg-white/20 backdrop-blur-sm p-4 rounded-full border-3 border-white/50 shadow-2xl">
+                  <div className="w-14 h-14 flex items-center justify-center">
+                    <span className="text-2xl font-bold text-white">{getInitials()}</span>
                   </div>
                 </div>
               </div>
@@ -261,7 +325,7 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
             </div>
           </div>
 
-          {/* Upcoming Sessions Card with Gradient */}
+          {/* Next Session Card - NEW */}
           <div className={`relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-500 ${animateCards ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
             style={{ 
               background: 'linear-gradient(135deg, #5B8DEF 0%, #4F7CFF 100%)',
@@ -269,27 +333,35 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
             }}
           >
             <div className="p-6 text-white">
-              <div className="flex items-center justify-between">
+              <p className="text-white/90 text-sm font-medium mb-3">Next Session</p>
+              {getNextSession() ? (
                 <div>
-                  <p className="text-white/90 text-sm font-medium mb-1">Upcoming Sessions</p>
-                  <p className="text-5xl font-bold">
-                    <AnimatedCounter value={upcomingBookings.length} />
+                  <p className="text-4xl font-bold mb-1">
+                    {formatNextSessionDate(getNextSession().start_time)}
                   </p>
-                  <p className="text-xs text-white/80 mt-2">
-                    {upcomingBookings.length === 0 ? 'No sessions booked' : `${upcomingBookings.length} ${upcomingBookings.length === 1 ? 'session' : 'sessions'} booked`}
+                  <p className="text-2xl font-semibold mb-4">
+                    {formatNextSessionTime(getNextSession().start_time)}
                   </p>
-                </div>
-                <div className="relative">
-                  <div className="absolute inset-0 bg-white/20 rounded-full blur-xl"></div>
-                  <div className="relative bg-white/30 p-4 rounded-2xl backdrop-blur-sm">
-                    <Calendar className="h-8 w-8 text-white" />
+                  <div className="flex items-center gap-2 mt-4 pt-4 border-t border-white/20">
+                    <Calendar className="h-4 w-4" />
+                    <p className="text-sm opacity-90">With {coachBranding?.business_name || 'your coach'}</p>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div>
+                  <p className="text-3xl font-bold mb-4">No sessions</p>
+                  <button 
+                    onClick={() => navigate('/customer/calendar')}
+                    className="mt-2 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-105"
+                  >
+                    Book Now
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Sessions Completed Card with Gradient */}
+          {/* This Week Card - NEW */}
           <div className={`relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-500 ${animateCards ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
             style={{ 
               background: 'linear-gradient(135deg, #9F7AEA 0%, #8B5CF6 100%)',
@@ -297,46 +369,32 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
             }}
           >
             <div className="p-6 text-white">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-white/90 text-sm font-medium mb-1">Sessions Completed</p>
-                  <p className="text-5xl font-bold">
-                    <AnimatedCounter value={0} />
-                  </p>
-                  <p className="text-xs text-white/80 mt-2">Keep up the great work! 💪</p>
-                </div>
-                <div className="relative">
-                  <div className="absolute inset-0 bg-white/20 rounded-full blur-xl"></div>
-                  <div className="relative bg-white/30 p-4 rounded-2xl backdrop-blur-sm">
-                    <FileText className="h-8 w-8 text-white" />
-                  </div>
-                </div>
+              <p className="text-white/90 text-sm font-medium mb-3">This Week</p>
+              <p className="text-5xl font-bold mb-4">
+                <AnimatedCounter value={getCompletedThisWeek()} /> / {weeklyGoal}
+              </p>
+              <div className="flex items-center gap-2 mt-4 pt-4 border-t border-white/20">
+                <Dumbbell className="h-4 w-4" />
+                <p className="text-sm opacity-90">{getWeeklyMotivation()}</p>
               </div>
             </div>
           </div>
 
-          {/* Action Items Card with Gradient */}
+          {/* Total Sessions Card - NEW */}
           <div className={`relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-500 ${animateCards ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
             style={{ 
-              background: 'linear-gradient(135deg, #FB923C 0%, #F97316 100%)',
+              background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
               transitionDelay: '300ms'
             }}
           >
             <div className="p-6 text-white">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-white/90 text-sm font-medium mb-1">Action Items</p>
-                  <p className="text-5xl font-bold">
-                    <AnimatedCounter value={0} />
-                  </p>
-                  <p className="text-xs text-white/80 mt-2">All tasks complete! ✨</p>
-                </div>
-                <div className="relative">
-                  <div className="absolute inset-0 bg-white/20 rounded-full blur-xl"></div>
-                  <div className="relative bg-white/30 p-4 rounded-2xl backdrop-blur-sm">
-                    <FileText className="h-8 w-8 text-white" />
-                  </div>
-                </div>
+              <p className="text-white/90 text-sm font-medium mb-3">Total Sessions</p>
+              <p className="text-5xl font-bold mb-4">
+                <AnimatedCounter value={completedSessions.length} />
+              </p>
+              <div className="flex items-center gap-2 mt-4 pt-4 border-t border-white/20">
+                <BarChart3 className="h-4 w-4" />
+                <p className="text-sm opacity-90">Since {getMemberSince()}</p>
               </div>
             </div>
           </div>
@@ -514,47 +572,7 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
           </button>
         </div>
 
-        {/* Enhanced Upcoming Bookings */}
-        {upcomingBookings.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-              <Calendar className="h-6 w-6 mr-3" style={{ color: brandColor }} />
-              Upcoming Sessions
-            </h2>
-            <div className="space-y-4">
-              {upcomingBookings.map((booking, index) => (
-                <div
-                  key={booking.id}
-                  className="flex items-center justify-between p-5 bg-gradient-to-r from-gray-50 to-white rounded-xl hover:shadow-md transition-all duration-300 border border-gray-100"
-                  style={{ 
-                    animationDelay: `${index * 100}ms`,
-                    animation: 'fadeInUp 0.5s ease-out forwards'
-                  }}
-                >
-                  <div className="flex items-center space-x-4">
-                    <div className="p-3 rounded-xl" style={{ backgroundColor: `${brandColor}15` }}>
-                      <Calendar className="h-6 w-6" style={{ color: brandColor }} />
-                    </div>
-                    <div>
-                      <p className="font-bold text-gray-900 text-lg">Training Session</p>
-                      <p className="text-sm text-gray-600 mt-1">
-                        {new Date(booking.start_time).toLocaleDateString('en-US', { 
-                          weekday: 'long', 
-                          year: 'numeric', 
-                          month: 'long', 
-                          day: 'numeric' 
-                        })} at {new Date(booking.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </p>
-                    </div>
-                  </div>
-                  <span className="px-4 py-2 bg-green-100 text-green-700 rounded-full text-sm font-semibold">
-                    {booking.status}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Removed duplicate Upcoming Sessions section - info now in Next Session card above */}
       </main>
 
       {/* Mobile Bottom Navigation */}
