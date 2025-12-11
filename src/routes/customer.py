@@ -395,3 +395,89 @@ def get_coach_branding(current_user):
         return jsonify({'message': f'Failed to get coach branding: {str(e)}'}), 500
 
 
+
+@customer_bp.route('/profile', methods=['PUT'])
+@token_required
+@customer_required
+def update_customer_profile(current_user):
+    """Update customer profile information"""
+    try:
+        data = request.json
+        
+        if not current_user.customer_profile:
+            return jsonify({'message': 'Customer profile not found'}), 404
+        
+        # Update user fields (email, phone, name)
+        if 'email' in data:
+            # Check if email is already taken by another user
+            existing_user = User.query.filter_by(email=data['email']).first()
+            if existing_user and existing_user.id != current_user.id:
+                return jsonify({'message': 'Email already in use'}), 400
+            current_user.email = data['email']
+        
+        if 'phone' in data:
+            current_user.phone = data['phone']
+        
+        if 'first_name' in data:
+            current_user.first_name = data['first_name']
+        
+        if 'last_name' in data:
+            current_user.last_name = data['last_name']
+        
+        # Update customer profile fields if needed
+        customer_profile = current_user.customer_profile
+        if 'emergency_contact' in data:
+            customer_profile.emergency_contact = data['emergency_contact']
+        
+        if 'medical_notes' in data:
+            customer_profile.medical_notes = data['medical_notes']
+        
+        db.session.commit()
+        
+        # Return updated profile
+        profile_data = customer_profile.to_dict()
+        if customer_profile.coach:
+            coach_data = customer_profile.coach.to_dict()
+            coach_data['user'] = customer_profile.coach.user.to_dict()
+            profile_data['coach'] = coach_data
+        
+        return jsonify({
+            'message': 'Profile updated successfully',
+            'profile': profile_data
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'Failed to update profile: {str(e)}'}), 500
+
+
+@customer_bp.route('/change-password', methods=['POST'])
+@token_required
+@customer_required
+def change_password(current_user):
+    """Change customer password"""
+    try:
+        data = request.json
+        
+        # Validate required fields
+        if 'current_password' not in data or 'new_password' not in data:
+            return jsonify({'message': 'Current password and new password are required'}), 400
+        
+        # Verify current password
+        if not current_user.check_password(data['current_password']):
+            return jsonify({'message': 'Current password is incorrect'}), 401
+        
+        # Validate new password strength
+        new_password = data['new_password']
+        if len(new_password) < 8:
+            return jsonify({'message': 'New password must be at least 8 characters long'}), 400
+        
+        # Update password
+        current_user.set_password(new_password)
+        db.session.commit()
+        
+        return jsonify({'message': 'Password changed successfully'}), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'Failed to change password: {str(e)}'}), 500
