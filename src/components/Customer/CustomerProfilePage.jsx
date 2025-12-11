@@ -24,7 +24,7 @@ function CustomerProfilePage() {
   const fetchCustomerProfile = async () => {
     try {
       const token = localStorage.getItem('coachsync_token');
-      const response = await fetch(`${API_BASE_URL}/api/customer/profile`, {
+      const response = await fetch(`${API_BASE_URL}/customer/profile`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -72,7 +72,7 @@ function CustomerProfilePage() {
       setError(null);
       
       const token = localStorage.getItem('coachsync_token');
-      const response = await fetch(`${API_BASE_URL}/api/customer/profile`, {
+      const response = await fetch(`${API_BASE_URL}/customer/profile`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -121,7 +121,7 @@ function CustomerProfilePage() {
       setError(null);
       
       const token = localStorage.getItem('coachsync_token');
-      const response = await fetch(`${API_BASE_URL}/api/customer/change-password`, {
+      const response = await fetch(`${API_BASE_URL}/customer/change-password`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

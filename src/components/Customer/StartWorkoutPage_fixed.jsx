@@ -16,7 +16,7 @@ function StartWorkoutPage() {
   const fetchTrainingPlans = async () => {
     try {
       const token = localStorage.getItem('coachsync_token');
-      const response = await fetch(`${API_BASE_URL}/api/customer/training-plans`, {
+      const response = await fetch(`${API_BASE_URL}/customer/training-plans`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
