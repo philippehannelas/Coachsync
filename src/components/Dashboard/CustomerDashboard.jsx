@@ -78,6 +78,10 @@ function CustomerDashboard({ user, onNavigate, onLogout }) {
   const [animateCards, setAnimateCards] = useState(false);
   const [completedSessions, setCompletedSessions] = useState([]);
   const [weeklyGoal] = useState(3); // Default weekly goal
+  const [refreshing, setRefreshing] = useState(false);
+  const [pullDistance, setPullDistance] = useState(0);
+  const touchStartY = useRef(0);
+  const scrollTop = useRef(0);
 
   console.log('🔍 CustomerDashboard render - user:', user, 'loading:', loading);
 
