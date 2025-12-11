@@ -255,7 +255,7 @@ function CustomersPage({ user, onNavigate, onBack }) {
 
     try {
       const token = localStorage.getItem('coachsync_token');
-      const response = await fetch('https://coachsync-pro.onrender.com/api/subscriptions', {
+      const response = await fetch('https://coachsync-pro.onrender.com/api/packages/subscriptions', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
