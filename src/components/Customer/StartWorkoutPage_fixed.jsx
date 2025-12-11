@@ -25,7 +25,15 @@ function StartWorkoutPage() {
 
       if (response.ok) {
         const data = await response.json();
-        setTrainingPlans(data);
+        console.log('🔧 Training plans API response:', data);
+        console.log('🔧 Number of plans:', data?.length);
+        if (data && data.length > 0) {
+          console.log('🔧 First plan:', data[0]);
+          console.log('🔧 First plan exercises:', data[0].exercises);
+        }
+        setTrainingPlans(data || []);
+      } else {
+        console.error('🔧 API response not OK:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('Error fetching training plans:', error);
@@ -89,6 +97,25 @@ function StartWorkoutPage() {
                     // Calculate unique days from exercises
                     const uniqueDays = [...new Set(plan.exercises?.map(ex => ex.day_number) || [])];
                     const sortedDays = uniqueDays.sort((a, b) => a - b);
+                    
+                    // If no exercises, show generic days based on duration_weeks
+                    if (sortedDays.length === 0 && plan.duration_weeks) {
+                      const totalDays = plan.duration_weeks * 7;
+                      return (
+                        <div className="p-4 text-center text-gray-600">
+                          <p className="text-sm">This plan has {plan.duration_weeks} weeks ({totalDays} days)</p>
+                          <p className="text-xs mt-2 text-gray-500">No exercises have been added yet. Contact your coach.</p>
+                        </div>
+                      );
+                    }
+                    
+                    if (sortedDays.length === 0) {
+                      return (
+                        <div className="p-4 text-center text-gray-600">
+                          <p className="text-sm">No workouts available yet</p>
+                        </div>
+                      );
+                    }
                     
                     return sortedDays.map((dayNumber) => {
                       const exerciseCount = plan.exercises?.filter(ex => ex.day_number === dayNumber).length || 0;
