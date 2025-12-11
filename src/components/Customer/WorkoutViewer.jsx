@@ -42,7 +42,7 @@ function WorkoutViewer({ trainingPlanId, dayNumber, onComplete, onCancel }) {
   const loadWorkout = async () => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/customer/workouts/${trainingPlanId}/day/${dayNumber}`,
+        `${API_BASE_URL}/customer/workouts/${trainingPlanId}/day/${dayNumber}`,
         {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('coachsync_token')}`,
@@ -141,7 +141,7 @@ function WorkoutViewer({ trainingPlanId, dayNumber, onComplete, onCancel }) {
 
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/customer/workouts/complete`,
+        `${API_BASE_URL}/customer/workouts/complete`,
         {
           method: 'POST',
           headers: {
