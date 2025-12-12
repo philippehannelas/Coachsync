@@ -505,3 +505,114 @@ class RecurringSchedule(db.Model):
             'paused_at': self.paused_at.isoformat() if self.paused_at else None,
             'paused_until': self.paused_until.isoformat() if self.paused_until else None
         }
+
+
+class CoachAssignment(db.Model):
+    """Temporary coach assignment for vacation/sick coverage"""
+    __tablename__ = 'coach_assignment'
+    
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    customer_id = db.Column(db.String(36), db.ForeignKey('customer_profile.id'), nullable=False)
+    primary_coach_id = db.Column(db.String(36), db.ForeignKey('coach_profile.id'), nullable=False)
+    substitute_coach_id = db.Column(db.String(36), db.ForeignKey('coach_profile.id'), nullable=False)
+    
+    # Assignment period
+    start_date = db.Column(db.Date, nullable=False)
+    end_date = db.Column(db.Date, nullable=True)  # NULL means indefinite
+    
+    # Status
+    status = db.Column(
+        db.Enum('pending', 'active', 'completed', 'cancelled', 'declined', 
+                name='assignment_status', create_type=False),
+        default='pending'
+    )
+    reason = db.Column(db.String(255), nullable=True)
+    
+    # Permissions for substitute coach
+    can_view_history = db.Column(db.Boolean, default=True)
+    can_book_sessions = db.Column(db.Boolean, default=True)
+    can_edit_plans = db.Column(db.Boolean, default=False)
+    can_view_notes = db.Column(db.Boolean, default=True)
+    can_add_notes = db.Column(db.Boolean, default=True)
+    
+    # Audit trail
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_by = db.Column(db.String(36), db.ForeignKey('user.id'))
+    accepted_at = db.Column(db.DateTime, nullable=True)
+    declined_at = db.Column(db.DateTime, nullable=True)
+    declined_reason = db.Column(db.Text, nullable=True)
+    completed_at = db.Column(db.DateTime, nullable=True)
+    cancelled_at = db.Column(db.DateTime, nullable=True)
+    cancelled_by = db.Column(db.String(36), db.ForeignKey('user.id'))
+    cancellation_reason = db.Column(db.Text, nullable=True)
+    
+    # Relationships
+    customer = db.relationship('CustomerProfile', foreign_keys=[customer_id], backref='coach_assignments')
+    primary_coach = db.relationship('CoachProfile', foreign_keys=[primary_coach_id], backref='assignments_given')
+    substitute_coach = db.relationship('CoachProfile', foreign_keys=[substitute_coach_id], backref='assignments_received')
+    
+    @property
+    def is_active(self):
+        """Check if assignment is currently active"""
+        if self.status != 'active':
+            return False
+        
+        from datetime import date
+        today = date.today()
+        
+        if self.start_date > today:
+            return False
+        
+        if self.end_date and self.end_date < today:
+            return False
+        
+        return True
+    
+    def to_dict(self, include_customer=False, include_coaches=False):
+        result = {
+            'id': self.id,
+            'customer_id': self.customer_id,
+            'primary_coach_id': self.primary_coach_id,
+            'substitute_coach_id': self.substitute_coach_id,
+            'start_date': self.start_date.isoformat() if self.start_date else None,
+            'end_date': self.end_date.isoformat() if self.end_date else None,
+            'status': self.status,
+            'reason': self.reason,
+            'can_view_history': self.can_view_history,
+            'can_book_sessions': self.can_book_sessions,
+            'can_edit_plans': self.can_edit_plans,
+            'can_view_notes': self.can_view_notes,
+            'can_add_notes': self.can_add_notes,
+            'is_active': self.is_active,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'accepted_at': self.accepted_at.isoformat() if self.accepted_at else None,
+            'declined_at': self.declined_at.isoformat() if self.declined_at else None,
+            'declined_reason': self.declined_reason,
+            'completed_at': self.completed_at.isoformat() if self.completed_at else None,
+            'cancelled_at': self.cancelled_at.isoformat() if self.cancelled_at else None,
+            'cancellation_reason': self.cancellation_reason
+        }
+        
+        if include_customer and self.customer:
+            result['customer'] = {
+                'id': self.customer.id,
+                'name': f"{self.customer.user.first_name} {self.customer.user.last_name}",
+                'email': self.customer.user.email
+            }
+        
+        if include_coaches:
+            if self.primary_coach:
+                result['primary_coach'] = {
+                    'id': self.primary_coach.id,
+                    'name': f"{self.primary_coach.user.first_name} {self.primary_coach.user.last_name}",
+                    'email': self.primary_coach.user.email
+                }
+            if self.substitute_coach:
+                result['substitute_coach'] = {
+                    'id': self.substitute_coach.id,
+                    'name': f"{self.substitute_coach.user.first_name} {self.substitute_coach.user.last_name}",
+                    'email': self.substitute_coach.user.email,
+                    'profile_photo_url': self.substitute_coach.profile_photo_url
+                }
+        
+        return result
