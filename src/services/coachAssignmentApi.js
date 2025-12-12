@@ -1,6 +1,24 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://coachsync-pro.onrender.com/api';
+const API_URL = import.meta.env.DEV
+  ? 'http://localhost:5000/api'
+  : 'https://coachsync-pro.onrender.com/api';
+
+// Get token from localStorage
+const getToken = () => {
+  return localStorage.getItem('coachsync_token');
+};
+
+// Create axios instance with auth interceptor
+const createAuthRequest = () => {
+  const token = getToken();
+  return {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  };
+};
 
 /**
  * Coach Assignment API Service
@@ -20,12 +38,11 @@ export const coachAssignmentApi = {
    */
   createAssignment: async (data) => {
     try {
-      const response = await axios.post(`${API_URL}/coach/assignments`, data, {
-        withCredentials: true,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await axios.post(
+        `${API_URL}/coach/assignments`,
+        data,
+        createAuthRequest()
+      );
       return response.data;
     } catch (error) {
       throw error.response?.data || error;
@@ -43,7 +60,7 @@ export const coachAssignmentApi = {
     try {
       const response = await axios.get(`${API_URL}/coach/assignments/given`, {
         params: filters,
-        withCredentials: true
+        ...createAuthRequest()
       });
       return response.data;
     } catch (error) {
@@ -61,7 +78,7 @@ export const coachAssignmentApi = {
     try {
       const response = await axios.get(`${API_URL}/coach/assignments/received`, {
         params: filters,
-        withCredentials: true
+        ...createAuthRequest()
       });
       return response.data;
     } catch (error) {
@@ -79,7 +96,7 @@ export const coachAssignmentApi = {
       const response = await axios.post(
         `${API_URL}/coach/assignments/${assignmentId}/accept`,
         {},
-        { withCredentials: true }
+        createAuthRequest()
       );
       return response.data;
     } catch (error) {
@@ -98,7 +115,7 @@ export const coachAssignmentApi = {
       const response = await axios.post(
         `${API_URL}/coach/assignments/${assignmentId}/decline`,
         { reason },
-        { withCredentials: true }
+        createAuthRequest()
       );
       return response.data;
     } catch (error) {
@@ -117,7 +134,7 @@ export const coachAssignmentApi = {
       const response = await axios.post(
         `${API_URL}/coach/assignments/${assignmentId}/cancel`,
         { reason },
-        { withCredentials: true }
+        createAuthRequest()
       );
       return response.data;
     } catch (error) {
@@ -131,9 +148,10 @@ export const coachAssignmentApi = {
    */
   getCurrentAssignment: async () => {
     try {
-      const response = await axios.get(`${API_URL}/customer/current-assignment`, {
-        withCredentials: true
-      });
+      const response = await axios.get(
+        `${API_URL}/customer/current-assignment`,
+        createAuthRequest()
+      );
       return response.data;
     } catch (error) {
       throw error.response?.data || error;
