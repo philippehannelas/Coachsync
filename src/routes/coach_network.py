@@ -52,9 +52,9 @@ def search_coaches(current_user):
                 'first_name': user.first_name,
                 'last_name': user.last_name,
                 'full_name': f'{user.first_name} {user.last_name}',
-                'profile_picture': user.profile_picture,
-                'specialty': coach_profile.specialty if hasattr(coach_profile, 'specialty') else None,
-                'bio': coach_profile.bio if hasattr(coach_profile, 'bio') else None
+                'profile_picture': getattr(user, 'profile_picture', None),
+                'specialty': getattr(coach_profile, 'specialty', None),
+                'bio': getattr(coach_profile, 'bio', None)
             })
         
         return jsonify({
@@ -93,7 +93,7 @@ def list_all_coaches(current_user):
                 'first_name': user.first_name,
                 'last_name': user.last_name,
                 'full_name': f'{user.first_name} {user.last_name}',
-                'profile_picture': user.profile_picture
+                'profile_picture': getattr(user, 'profile_picture', None)
             })
         
         return jsonify({
