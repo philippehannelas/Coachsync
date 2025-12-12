@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Search, Plus, ArrowLeft, Edit, CreditCard, FileText } from 'lucide-react';
+import { Users, Search, Plus, ArrowLeft, Edit, CreditCard, FileText, UserCheck } from 'lucide-react';
 import { coachAPI } from '../../services/api.jsx';
 import SwipeableCustomerCard from '../Swipeable/SwipeableCustomerCard';
 import InvitationLinkModal from '../Modals/InvitationLinkModal';
+import { AssignSubstituteModal } from '../CoachAssignment';
 
 function CustomersPage({ user, onNavigate, onBack }) {
   const [customers, setCustomers] = useState([]);
@@ -28,6 +29,10 @@ function CustomersPage({ user, onNavigate, onBack }) {
   const [showAssignPackageModal, setShowAssignPackageModal] = useState(false);
   const [availablePackages, setAvailablePackages] = useState([]);
   const [selectedPackageId, setSelectedPackageId] = useState('');
+  
+  // Coach assignment modal states
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [customersToAssign, setCustomersToAssign] = useState([]);
   
   // Pull-to-refresh states
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -283,6 +288,11 @@ function CustomersPage({ user, onNavigate, onBack }) {
     }
   };
 
+  const handleAssignSubstitute = (customer) => {
+    setCustomersToAssign([customer]);
+    setShowAssignModal(true);
+  };
+
   // Filter customers
   const filteredCustomers = customers.filter(customer => {
     const matchesSearch = searchTerm === '' || 
@@ -481,6 +491,7 @@ function CustomersPage({ user, onNavigate, onBack }) {
                   onAddCredits={() => handleAddCredits(customer)}
                   onViewPlans={() => handleViewPlans(customer)}
                   onAssignPackage={() => handleAssignPackage(customer)}
+                  onAssignSubstitute={() => handleAssignSubstitute(customer)}
                 />
               );
             })}
@@ -868,9 +879,24 @@ function CustomersPage({ user, onNavigate, onBack }) {
             </div>
           </div>
         </div>
+       )}
+
+      {/* Coach Assignment Modal */}
+      {showAssignModal && (
+        <AssignSubstituteModal
+          customers={customersToAssign}
+          onClose={() => {
+            setShowAssignModal(false);
+            setCustomersToAssign([]);
+          }}
+          onSuccess={() => {
+            setShowAssignModal(false);
+            setCustomersToAssign([]);
+            alert('Assignment created successfully!');
+          }}
+        />
       )}
     </div>
   );
 }
-
 export default CustomersPage;

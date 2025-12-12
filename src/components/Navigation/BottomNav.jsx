@@ -1,12 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Users, FileText, Calendar, MoreHorizontal, Settings, LogOut, Palette, User, Package } from 'lucide-react';
+import { Home, Users, FileText, Calendar, MoreHorizontal, Settings, LogOut, Palette, User, Package, UserCheck } from 'lucide-react';
+import { coachAssignmentApi } from '../../services/coachAssignmentApi';
 
 const BottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [pendingAssignmentsCount, setPendingAssignmentsCount] = useState(0);
+
+  useEffect(() => {
+    const fetchPendingCount = async () => {
+      try {
+        const response = await coachAssignmentApi.getAssignmentsReceived({ status: 'pending' });
+        setPendingAssignmentsCount(response.assignments?.length || 0);
+      } catch (error) {
+        console.error('Failed to fetch pending assignments:', error);
+      }
+    };
+
+    fetchPendingCount();
+    
+    // Refresh every 5 minutes
+    const interval = setInterval(fetchPendingCount, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const navItems = [
     { path: '/coach/dashboard', icon: Home, label: 'Home' },
@@ -96,6 +115,34 @@ const BottomNav = () => {
               >
                 <Package size={20} />
                 <span>Packages</span>
+              </button>
+              <button 
+                className="mobile-more-menu-item"
+                onClick={() => {
+                  navigate('/coach/assignments');
+                  setShowMoreMenu(false);
+                }}
+                style={{ position: 'relative' }}
+              >
+                <UserCheck size={20} />
+                <span>Assignments</span>
+                {pendingAssignmentsCount > 0 && (
+                  <span style={{
+                    position: 'absolute',
+                    top: '8px',
+                    right: '8px',
+                    backgroundColor: '#EF4444',
+                    color: 'white',
+                    borderRadius: '999px',
+                    padding: '2px 6px',
+                    fontSize: '10px',
+                    fontWeight: 'bold',
+                    minWidth: '18px',
+                    textAlign: 'center'
+                  }}>
+                    {pendingAssignmentsCount}
+                  </span>
+                )}
               </button>
               <button 
                 className="mobile-more-menu-item"

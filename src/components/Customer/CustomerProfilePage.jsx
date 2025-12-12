@@ -3,6 +3,8 @@ import { User, Mail, Phone, CreditCard, Calendar, Star, Copy, Check, Sparkles, T
 import { useAuth } from '../../hooks/useAuth';
 import MobilePageLayout from './MobilePageLayout';
 import { API_BASE_URL } from '../../config';
+import { AssignmentBanner } from '../CoachAssignment';
+import { coachAssignmentApi } from '../../services/coachAssignmentApi';
 
 function CustomerProfilePage() {
   const { user } = useAuth();
@@ -16,9 +18,25 @@ function CustomerProfilePage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [currentAssignment, setCurrentAssignment] = useState(null);
 
   useEffect(() => {
     fetchCustomerProfile();
+  }, []);
+
+  useEffect(() => {
+    const fetchCurrentAssignment = async () => {
+      try {
+        const response = await coachAssignmentApi.getCurrentAssignment();
+        if (response.has_assignment) {
+          setCurrentAssignment(response.assignment);
+        }
+      } catch (error) {
+        console.error('Failed to fetch assignment:', error);
+      }
+    };
+
+    fetchCurrentAssignment();
   }, []);
 
   const fetchCustomerProfile = async () => {
@@ -177,6 +195,9 @@ function CustomerProfilePage() {
 
   return (
     <MobilePageLayout title="Profile">
+      {/* Temporary Coach Assignment Banner */}
+      <AssignmentBanner assignment={currentAssignment} />
+
       {/* Success Notification */}
       {success && (
         <div className="fixed top-4 left-4 right-4 z-50 animate-slide-down">

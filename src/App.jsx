@@ -21,6 +21,7 @@ import CustomerProfilePage from './components/Customer/CustomerProfilePage';
 import BrandingSettings from './components/Dashboard/BrandingSettings';
 import CustomersPage from './components/Customers/CustomersPage';
 import PackagesPage from './components/Packages/PackagesPage';
+import { ManageAssignmentsPage } from './components/CoachAssignment';
 import BottomNav from './components/Navigation/BottomNav';
 import SettingsPage from './components/Settings/SettingsPage';
 import DesktopNav from './components/Navigation/DesktopNav';
@@ -241,6 +242,18 @@ function AppContent() {
           <ProtectedRoute allowedRole="coach">
             <>
               <SettingsPage />
+              <BottomNav />
+            </>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/coach/assignments"
+        element={
+          <ProtectedRoute allowedRole="coach">
+            <>
+              <ManageAssignmentsPage />
               <BottomNav />
             </>
           </ProtectedRoute>

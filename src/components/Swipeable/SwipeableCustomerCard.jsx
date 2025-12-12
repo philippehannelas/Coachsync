@@ -1,7 +1,7 @@
 import React from 'react';
-import { Mail, Phone, Edit, Trash2, CreditCard, FileText, Eye } from 'lucide-react';
+import { Mail, Phone, Edit, Trash2, CreditCard, FileText, Eye, UserCheck } from 'lucide-react';
 
-const SwipeableCustomerCard = ({ customer, lastSession, onView, onEdit, onDelete, onAddCredits, onViewPlans, onAssignPackage }) => {
+const SwipeableCustomerCard = ({ customer, lastSession, onView, onEdit, onDelete, onAddCredits, onViewPlans, onAssignPackage, onAssignSubstitute }) => {
   return (
     <div className="customer-card-mobile">
       <div className="customer-card-mobile-header">
@@ -122,6 +122,14 @@ const SwipeableCustomerCard = ({ customer, lastSession, onView, onEdit, onDelete
         >
           <CreditCard size={16} />
           <span>Package</span>
+        </button>
+        <button
+          className="customer-action-btn-compact customer-action-package"
+          onClick={() => onAssignSubstitute && onAssignSubstitute(customer)}
+          style={{ backgroundColor: '#3B82F6', color: 'white' }}
+        >
+          <UserCheck size={16} />
+          <span>Assign</span>
         </button>
         <button
           className="customer-action-btn-compact customer-action-delete"
