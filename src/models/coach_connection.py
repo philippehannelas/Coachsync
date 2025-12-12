@@ -9,8 +9,8 @@ class CoachConnection(db.Model):
     __tablename__ = 'coach_connections'
     
     id = db.Column(db.Integer, primary_key=True)
-    requester_coach_id = db.Column(db.Integer, db.ForeignKey('coach_profile.id', ondelete='CASCADE'), nullable=False)
-    receiver_coach_id = db.Column(db.Integer, db.ForeignKey('coach_profile.id', ondelete='CASCADE'), nullable=False)
+    requester_coach_id = db.Column(db.String(36), db.ForeignKey('coach_profile.id', ondelete='CASCADE'), nullable=False)  # FIXED: Changed from Integer to String(36)
+    receiver_coach_id = db.Column(db.String(36), db.ForeignKey('coach_profile.id', ondelete='CASCADE'), nullable=False)  # FIXED: Changed from Integer to String(36)
     status = db.Column(db.String(20), nullable=False, default='pending')
     requested_at = db.Column(db.DateTime, default=datetime.utcnow)
     responded_at = db.Column(db.DateTime)
