@@ -145,10 +145,10 @@ const AssignSubstituteModal = ({ customers = [], onClose, onSuccess }) => {
                     className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                   />
                   <span className="text-sm text-gray-900">
-                    {customer.name || `${customer.first_name} ${customer.last_name}`}
+                    {customer.name || `${customer.user?.first_name || customer.first_name || ''} ${customer.user?.last_name || customer.last_name || ''}`.trim() || 'Unnamed Customer'}
                   </span>
                   <span className="text-xs text-gray-500 ml-auto">
-                    {customer.email}
+                    {customer.user?.email || customer.email || ''}
                   </span>
                 </label>
               ))}
