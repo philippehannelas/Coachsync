@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Home, Users, FileText, Calendar, MoreHorizontal, Settings, LogOut, Palette, User, Package, UserCheck } from 'lucide-react';
-import { coachAssignmentApi } from '../../services/coachAssignmentApi';
+import { coachAssignmentApi } from '../../services/coachAssignmentApi.js';
 
 const BottomNav = () => {
   const navigate = useNavigate();
