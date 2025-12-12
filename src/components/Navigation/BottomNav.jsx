@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Users, FileText, Calendar, MoreHorizontal, Settings, LogOut, Palette, User, Package, UserCheck } from 'lucide-react';
+import { Home, Users, FileText, Calendar, MoreHorizontal, Settings, LogOut, Palette, User, Package, UserCheck, UsersRound } from 'lucide-react';
 import { coachAssignmentApi } from '../../services/coachAssignmentApi.js';
 
 const BottomNav = () => {
@@ -143,6 +143,16 @@ const BottomNav = () => {
                     {pendingAssignmentsCount}
                   </span>
                 )}
+              </button>
+              <button 
+                className="mobile-more-menu-item"
+                onClick={() => {
+                  navigate('/coach/network');
+                  setShowMoreMenu(false);
+                }}
+              >
+                <UsersRound size={20} />
+                <span>My Team</span>
               </button>
               <button 
                 className="mobile-more-menu-item"
