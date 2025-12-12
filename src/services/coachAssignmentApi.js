@@ -141,6 +141,47 @@ export const coachAssignmentApi = {
       throw error.response?.data || error;
     }
   },
+/**
+ * Extension to coachAssignmentApi.js
+ * Add these methods to the existing coachAssignmentApi object
+ */
+
+/**
+ * Rate a completed assignment
+ * @param {number} assignmentId - ID of the assignment
+ * @param {number} rating - Rating (1-5)
+ * @param {string} feedback - Optional feedback
+ * @returns {Promise<Object>} Updated assignment
+ */
+rateAssignment: async (assignmentId, rating, feedback = '') => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/coach/assignments/${assignmentId}/rate`,
+      { rating, feedback },
+      createAuthRequest()
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+},
+
+/**
+ * Get assignment history with a specific coach
+ * @param {number} coachId - ID of the coach
+ * @returns {Promise<Object>} List of assignments
+ */
+getAssignmentHistory: async (coachId) => {
+  try {
+    const response = await axios.get(
+      `${API_URL}/coach/assignments/history/${coachId}`,
+      createAuthRequest()
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+}
 
   /**
    * Get customer's current assignment (for customer view)

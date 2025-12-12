@@ -352,3 +352,91 @@ def get_current_assignment(current_user):
     except Exception as e:
         current_app.logger.error(f'Error fetching current assignment: {str(e)}')
         return jsonify({'error': 'Failed to fetch assignment'}), 500
+"""
+Extension to coach_assignment.py
+Add these routes to the existing assignment_bp blueprint
+"""
+
+from datetime import datetime
+
+@assignment_bp.route('/coach/assignments/<int:assignment_id>/rate', methods=['POST'])
+@token_required
+def rate_assignment(current_user, assignment_id):
+    """
+    Rate a completed assignment
+    Body: { rating, feedback }
+    """
+    try:
+        if current_user.role != 'coach':
+            return jsonify({'error': 'Only coaches can rate assignments'}), 403
+        
+        # Get coach profile
+        coach_profile = CoachProfile.query.filter_by(user_id=current_user.id).first()
+        if not coach_profile:
+            return jsonify({'error': 'Coach profile not found'}), 404
+        
+        # Get assignment
+        assignment = CoachAssignment.query.get(assignment_id)
+        if not assignment:
+            return jsonify({'error': 'Assignment not found'}), 404
+        
+        # Verify this is the primary coach
+        if assignment.primary_coach_id != coach_profile.id:
+            return jsonify({'error': 'Only the primary coach can rate this assignment'}), 403
+        
+        # Get rating data
+        data = request.get_json()
+        rating = data.get('rating')
+        feedback = data.get('feedback', '')
+        
+        if not rating or rating < 1 or rating > 5:
+            return jsonify({'error': 'Rating must be between 1 and 5'}), 400
+        
+        # Update assignment
+        assignment.assignment_rating = rating
+        assignment.assignment_feedback = feedback
+        assignment.rated_at = datetime.utcnow()
+        
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Rating submitted',
+            'assignment': assignment.to_dict()
+        }), 200
+        
+    except Exception as e:
+        current_app.logger.error(f'Error rating assignment: {str(e)}')
+        db.session.rollback()
+        return jsonify({'error': 'Failed to submit rating'}), 500
+
+
+@assignment_bp.route('/coach/assignments/history/<int:coach_id>', methods=['GET'])
+@token_required
+def get_assignment_history(current_user, coach_id):
+    """
+    Get assignment history with a specific coach
+    """
+    try:
+        if current_user.role != 'coach':
+            return jsonify({'error': 'Only coaches can access assignment history'}), 403
+        
+        # Get current coach profile
+        coach_profile = CoachProfile.query.filter_by(user_id=current_user.id).first()
+        if not coach_profile:
+            return jsonify({'error': 'Coach profile not found'}), 404
+        
+        # Get assignments where current coach is primary and specified coach is substitute
+        assignments = CoachAssignment.query.filter_by(
+            primary_coach_id=coach_profile.id,
+            substitute_coach_id=coach_id
+        ).order_by(CoachAssignment.created_at.desc()).all()
+        
+        return jsonify({
+            'assignments': [a.to_dict() for a in assignments],
+            'count': len(assignments)
+        }), 200
+        
+    except Exception as e:
+        current_app.logger.error(f'Error getting assignment history: {str(e)}')
+        return jsonify({'error': 'Failed to get assignment history'}), 500
+

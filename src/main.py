@@ -25,6 +25,7 @@ from src.routes.branding import branding_bp
 from src.routes.package import package_bp
 from src.routes.coach_assignment import assignment_bp
 from src.routes.coach_network import coach_network_bp
+from src.routes.coach_connections import coach_connections_bp
 
 
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
@@ -53,6 +54,7 @@ app.register_blueprint(branding_bp, url_prefix='/api')
 app.register_blueprint(package_bp, url_prefix='/api/packages')
 app.register_blueprint(assignment_bp, url_prefix='/api')
 app.register_blueprint(coach_network_bp, url_prefix='/api')
+app.register_blueprint(coach_connections_bp, url_prefix='/api')
 
 # Database configuration for production
 # Use PostgreSQL if DATABASE_URL is set, otherwise fall back to SQLite
