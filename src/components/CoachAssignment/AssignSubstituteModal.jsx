@@ -1,19 +1,17 @@
 import React, { useState } from 'react';
-import { X, Calendar, Mail, AlertCircle, CheckCircle } from 'lucide-react';
+import { X, Calendar, AlertCircle, CheckCircle } from 'lucide-react';
 import { coachAssignmentApi } from '../../services/coachAssignmentApi';
+import CoachSelector from './CoachSelector';
 
 /**
  * Modal for assigning substitute coach to customers
  * @param {Object} props
- * @param {Array} props.customers - List of customers to assign
+ * @param {Array} props.customers - List of customers to assign (pre-selected)
  * @param {Function} props.onClose - Close modal callback
  * @param {Function} props.onSuccess - Success callback
  */
 const AssignSubstituteModal = ({ customers = [], onClose, onSuccess }) => {
-  const [selectedCustomers, setSelectedCustomers] = useState(
-    customers.map(c => c.id)
-  );
-  const [substituteEmail, setSubstituteEmail] = useState('');
+  const [selectedCoach, setSelectedCoach] = useState(null);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [noEndDate, setNoEndDate] = useState(false);
@@ -21,21 +19,12 @@ const AssignSubstituteModal = ({ customers = [], onClose, onSuccess }) => {
   const [permissions, setPermissions] = useState({
     can_view_history: true,
     can_book_sessions: true,
-    can_edit_plans: false,
-    can_view_notes: true,
+    can_modify_plans: false,
     can_add_notes: true
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
-
-  const handleCustomerToggle = (customerId) => {
-    setSelectedCustomers(prev => 
-      prev.includes(customerId)
-        ? prev.filter(id => id !== customerId)
-        : [...prev, customerId]
-    );
-  };
 
   const handlePermissionToggle = (permission) => {
     setPermissions(prev => ({
@@ -50,14 +39,8 @@ const AssignSubstituteModal = ({ customers = [], onClose, onSuccess }) => {
     setLoading(true);
 
     // Validation
-    if (selectedCustomers.length === 0) {
-      setError('Please select at least one customer');
-      setLoading(false);
-      return;
-    }
-
-    if (!substituteEmail) {
-      setError('Please enter substitute coach email');
+    if (!selectedCoach) {
+      setError('Please select a substitute coach');
       setLoading(false);
       return;
     }
@@ -70,8 +53,8 @@ const AssignSubstituteModal = ({ customers = [], onClose, onSuccess }) => {
 
     try {
       const response = await coachAssignmentApi.createAssignment({
-        customer_ids: selectedCustomers,
-        substitute_coach_email: substituteEmail,
+        customer_ids: customers.map(c => c.id),
+        substitute_coach_email: selectedCoach.email,
         start_date: startDate,
         end_date: noEndDate ? null : endDate,
         reason: reason || 'Temporary coverage',
@@ -92,6 +75,13 @@ const AssignSubstituteModal = ({ customers = [], onClose, onSuccess }) => {
 
   // Get minimum date (today)
   const today = new Date().toISOString().split('T')[0];
+
+  // Get customer name helper
+  const getCustomerName = (customer) => {
+    return customer.name || 
+           `${customer.user?.first_name || customer.first_name || ''} ${customer.user?.last_name || customer.last_name || ''}`.trim() || 
+           'Unnamed Customer';
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -127,53 +117,44 @@ const AssignSubstituteModal = ({ customers = [], onClose, onSuccess }) => {
             </div>
           )}
 
-          {/* Select Customers */}
+          {/* Customer(s) Being Assigned - Read Only */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Select Customers
+              Assigning {customers.length === 1 ? 'Client' : 'Clients'}
             </label>
-            <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-200 rounded-lg p-3">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               {customers.map(customer => (
-                <label
-                  key={customer.id}
-                  className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedCustomers.includes(customer.id)}
-                    onChange={() => handleCustomerToggle(customer.id)}
-                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-                  />
-                  <span className="text-sm text-gray-900">
-                    {customer.name || `${customer.user?.first_name || customer.first_name || ''} ${customer.user?.last_name || customer.last_name || ''}`.trim() || 'Unnamed Customer'}
-                  </span>
-                  <span className="text-xs text-gray-500 ml-auto">
-                    {customer.user?.email || customer.email || ''}
-                  </span>
-                </label>
+                <div key={customer.id} className="flex items-center gap-3 mb-2 last:mb-0">
+                  <div className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold">
+                    {(customer.user?.first_name || customer.first_name || 'U')[0]}
+                    {(customer.user?.last_name || customer.last_name || '')[0]}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-900">
+                      {getCustomerName(customer)}
+                    </p>
+                    <p className="text-xs text-gray-600">
+                      {customer.user?.email || customer.email || ''}
+                    </p>
+                  </div>
+                  <div className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                    {customer.session_credits || 0} credits
+                  </div>
+                </div>
               ))}
             </div>
-            <p className="text-xs text-gray-500 mt-1">
-              {selectedCustomers.length} customer(s) selected
-            </p>
           </div>
 
-          {/* Substitute Coach Email */}
+          {/* Substitute Coach Selector */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Substitute Coach Email
+              Select Substitute Coach
             </label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-              <input
-                type="email"
-                value={substituteEmail}
-                onChange={(e) => setSubstituteEmail(e.target.value)}
-                placeholder="substitute@example.com"
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              />
-            </div>
+            <CoachSelector
+              selectedCoach={selectedCoach}
+              onSelect={setSelectedCoach}
+              placeholder="Search for a coach by name or email..."
+            />
             <p className="text-xs text-gray-500 mt-1">
               The substitute coach will receive a notification and must accept the assignment
             </p>
@@ -247,8 +228,7 @@ const AssignSubstituteModal = ({ customers = [], onClose, onSuccess }) => {
               {Object.entries({
                 can_view_history: 'View client history',
                 can_book_sessions: 'Book sessions',
-                can_edit_plans: 'Edit training plans',
-                can_view_notes: 'View session notes',
+                can_modify_plans: 'Edit training plans',
                 can_add_notes: 'Add session notes'
               }).map(([key, label]) => (
                 <label key={key} className="flex items-center gap-3 cursor-pointer">
