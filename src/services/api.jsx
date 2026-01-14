@@ -77,7 +77,7 @@ export const coachAPI = {
   updateCustomer: (customerId, customerData) => api.put(`/coach/customers/${customerId}`, customerData),
   deleteCustomer: (customerId) => api.delete(`/coach/customers/${customerId}`),
   addCredits: (customerId, credits) => api.post(`/coach/customers/${customerId}/credits`, { credits }),
-  inviteCustomer: (customerData) => api.post('/coach/customers', customerData),
+  inviteCustomer: (customerData) => api.post('/coach/customers/invite', customerData),
   
   getTrainingPlans: () => api.get('/coach/training-plans'),
   createTrainingPlan: (planData) => api.post('/coach/training-plans', planData),
