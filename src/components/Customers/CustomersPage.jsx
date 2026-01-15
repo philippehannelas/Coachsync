@@ -125,11 +125,18 @@ function CustomersPage({ user, onNavigate, onBack }) {
 
   const handleInviteCustomer = async (e) => {
     e.preventDefault();
+    if (!formData.email.trim() && !formData.phone.trim()) {
+      setError('Please provide either an email or a phone number.');
+      setTimeout(() => setError(''), 5000);
+      return;
+    }
     try {
       const response = await coachAPI.inviteCustomer(formData);
       
-      if (response.data.invitation_link) {
-        setInviteLink(response.data.invitation_link);
+      if (response.data.setup_token) {
+        // The backend returns a setup_token, let's form an invite link.
+        const invite_link = `${window.location.origin}/accept-invite/${response.data.setup_token}`;
+        setInviteLink(invite_link);
         setInviteCustomerName(`${formData.first_name} ${formData.last_name}`);
         setShowInviteModal(true);
         setShowAddModal(false);
@@ -145,7 +152,8 @@ function CustomersPage({ user, onNavigate, onBack }) {
         await fetchCustomers();
       }
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to invite customer');
+      setError(err.response?.data?.message || 'Failed to invite customer');
+      setTimeout(() => setError(''), 5000);
     }
   };
 
@@ -504,6 +512,11 @@ function CustomersPage({ user, onNavigate, onBack }) {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Invite New Client</h2>
+            {error && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4">
+                <p>{error}</p>
+              </div>
+            )}
             <form onSubmit={handleInviteCustomer} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
